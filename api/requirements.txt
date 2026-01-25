@@ -5,5 +5,5 @@ azure-functions>=1.17.0
 requests>=2.31.0
 python-dotenv>=1.0.0
 
-# Database (Azure SQL)
-pyodbc>=5.0.0
+# Database (Azure Table Storage)
+azure-data-tables>=12.4.0
