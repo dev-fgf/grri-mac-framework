@@ -15,7 +15,7 @@ let macGaugeChart = null;
 let historyChart = null;
 let backtestChart = null;
 let showPillars = false;
-let historyDays = 30;
+let historyDays = 180; // Match HTML default
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -704,10 +704,15 @@ async function initHistoryChart() {
     const historicalData = await fetchHistoricalData(historyDays);
 
     // Convert to stress/depletion scores (1 - value): high = danger
+    // Format labels based on time period
+    const labelFormat = historyDays > 90
+        ? { month: 'short', year: '2-digit' }  // "Jan '25" for longer periods
+        : { month: 'short', day: 'numeric' };   // "Jan 15" for shorter periods
+
     const chartData = {
         labels: historicalData.map(d => {
             const date = new Date(d.date);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString('en-US', labelFormat);
         }),
         datasets: [
             {
@@ -849,9 +854,14 @@ async function updateHistoryRange() {
 
     const historicalData = await fetchHistoricalData(historyDays);
 
+    // Format labels based on time period
+    const labelFormat = historyDays > 90
+        ? { month: 'short', year: '2-digit' }  // "Jan '25" for longer periods
+        : { month: 'short', day: 'numeric' };   // "Jan 15" for shorter periods
+
     historyChart.data.labels = historicalData.map(d => {
         const date = new Date(d.date);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-US', labelFormat);
     });
 
     // Convert to stress/depletion (1 - value)
