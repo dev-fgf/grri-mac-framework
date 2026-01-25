@@ -1,115 +1,126 @@
+"""Pre-compute and store historical MAC data from FRED for the history chart."""
+
 import json
 import sys
 import os
-import random
+import uuid
 from datetime import datetime, timedelta
 import azure.functions as func
 
-# Add shared module to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from shared.database import get_database
+from shared.fred_client import FREDClient
 from shared.mac_scorer import calculate_mac
-
-
-def generate_historical_indicators(days_ago: int, seed: int = 42) -> dict:
-    """Generate realistic historical indicators with some randomness."""
-    random.seed(seed + days_ago)
-
-    # Base values that evolve over time
-    base_sofr_spread = 3 + random.uniform(-2, 5)
-    base_cp_spread = 20 + random.uniform(-10, 30)
-    base_term_premium = 40 + random.uniform(-20, 60)
-    base_ig_oas = 90 + random.uniform(-20, 50)
-    base_hy_oas = 300 + random.uniform(-100, 200)
-    base_vix = 16 + random.uniform(-4, 15)
-    base_fed_vs_neutral = 150 + random.uniform(-50, 100)
-
-    return {
-        "sofr_iorb_spread_bps": round(base_sofr_spread, 2),
-        "cp_treasury_spread_bps": round(base_cp_spread, 2),
-        "term_premium_10y_bps": round(base_term_premium, 2),
-        "ig_oas_bps": round(base_ig_oas, 2),
-        "hy_oas_bps": round(base_hy_oas, 2),
-        "vix_level": round(base_vix, 2),
-        "fed_funds_vs_neutral_bps": round(base_fed_vs_neutral, 2),
-    }
+from shared.database import get_database
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    """Seed historical MAC data into Table Storage."""
+    """Fetch historical data from FRED and store in machistory Table Storage."""
 
-    # Get days parameter (default 90)
-    days_param = req.params.get('days', '90')
-    try:
-        days = min(int(days_param), 365)  # Max 1 year
-    except ValueError:
-        days = 90
-
+    client = FREDClient()
     db = get_database()
 
-    if not db.connected:
+    if not client.api_key:
         return func.HttpResponse(
-            json.dumps({"error": "Database not connected", "db_connected": False}),
+            json.dumps({"error": "FRED_API_KEY not configured"}),
             status_code=500,
             mimetype="application/json"
         )
 
-    seeded_count = 0
+    if not db.connected:
+        return func.HttpResponse(
+            json.dumps({"error": "Database not connected"}),
+            status_code=500,
+            mimetype="application/json"
+        )
+
+    # Parameters - default to 2 years of daily data
+    days_param = req.params.get('days', '730')
+    try:
+        days = min(int(days_param), 2000)  # Max ~5.5 years
+    except ValueError:
+        days = 730
+
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+
+    # Fetch all FRED series in bulk
+    bulk_data = client.get_all_bulk_series(start_date, end_date)
+
+    if not bulk_data:
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to fetch FRED data"}),
+            status_code=500,
+            mimetype="application/json"
+        )
+
+    # Generate and store data points
+    saved_count = 0
+    skipped = 0
     errors = []
 
-    # Generate data for each day
-    for i in range(days, 0, -1):
+    current_date = start_date
+    while current_date <= end_date:
+        date_str = current_date.strftime("%Y-%m-%d")
+
         try:
-            # Generate indicators for this day
-            indicators = generate_historical_indicators(i, seed=42)
+            indicators = client.calculate_indicators_from_bulk(bulk_data, date_str)
 
-            # Calculate MAC score
-            result = calculate_mac(indicators)
-            result["is_live"] = False  # Mark as historical/seeded
-            result["indicators"] = indicators
+            if indicators and len(indicators) >= 3:
+                mac_result = calculate_mac(indicators)
+                mac_score = mac_result.get("mac_score", 0)
+                pillars = mac_result.get("pillar_scores", {})
 
-            # Override the timestamp to be in the past
-            target_date = datetime.utcnow() - timedelta(days=i)
+                # Create entity for machistory table
+                partition_key = date_str
+                row_key = current_date.strftime("%H%M%S") + "_" + str(uuid.uuid4())[:8]
 
-            # Save directly to table with custom timestamp
-            pillars = result.get("pillar_scores", {})
+                entity = {
+                    "PartitionKey": partition_key,
+                    "RowKey": row_key,
+                    "timestamp": current_date.isoformat(),
+                    "mac_score": round(mac_score, 4),
+                    "liquidity_score": round(pillars.get("liquidity", {}).get("score", 0), 4),
+                    "valuation_score": round(pillars.get("valuation", {}).get("score", 0), 4),
+                    "positioning_score": round(pillars.get("positioning", {}).get("score", 0), 4),
+                    "volatility_score": round(pillars.get("volatility", {}).get("score", 0), 4),
+                    "policy_score": round(pillars.get("policy", {}).get("score", 0), 4),
+                    "multiplier": mac_result.get("multiplier"),
+                    "breach_flags": json.dumps(mac_result.get("breach_flags", [])),
+                    "is_live": False,
+                    "indicators": json.dumps({
+                        k: round(v, 2) if isinstance(v, float) else v
+                        for k, v in indicators.items()
+                    }),
+                }
 
-            import uuid
-            partition_key = target_date.strftime("%Y-%m-%d")
-            row_key = target_date.strftime("%H%M%S") + "_" + str(uuid.uuid4())[:8]
-
-            entity = {
-                "PartitionKey": partition_key,
-                "RowKey": row_key,
-                "timestamp": target_date.isoformat(),
-                "mac_score": result.get("mac_score"),
-                "liquidity_score": pillars.get("liquidity", {}).get("score"),
-                "valuation_score": pillars.get("valuation", {}).get("score"),
-                "positioning_score": pillars.get("positioning", {}).get("score"),
-                "volatility_score": pillars.get("volatility", {}).get("score"),
-                "policy_score": pillars.get("policy", {}).get("score"),
-                "multiplier": result.get("multiplier"),
-                "breach_flags": json.dumps(result.get("breach_flags", [])),
-                "is_live": False,
-                "indicators": json.dumps(indicators),
-            }
-
-            db._table_client.create_entity(entity)
-            seeded_count += 1
+                # Upsert to handle existing data
+                db._table_client.upsert_entity(entity)
+                saved_count += 1
+            else:
+                skipped += 1
 
         except Exception as e:
-            errors.append(f"Day {i}: {str(e)}")
+            errors.append(f"{date_str}: {str(e)}")
+            skipped += 1
 
-    response = {
-        "success": True,
-        "days_requested": days,
-        "records_seeded": seeded_count,
-        "errors": errors[:10] if errors else [],  # First 10 errors only
-        "message": f"Seeded {seeded_count} historical records"
-    }
+        current_date += timedelta(days=1)
 
     return func.HttpResponse(
-        json.dumps(response),
+        json.dumps({
+            "success": True,
+            "message": f"Seeded {saved_count} historical MAC records from FRED",
+            "parameters": {
+                "days_requested": days,
+                "start_date": start_date.strftime("%Y-%m-%d"),
+                "end_date": end_date.strftime("%Y-%m-%d"),
+            },
+            "stats": {
+                "saved": saved_count,
+                "skipped_no_data": skipped,
+                "errors": len(errors),
+            },
+            "sample_errors": errors[:5] if errors else [],
+        }),
         mimetype="application/json"
     )
