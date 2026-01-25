@@ -1,0 +1,38 @@
+name: Daily MAC Refresh
+
+on:
+  schedule:
+    # Run at 6:00 AM UTC every day
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger MAC refresh
+        run: |
+          echo "Triggering daily MAC data refresh..."
+          response=$(curl -s -w "\n%{http_code}" "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/mac_demo")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✓ MAC refresh successful"
+            # Extract key values from JSON response
+            mac_score=$(echo "$body" | jq -r '.mac_score // "N/A"')
+            is_live=$(echo "$body" | jq -r '.is_live // "N/A"')
+            db_connected=$(echo "$body" | jq -r '.db_connected // "N/A"')
+            saved=$(echo "$body" | jq -r '.saved_to_db // "N/A"')
+
+            echo "MAC Score: $mac_score"
+            echo "Live Data: $is_live"
+            echo "DB Connected: $db_connected"
+            echo "Saved to DB: $saved"
+          else
+            echo "✗ MAC refresh failed with status $http_code"
+            exit 1
+          fi
