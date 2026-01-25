@@ -621,28 +621,63 @@ function generateDemoHistory(days) {
     const data = [];
     const now = new Date();
 
-    // Base values with some realistic variation
-    let mac = 0.58;
-    let liquidity = 0.72;
-    let valuation = 0.55;
-    let positioning = 0.48;
-    let volatility = 0.62;
-    let policy = 0.52;
+    // Define stress episodes (days ago, duration, severity)
+    const stressEpisodes = [
+        { start: 150, duration: 20, severity: 0.25 },  // Major stress event
+        { start: 90, duration: 10, severity: 0.15 },   // Moderate stress
+        { start: 45, duration: 8, severity: 0.20 },    // Recent stress
+        { start: 15, duration: 5, severity: 0.12 },    // Minor recent stress
+    ];
+
+    // Base values - start in comfortable territory
+    let liquidity = 0.68;
+    let valuation = 0.62;
+    let positioning = 0.55;
+    let volatility = 0.58;
+    let policy = 0.60;
 
     for (let i = days; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
 
-        // Add some random walk with mean reversion
-        mac = clamp(mac + (Math.random() - 0.5) * 0.04 + (0.55 - mac) * 0.02, 0.15, 0.85);
-        liquidity = clamp(liquidity + (Math.random() - 0.5) * 0.05 + (0.65 - liquidity) * 0.02, 0.2, 0.9);
-        valuation = clamp(valuation + (Math.random() - 0.5) * 0.04 + (0.55 - valuation) * 0.02, 0.2, 0.85);
-        positioning = clamp(positioning + (Math.random() - 0.5) * 0.06 + (0.50 - positioning) * 0.02, 0.15, 0.8);
-        volatility = clamp(volatility + (Math.random() - 0.5) * 0.05 + (0.60 - volatility) * 0.02, 0.2, 0.85);
-        policy = clamp(policy + (Math.random() - 0.5) * 0.03 + (0.52 - policy) * 0.02, 0.25, 0.75);
+        // Check if we're in a stress episode
+        let stressBoost = 0;
+        for (const episode of stressEpisodes) {
+            if (i <= episode.start && i > episode.start - episode.duration) {
+                // Ramp up stress at start, peak in middle, decay at end
+                const progress = (episode.start - i) / episode.duration;
+                const stressShape = Math.sin(progress * Math.PI); // Bell curve
+                stressBoost = Math.max(stressBoost, episode.severity * stressShape);
+            }
+        }
 
-        // Recalculate MAC as average
-        mac = (liquidity + valuation + positioning + volatility + policy) / 5;
+        // Random walk with larger steps and weaker mean reversion
+        const baseVol = 0.08;  // Base volatility
+        const stressVol = stressBoost * 0.15;  // Extra volatility during stress
+
+        liquidity = clamp(
+            liquidity + (Math.random() - 0.5) * (baseVol + stressVol) + (0.65 - liquidity) * 0.005 - stressBoost * 0.3,
+            0.15, 0.92
+        );
+        valuation = clamp(
+            valuation + (Math.random() - 0.5) * (baseVol + stressVol) + (0.60 - valuation) * 0.005 - stressBoost * 0.25,
+            0.18, 0.90
+        );
+        positioning = clamp(
+            positioning + (Math.random() - 0.5) * (baseVol * 1.2 + stressVol) + (0.55 - positioning) * 0.005 - stressBoost * 0.35,
+            0.12, 0.88
+        );
+        volatility = clamp(
+            volatility + (Math.random() - 0.5) * (baseVol * 1.3 + stressVol) + (0.58 - volatility) * 0.008 - stressBoost * 0.40,
+            0.15, 0.95
+        );
+        policy = clamp(
+            policy + (Math.random() - 0.5) * (baseVol * 0.6) + (0.60 - policy) * 0.003,
+            0.30, 0.80
+        );
+
+        // Calculate MAC as average
+        const mac = (liquidity + valuation + positioning + volatility + policy) / 5;
 
         data.push({
             date: date.toISOString().split('T')[0],
