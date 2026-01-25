@@ -225,6 +225,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     mac_scores = [p["mac_score"] for p in time_series]
     crisis_analysis = calculate_crisis_analysis(time_series, start_date, end_date)
 
+    # Calculate prediction metrics from crisis analysis
+    total_crises = len(crisis_analysis)
+    crises_with_warning = sum(1 for c in crisis_analysis if c["days_of_warning"] > 0)
+    crises_stretched = sum(1 for c in crisis_analysis if c["days_stretched"] > 0)
+
+    avg_lead_time = 0
+    avg_days_stretched = 0
+    if total_crises > 0:
+        avg_lead_time = sum(c["days_of_warning"] for c in crisis_analysis) / total_crises
+        avg_days_stretched = sum(c["days_stretched"] for c in crisis_analysis) / total_crises
+
+    warning_rate = (crises_with_warning / total_crises * 100) if total_crises > 0 else 0
+    prediction_accuracy = (crises_stretched / total_crises * 100) if total_crises > 0 else 0
+
     response = {
         "data_source": data_source,
         "parameters": {
@@ -234,6 +248,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "data_points": len(time_series)
         },
         "summary": {
+            "data_points": len(time_series),
+            "average_lead_time_days": round(avg_lead_time, 1),
+            "average_days_stretched_before_event": round(avg_days_stretched, 1),
+            "warning_rate": f"{warning_rate:.0f}%",
+            "prediction_accuracy": f"{prediction_accuracy:.0f}%",
             "min_mac": round(min(mac_scores), 4),
             "max_mac": round(max(mac_scores), 4),
             "avg_mac": round(sum(mac_scores) / len(mac_scores), 4),
