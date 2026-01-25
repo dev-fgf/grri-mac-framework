@@ -218,6 +218,35 @@ function getInterpretationClass(score) {
     return getDepletionClass(1 - score);
 }
 
+// Pillar descriptions for tooltips
+const PILLAR_TOOLTIPS = {
+    liquidity: {
+        name: "Liquidity Stress",
+        description: "Funding market stress measured via SOFR-IORB spread and CP-Treasury spread. High stress indicates tight funding conditions and potential credit freeze.",
+        indicators: "SOFR spread, Commercial Paper spread"
+    },
+    valuation: {
+        name: "Valuation Stress",
+        description: "Credit and term premium stress measured via corporate bond spreads and yield curve shape. High stress indicates risk repricing and flight to quality.",
+        indicators: "IG/HY spreads, Term premium"
+    },
+    positioning: {
+        name: "Positioning Stress",
+        description: "Market positioning and crowding risk. High stress indicates concentrated positions that could unwind rapidly during volatility.",
+        indicators: "Basis trades, Short vol positions"
+    },
+    volatility: {
+        name: "Volatility Stress",
+        description: "Implied volatility and market fear measured via VIX. High stress indicates elevated uncertainty and potential for large price swings.",
+        indicators: "VIX level"
+    },
+    policy: {
+        name: "Policy Stress",
+        description: "Monetary policy tightness relative to neutral. High stress indicates restrictive conditions that may amplify market shocks.",
+        indicators: "Fed funds vs neutral, Balance sheet"
+    }
+};
+
 function updatePillarGrid(pillars) {
     const grid = document.getElementById('pillarGrid');
     grid.innerHTML = '';
@@ -226,13 +255,22 @@ function updatePillarGrid(pillars) {
         // Convert to depletion: high = stressed
         const depletion = 1 - data.score;
         const depletionStatus = getDepletionStatus(depletion);
+        const tooltip = PILLAR_TOOLTIPS[name.toLowerCase()] || {};
 
         const item = document.createElement('div');
         item.className = `pillar-item ${depletionStatus.toLowerCase()}`;
         item.innerHTML = `
-            <div class="name">${name}</div>
+            <div class="pillar-header">
+                <div class="name">${name}</div>
+                <div class="pillar-info" title="${tooltip.description || ''}">?</div>
+            </div>
             <div class="score">${depletion.toFixed(2)}</div>
             <div class="status">${depletionStatus}</div>
+            <div class="pillar-tooltip">
+                <strong>${tooltip.name || name}</strong>
+                <p>${tooltip.description || ''}</p>
+                <span class="tooltip-indicators">${tooltip.indicators || ''}</span>
+            </div>
         `;
         grid.appendChild(item);
     }

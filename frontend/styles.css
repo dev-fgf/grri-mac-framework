@@ -481,18 +481,43 @@ body {
     padding: var(--space-md);
     text-align: center;
     border-left: 3px solid transparent;
+    position: relative;
+    cursor: pointer;
 }
 
 .pillar-item.ample { border-color: var(--mac-ample); }
+.pillar-item.comfortable { border-color: var(--mac-ample); }
 .pillar-item.thin { border-color: var(--mac-thin); }
+.pillar-item.cautious { border-color: var(--mac-thin); }
 .pillar-item.stretched { border-color: var(--mac-stretched); }
+.pillar-item.critical { border-color: var(--mac-breach); }
 .pillar-item.breaching { border-color: var(--mac-breach); }
+
+.pillar-item .pillar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xs);
+}
 
 .pillar-item .name {
     font-size: 0.75rem;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: var(--space-xs);
+}
+
+.pillar-item .pillar-info {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
 }
 
 .pillar-item .score {
@@ -503,6 +528,58 @@ body {
 .pillar-item .status {
     font-size: 0.7rem;
     margin-top: var(--space-xs);
+}
+
+/* Pillar Tooltip */
+.pillar-item .pillar-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    width: 220px;
+    text-align: left;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pillar-item .pillar-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--border-primary);
+}
+
+.pillar-item:hover .pillar-tooltip {
+    display: block;
+}
+
+.pillar-item .pillar-tooltip strong {
+    display: block;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+    font-size: 0.85rem;
+}
+
+.pillar-item .pillar-tooltip p {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.pillar-item .pillar-tooltip .tooltip-indicators {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-style: italic;
 }
 
 /* Chart */
