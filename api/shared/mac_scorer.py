@@ -1,6 +1,8 @@
 """MAC scoring logic with calibrated thresholds."""
 
-from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Calibrated thresholds from backtesting
 THRESHOLDS = {
@@ -166,10 +168,20 @@ def score_valuation(indicators: dict) -> tuple[float, str]:
 
 
 def score_positioning(indicators: dict) -> tuple[float, str]:
-    """Score positioning pillar from indicators."""
-    # Without CFTC/ETF data, use demo score
-    # In production, this would pull from CFTC API
-    return 0.55, "THIN"
+    """Score positioning pillar from CFTC Commitments of Traders data."""
+    try:
+        from shared.cftc_client import get_cftc_client
+        client = get_cftc_client()
+        score, status = client.get_aggregate_positioning_score(lookback_weeks=52)
+
+        if status == "NO_DATA":
+            logger.warning("No CFTC data available, using neutral positioning")
+            return 0.55, "THIN"
+
+        return score, status
+    except Exception as e:
+        logger.error(f"Failed to fetch CFTC positioning data: {e}")
+        return 0.55, "THIN"
 
 
 def score_volatility(indicators: dict) -> tuple[float, str]:
