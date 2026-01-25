@@ -24,6 +24,7 @@ class MACDatabase:
 
     TABLE_NAME = "machistory"
     BACKTEST_TABLE_NAME = "backtesthistory"
+    GRRI_TABLE_NAME = "grridata"
 
     def __init__(self):
         self.connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
@@ -337,6 +338,198 @@ class MACDatabase:
             return count
         except Exception as e:
             logger.error(f"Failed to count backtest: {e}")
+            return 0
+
+    # ==================== GRRI DATA METHODS ====================
+
+    def _get_grri_table(self):
+        """Get or create the GRRI data table client."""
+        if not self.connected or not self.connection_string:
+            return None
+
+        try:
+            service_client = TableServiceClient.from_connection_string(
+                self.connection_string
+            )
+            try:
+                service_client.create_table(self.GRRI_TABLE_NAME)
+                logger.info(f"Created table: {self.GRRI_TABLE_NAME}")
+            except ResourceExistsError:
+                pass
+            return service_client.get_table_client(self.GRRI_TABLE_NAME)
+        except Exception as e:
+            logger.error(f"Failed to get GRRI table: {e}")
+            return None
+
+    def save_grri_record(self, record: dict) -> bool:
+        """Save a single GRRI data record (country-year-quarter)."""
+        table = self._get_grri_table()
+        if not table:
+            return False
+
+        try:
+            # PartitionKey: country code for efficient country queries
+            # RowKey: year-quarter for ordering (e.g., "2024-Q2")
+            country = record.get("country_code", "UNK")
+            year = record.get("year", 2024)
+            quarter = record.get("quarter", "Q4")
+            row_key = f"{year}-{quarter}"
+
+            entity = {
+                "PartitionKey": country,
+                "RowKey": row_key,
+                "country_name": record.get("country_name", ""),
+                "year": year,
+                "quarter": quarter,
+                "composite_score": record.get("composite_score"),
+                "political_score": record.get("political_score"),
+                "economic_score": record.get("economic_score"),
+                "social_score": record.get("social_score"),
+                "environmental_score": record.get("environmental_score"),
+                "data_source": record.get("data_source", ""),
+                "timestamp": record.get("timestamp", datetime.utcnow().isoformat()),
+            }
+
+            # Upsert to handle updates
+            table.upsert_entity(entity)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save GRRI record: {e}")
+            return False
+
+    def save_grri_batch(self, records: list) -> int:
+        """Save multiple GRRI records. Returns count saved."""
+        saved = 0
+        for record in records:
+            if self.save_grri_record(record):
+                saved += 1
+        return saved
+
+    def get_grri_by_country(self, country_code: str) -> list:
+        """Get all GRRI data for a specific country."""
+        table = self._get_grri_table()
+        if not table:
+            return []
+
+        try:
+            filter_query = f"PartitionKey eq '{country_code}'"
+            entities = table.query_entities(filter_query)
+
+            results = []
+            for entity in entities:
+                results.append({
+                    "country_code": entity["PartitionKey"],
+                    "country_name": entity.get("country_name", ""),
+                    "year": entity.get("year"),
+                    "quarter": entity.get("quarter"),
+                    "composite_score": entity.get("composite_score"),
+                    "political_score": entity.get("political_score"),
+                    "economic_score": entity.get("economic_score"),
+                    "social_score": entity.get("social_score"),
+                    "environmental_score": entity.get("environmental_score"),
+                    "data_source": entity.get("data_source", ""),
+                })
+
+            # Sort by year-quarter descending (most recent first)
+            results.sort(key=lambda x: x["RowKey"] if "RowKey" in x else f"{x['year']}-{x['quarter']}", reverse=True)
+            return results
+        except Exception as e:
+            logger.error(f"Failed to get GRRI for {country_code}: {e}")
+            return []
+
+    def get_grri_by_year(self, year: int, quarter: str = None) -> list:
+        """Get GRRI data for all countries in a specific year/quarter."""
+        table = self._get_grri_table()
+        if not table:
+            return []
+
+        try:
+            # Query all entities and filter by year
+            results = []
+            entities = table.query_entities("")
+
+            for entity in entities:
+                entity_year = entity.get("year")
+                entity_quarter = entity.get("quarter")
+
+                if entity_year == year:
+                    if quarter is None or entity_quarter == quarter:
+                        results.append({
+                            "country_code": entity["PartitionKey"],
+                            "country_name": entity.get("country_name", ""),
+                            "year": entity_year,
+                            "quarter": entity_quarter,
+                            "composite_score": entity.get("composite_score"),
+                            "political_score": entity.get("political_score"),
+                            "economic_score": entity.get("economic_score"),
+                            "social_score": entity.get("social_score"),
+                            "environmental_score": entity.get("environmental_score"),
+                        })
+
+            # Sort by composite score descending (rankings)
+            results.sort(key=lambda x: x.get("composite_score") or 0, reverse=True)
+            return results
+        except Exception as e:
+            logger.error(f"Failed to get GRRI for year {year}: {e}")
+            return []
+
+    def get_grri_latest(self) -> list:
+        """Get the most recent GRRI data for all countries."""
+        table = self._get_grri_table()
+        if not table:
+            return []
+
+        try:
+            # Get all data and find latest per country
+            latest_by_country = {}
+            entities = table.query_entities("")
+
+            for entity in entities:
+                country = entity["PartitionKey"]
+                row_key = entity["RowKey"]
+
+                if country not in latest_by_country:
+                    latest_by_country[country] = entity
+                else:
+                    # Compare row keys to find most recent
+                    if row_key > latest_by_country[country]["RowKey"]:
+                        latest_by_country[country] = entity
+
+            results = []
+            for country, entity in latest_by_country.items():
+                results.append({
+                    "country_code": country,
+                    "country_name": entity.get("country_name", ""),
+                    "year": entity.get("year"),
+                    "quarter": entity.get("quarter"),
+                    "composite_score": entity.get("composite_score"),
+                    "political_score": entity.get("political_score"),
+                    "economic_score": entity.get("economic_score"),
+                    "social_score": entity.get("social_score"),
+                    "environmental_score": entity.get("environmental_score"),
+                })
+
+            # Sort by composite score descending
+            results.sort(key=lambda x: x.get("composite_score") or 0, reverse=True)
+            return results
+        except Exception as e:
+            logger.error(f"Failed to get latest GRRI: {e}")
+            return []
+
+    def get_grri_count(self) -> int:
+        """Get count of stored GRRI records."""
+        table = self._get_grri_table()
+        if not table:
+            return 0
+
+        try:
+            count = 0
+            entities = table.query_entities(select=["PartitionKey"])
+            for _ in entities:
+                count += 1
+            return count
+        except Exception as e:
+            logger.error(f"Failed to count GRRI: {e}")
             return 0
 
 
