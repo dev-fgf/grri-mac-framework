@@ -176,3 +176,71 @@ class FREDClient:
         indicators.update(self.get_policy_indicators())
         indicators.update(self.get_volatility_indicators())
         return indicators
+
+    def get_value_at_date(self, series_id: str, target_date: datetime) -> Optional[float]:
+        """Get the value for a series at or near a specific date."""
+        # Fetch a window around the target date (some series update weekly/monthly)
+        start = target_date - timedelta(days=14)
+        end = target_date + timedelta(days=7)
+
+        observations = self.get_series(series_id, start_date=start, end_date=end, limit=30)
+
+        # Find closest observation on or before target date
+        best_obs = None
+        best_date = None
+
+        for obs in observations:
+            if obs.get("value") and obs["value"] != ".":
+                try:
+                    obs_date = datetime.strptime(obs["date"], "%Y-%m-%d")
+                    if obs_date <= target_date:
+                        if best_date is None or obs_date > best_date:
+                            best_obs = float(obs["value"])
+                            best_date = obs_date
+                except (ValueError, KeyError):
+                    continue
+
+        return best_obs
+
+    def get_indicators_at_date(self, target_date: datetime) -> dict:
+        """Fetch all indicators for a specific historical date."""
+        if not self.api_key:
+            return {}
+
+        indicators = {}
+
+        # Liquidity
+        sofr = self.get_value_at_date(FRED_SERIES["SOFR"], target_date)
+        iorb = self.get_value_at_date(FRED_SERIES["IORB"], target_date)
+        cp_rate = self.get_value_at_date(FRED_SERIES["CP_3M"], target_date)
+        treasury_3m = self.get_value_at_date(FRED_SERIES["TREASURY_3M"], target_date)
+
+        if sofr is not None and iorb is not None:
+            indicators["sofr_iorb_spread_bps"] = (sofr - iorb) * 100
+        if cp_rate is not None and treasury_3m is not None:
+            indicators["cp_treasury_spread_bps"] = (cp_rate - treasury_3m) * 100
+
+        # Valuation
+        treasury_10y = self.get_value_at_date(FRED_SERIES["TREASURY_10Y"], target_date)
+        treasury_2y = self.get_value_at_date(FRED_SERIES["TREASURY_2Y"], target_date)
+        baa_spread = self.get_value_at_date(FRED_SERIES["BAA_SPREAD"], target_date)
+        aaa_spread = self.get_value_at_date(FRED_SERIES["AAA_SPREAD"], target_date)
+
+        if treasury_10y is not None and treasury_2y is not None:
+            indicators["term_premium_10y_bps"] = (treasury_10y - treasury_2y) * 100
+        if aaa_spread is not None:
+            indicators["ig_oas_bps"] = aaa_spread * 100
+        if baa_spread is not None:
+            indicators["hy_oas_bps"] = baa_spread * 100
+
+        # Policy
+        fed_funds = self.get_value_at_date(FRED_SERIES["FED_FUNDS"], target_date)
+        if fed_funds is not None:
+            indicators["fed_funds_vs_neutral_bps"] = (fed_funds - 2.5) * 100
+
+        # Volatility
+        vix = self.get_value_at_date(FRED_SERIES["VIX"], target_date)
+        if vix is not None:
+            indicators["vix_level"] = vix
+
+        return indicators
