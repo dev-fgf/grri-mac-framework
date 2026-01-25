@@ -622,11 +622,21 @@ function generateDemoHistory(days) {
     const now = new Date();
 
     // Define stress episodes (days ago, duration, severity)
+    // Cover full range for longer time periods
     const stressEpisodes = [
-        { start: 150, duration: 20, severity: 0.25 },  // Major stress event
-        { start: 90, duration: 10, severity: 0.15 },   // Moderate stress
-        { start: 45, duration: 8, severity: 0.20 },    // Recent stress
-        { start: 15, duration: 5, severity: 0.12 },    // Minor recent stress
+        // 5-year history episodes
+        { start: 1800, duration: 30, severity: 0.30 },  // Major crisis ~5 years ago
+        { start: 1500, duration: 25, severity: 0.22 },  // ~4 years ago
+        { start: 1200, duration: 20, severity: 0.18 },  // ~3.3 years ago
+        { start: 900, duration: 35, severity: 0.35 },   // Major crisis ~2.5 years ago
+        { start: 700, duration: 15, severity: 0.20 },   // ~2 years ago
+        { start: 500, duration: 20, severity: 0.25 },   // ~1.4 years ago
+        { start: 350, duration: 18, severity: 0.22 },   // ~1 year ago
+        // Recent episodes
+        { start: 150, duration: 20, severity: 0.25 },   // Major stress event
+        { start: 90, duration: 10, severity: 0.15 },    // Moderate stress
+        { start: 45, duration: 8, severity: 0.20 },     // Recent stress
+        { start: 15, duration: 5, severity: 0.12 },     // Minor recent stress
     ];
 
     // Base values - start in comfortable territory
