@@ -821,3 +821,68 @@ body {
         min-width: calc(50% - var(--space-sm));
     }
 }
+
+/* Backtest Historical Chart */
+.backtest-chart-card {
+    margin-bottom: var(--space-lg);
+}
+
+.backtest-chart-container {
+    height: 400px;
+    position: relative;
+}
+
+.backtest-legend {
+    margin-top: var(--space-md);
+}
+
+.backtest-legend .legend-item.crisis .legend-color {
+    background: #ef4444;
+}
+
+.backtest-legend .legend-item.warning .legend-color {
+    background: #f59e0b;
+}
+
+.backtest-loading {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(26, 35, 50, 0.95);
+    padding: var(--space-lg) var(--space-xl);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    z-index: 10;
+}
+
+/* Badge styles */
+.badge {
+    display: inline-block;
+    padding: 0.2em 0.6em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+}
+
+.badge-success {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.badge-danger {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.badge-info {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-primary);
+}

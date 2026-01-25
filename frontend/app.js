@@ -13,6 +13,7 @@ let thresholdsData = null;
 let pillarRadarChart = null;
 let macGaugeChart = null;
 let historyChart = null;
+let backtestChart = null;
 let showPillars = false;
 let historyDays = 30;
 
@@ -782,4 +783,228 @@ async function updateHistoryRange() {
     historyChart.data.datasets[5].data = historicalData.map(d => d.policy);
 
     historyChart.update();
+}
+
+// Backtest Historical Chart with Crisis Events
+async function loadBacktestHistory() {
+    const loadingEl = document.getElementById('backtestLoading');
+    const tbody = document.getElementById('backtestTableBody');
+
+    loadingEl.style.display = 'block';
+    tbody.innerHTML = '<tr><td colspan="7" class="placeholder">Loading historical FRED data...</td></tr>';
+
+    const interval = document.getElementById('backtestInterval').value;
+
+    try {
+        const response = await fetch(`${API_BASE}/backtest/run?start=2019-01-01&interval=${interval}`);
+        if (!response.ok) throw new Error('Failed to load backtest data');
+
+        backtestData = await response.json();
+
+        if (backtestData.error) {
+            throw new Error(backtestData.message || backtestData.error);
+        }
+
+        updateBacktestHistoryChart(backtestData);
+        updateBacktestSummary(backtestData);
+        updateCrisisAnalysisTable(backtestData);
+
+    } catch (error) {
+        console.error('Backtest history failed:', error);
+        tbody.innerHTML = `<tr><td colspan="7" class="placeholder">Failed to load: ${error.message}</td></tr>`;
+    } finally {
+        loadingEl.style.display = 'none';
+    }
+}
+
+function updateBacktestHistoryChart(data) {
+    const ctx = document.getElementById('backtestChart');
+    if (!ctx) return;
+
+    const timeSeries = data.time_series || [];
+    const crisisEvents = data.crisis_events || {};
+
+    // Prepare data
+    const labels = timeSeries.map(d => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short' });
+    });
+
+    const macScores = timeSeries.map(d => d.mac_score);
+
+    // Find crisis event indices
+    const crisisAnnotations = [];
+    timeSeries.forEach((point, index) => {
+        if (point.crisis_event) {
+            crisisAnnotations.push({
+                index: index,
+                event: point.crisis_event
+            });
+        }
+    });
+
+    // Create datasets
+    const datasets = [
+        {
+            label: 'MAC Score',
+            data: macScores,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: timeSeries.map(d => d.crisis_event ? 8 : 2),
+            pointBackgroundColor: timeSeries.map(d =>
+                d.crisis_event ? '#ef4444' :
+                d.status === 'CRITICAL' ? '#ef4444' :
+                d.status === 'STRETCHED' ? '#f97316' :
+                d.status === 'CAUTIOUS' ? '#fbbf24' : '#3b82f6'
+            ),
+            pointBorderColor: timeSeries.map(d => d.crisis_event ? '#fff' : 'transparent'),
+            pointBorderWidth: timeSeries.map(d => d.crisis_event ? 2 : 0),
+        }
+    ];
+
+    // Add threshold lines
+    datasets.push({
+        label: 'Comfortable Threshold',
+        data: Array(timeSeries.length).fill(0.65),
+        borderColor: '#10b981',
+        borderWidth: 1,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false,
+    });
+
+    datasets.push({
+        label: 'Stretched Threshold',
+        data: Array(timeSeries.length).fill(0.35),
+        borderColor: '#ef4444',
+        borderWidth: 1,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false,
+    });
+
+    if (backtestChart) {
+        backtestChart.destroy();
+    }
+
+    backtestChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    backgroundColor: '#1a2332',
+                    titleColor: '#f3f4f6',
+                    bodyColor: '#9ca3af',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    callbacks: {
+                        title: function(context) {
+                            const point = timeSeries[context[0].dataIndex];
+                            if (point.crisis_event) {
+                                return `${point.date} - ${point.crisis_event.name}`;
+                            }
+                            return point.date;
+                        },
+                        label: function(context) {
+                            if (context.datasetIndex === 0) {
+                                const point = timeSeries[context.dataIndex];
+                                const lines = [`MAC: ${context.raw.toFixed(3)} (${point.status})`];
+                                if (point.crisis_event) {
+                                    lines.push(`Event: ${point.crisis_event.description}`);
+                                }
+                                return lines;
+                            }
+                            return null;
+                        },
+                        afterBody: function(context) {
+                            const point = timeSeries[context[0].dataIndex];
+                            if (point.breach_flags && point.breach_flags.length > 0) {
+                                return [`Breaches: ${point.breach_flags.join(', ')}`];
+                            }
+                            return [];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: '#1f2937',
+                    },
+                    ticks: {
+                        color: '#9ca3af',
+                        maxTicksLimit: 15,
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: 1,
+                    grid: {
+                        color: '#1f2937',
+                    },
+                    ticks: {
+                        color: '#9ca3af',
+                        callback: function(value) {
+                            return value.toFixed(1);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateBacktestSummary(data) {
+    const summary = data.summary || {};
+    const crisisAnalysis = data.crisis_prediction_analysis || [];
+
+    document.getElementById('btTotal').textContent = summary.data_points || '--';
+    document.getElementById('btAvgLead').textContent = summary.average_lead_time_days || '--';
+    document.getElementById('btAvgStretched').textContent = summary.average_days_stretched_before_event || '--';
+    document.getElementById('btWarningRate').textContent = summary.warning_rate || '--%';
+    document.getElementById('btPredictionAcc').textContent = summary.prediction_accuracy || '--%';
+}
+
+function updateCrisisAnalysisTable(data) {
+    const tbody = document.getElementById('backtestTableBody');
+    const crisisAnalysis = data.crisis_prediction_analysis || [];
+
+    if (crisisAnalysis.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="placeholder">No crisis events in selected date range</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = crisisAnalysis.map(crisis => {
+        const statusClass = crisis.mac_at_event < 0.35 ? 'badge-danger' :
+                           crisis.mac_at_event < 0.5 ? 'badge-warning' : 'badge-success';
+
+        const warningBadge = crisis.days_of_warning > 0 ?
+            `<span class="badge badge-success">${crisis.days_of_warning} days</span>` :
+            '<span class="badge badge-danger">None</span>';
+
+        return `
+            <tr>
+                <td><strong>${crisis.event}</strong></td>
+                <td>${formatDate(crisis.event_date)}</td>
+                <td><span class="badge ${statusClass}">${crisis.mac_at_event?.toFixed(3) || 'N/A'}</span></td>
+                <td>${crisis.first_warning_date ? formatDate(crisis.first_warning_date) : '-'}</td>
+                <td>${warningBadge}</td>
+                <td>${crisis.days_stretched > 0 ? `${crisis.days_stretched} days` : '-'}</td>
+                <td><span class="badge ${statusClass}">${crisis.status_at_event || 'N/A'}</span></td>
+            </tr>
+        `;
+    }).join('');
 }
