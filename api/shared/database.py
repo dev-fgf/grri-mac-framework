@@ -23,6 +23,7 @@ class MACDatabase:
     """Database client for storing and retrieving MAC history."""
 
     TABLE_NAME = "machistory"
+    BACKTEST_TABLE_NAME = "backtesthistory"
 
     def __init__(self):
         self.connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
@@ -209,6 +210,134 @@ class MACDatabase:
             logger.error(f"Failed to get latest: {e}")
 
         return None
+
+    # ==================== BACKTEST HISTORY METHODS ====================
+
+    def _get_backtest_table(self):
+        """Get or create the backtest history table client."""
+        if not self.connected or not self.connection_string:
+            return None
+
+        try:
+            service_client = TableServiceClient.from_connection_string(
+                self.connection_string
+            )
+            try:
+                service_client.create_table(self.BACKTEST_TABLE_NAME)
+                logger.info(f"Created table: {self.BACKTEST_TABLE_NAME}")
+            except ResourceExistsError:
+                pass
+            return service_client.get_table_client(self.BACKTEST_TABLE_NAME)
+        except Exception as e:
+            logger.error(f"Failed to get backtest table: {e}")
+            return None
+
+    def save_backtest_point(self, date_str: str, data: dict) -> bool:
+        """Save a single backtest data point."""
+        table = self._get_backtest_table()
+        if not table:
+            return False
+
+        try:
+            # PartitionKey: year for efficient range queries
+            # RowKey: full date for uniqueness
+            year = date_str[:4]
+            pillars = data.get("pillar_scores", {})
+
+            entity = {
+                "PartitionKey": year,
+                "RowKey": date_str,
+                "mac_score": data.get("mac_score"),
+                "status": data.get("status"),
+                "multiplier": data.get("multiplier"),
+                "liquidity": pillars.get("liquidity", 0),
+                "valuation": pillars.get("valuation", 0),
+                "positioning": pillars.get("positioning", 0),
+                "volatility": pillars.get("volatility", 0),
+                "policy": pillars.get("policy", 0),
+                "breach_flags": json.dumps(data.get("breach_flags", [])),
+                "indicators": json.dumps(data.get("indicators", {})),
+            }
+
+            # Upsert to handle updates
+            table.upsert_entity(entity)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save backtest point {date_str}: {e}")
+            return False
+
+    def save_backtest_batch(self, points: list) -> int:
+        """Save multiple backtest points. Returns count saved."""
+        saved = 0
+        for point in points:
+            if self.save_backtest_point(point["date"], point):
+                saved += 1
+        return saved
+
+    def get_backtest_history(
+        self, start_date: str, end_date: str
+    ) -> list:
+        """Get stored backtest history for a date range."""
+        table = self._get_backtest_table()
+        if not table:
+            return []
+
+        try:
+            results = []
+            start_year = int(start_date[:4])
+            end_year = int(end_date[:4])
+
+            # Query each year partition
+            for year in range(start_year, end_year + 1):
+                filter_query = (
+                    f"PartitionKey eq '{year}' and "
+                    f"RowKey ge '{start_date}' and RowKey le '{end_date}'"
+                )
+                entities = table.query_entities(filter_query)
+
+                for entity in entities:
+                    results.append({
+                        "date": entity["RowKey"],
+                        "mac_score": entity.get("mac_score"),
+                        "status": entity.get("status"),
+                        "multiplier": entity.get("multiplier"),
+                        "pillar_scores": {
+                            "liquidity": entity.get("liquidity", 0),
+                            "valuation": entity.get("valuation", 0),
+                            "positioning": entity.get("positioning", 0),
+                            "volatility": entity.get("volatility", 0),
+                            "policy": entity.get("policy", 0),
+                        },
+                        "breach_flags": json.loads(
+                            entity.get("breach_flags", "[]")
+                        ),
+                        "indicators": json.loads(
+                            entity.get("indicators", "{}")
+                        ),
+                    })
+
+            # Sort by date
+            results.sort(key=lambda x: x["date"])
+            return results
+        except Exception as e:
+            logger.error(f"Failed to get backtest history: {e}")
+            return []
+
+    def get_backtest_count(self) -> int:
+        """Get count of stored backtest points."""
+        table = self._get_backtest_table()
+        if not table:
+            return 0
+
+        try:
+            count = 0
+            entities = table.query_entities(select=["PartitionKey"])
+            for _ in entities:
+                count += 1
+            return count
+        except Exception as e:
+            logger.error(f"Failed to count backtest: {e}")
+            return 0
 
 
 # Singleton instance

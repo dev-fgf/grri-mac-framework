@@ -844,6 +844,23 @@ body {
     background: #f59e0b;
 }
 
+/* Zone legend colors */
+.backtest-legend .legend-item.zone-critical .legend-color {
+    background: rgba(239, 68, 68, 0.5);
+}
+
+.backtest-legend .legend-item.zone-stretched .legend-color {
+    background: rgba(249, 115, 22, 0.5);
+}
+
+.backtest-legend .legend-item.zone-cautious .legend-color {
+    background: rgba(251, 191, 36, 0.5);
+}
+
+.backtest-legend .legend-item.zone-comfortable .legend-color {
+    background: rgba(16, 185, 129, 0.5);
+}
+
 .backtest-loading {
     display: none;
     position: absolute;

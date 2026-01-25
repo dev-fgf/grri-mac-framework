@@ -843,14 +843,60 @@ function updateBacktestHistoryChart(data) {
         }
     });
 
-    // Create datasets
+    // Create background zone datasets (rendered first, behind the line)
+    // With inverted Y-axis: low values at top (danger), high values at bottom (safe)
+    const zoneDatasets = [
+        // CRITICAL zone: 0 to 0.35 (top of chart - danger)
+        {
+            label: 'Critical Zone',
+            data: Array(timeSeries.length).fill(0.35),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',  // red
+            fill: { target: { value: 0 }, above: 'rgba(239, 68, 68, 0.15)' },
+            pointRadius: 0,
+            order: 4,
+        },
+        // STRETCHED zone: 0.35 to 0.50
+        {
+            label: 'Stretched Zone',
+            data: Array(timeSeries.length).fill(0.50),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(249, 115, 22, 0.12)',  // orange
+            fill: { target: { value: 0.35 }, above: 'rgba(249, 115, 22, 0.12)' },
+            pointRadius: 0,
+            order: 4,
+        },
+        // CAUTIOUS zone: 0.50 to 0.65
+        {
+            label: 'Cautious Zone',
+            data: Array(timeSeries.length).fill(0.65),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(251, 191, 36, 0.10)',  // yellow
+            fill: { target: { value: 0.50 }, above: 'rgba(251, 191, 36, 0.10)' },
+            pointRadius: 0,
+            order: 4,
+        },
+        // COMFORTABLE zone: 0.65 to 1.0 (bottom of chart - safe)
+        {
+            label: 'Comfortable Zone',
+            data: Array(timeSeries.length).fill(1.0),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(16, 185, 129, 0.08)',  // green
+            fill: { target: { value: 0.65 }, above: 'rgba(16, 185, 129, 0.08)' },
+            pointRadius: 0,
+            order: 4,
+        },
+    ];
+
+    // Main MAC score line (rendered on top)
     const datasets = [
+        ...zoneDatasets,
         {
             label: 'MAC Score',
             data: macScores,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            fill: true,
+            fill: false,
             tension: 0.3,
             borderWidth: 2,
             pointRadius: timeSeries.map(d => d.crisis_event ? 8 : 2),
@@ -862,28 +908,42 @@ function updateBacktestHistoryChart(data) {
             ),
             pointBorderColor: timeSeries.map(d => d.crisis_event ? '#fff' : 'transparent'),
             pointBorderWidth: timeSeries.map(d => d.crisis_event ? 2 : 0),
+            order: 1,
         }
     ];
 
-    // Add threshold lines
+    // Add threshold lines with zone labels
     datasets.push({
-        label: 'Comfortable Threshold',
+        label: 'Comfortable Threshold (0.65)',
         data: Array(timeSeries.length).fill(0.65),
-        borderColor: '#10b981',
+        borderColor: 'rgba(16, 185, 129, 0.6)',
         borderWidth: 1,
         borderDash: [5, 5],
         pointRadius: 0,
         fill: false,
+        order: 2,
     });
 
     datasets.push({
-        label: 'Stretched Threshold',
-        data: Array(timeSeries.length).fill(0.35),
-        borderColor: '#ef4444',
+        label: 'Cautious Threshold (0.50)',
+        data: Array(timeSeries.length).fill(0.50),
+        borderColor: 'rgba(251, 191, 36, 0.6)',
         borderWidth: 1,
         borderDash: [5, 5],
         pointRadius: 0,
         fill: false,
+        order: 2,
+    });
+
+    datasets.push({
+        label: 'Stretched Threshold (0.35)',
+        data: Array(timeSeries.length).fill(0.35),
+        borderColor: 'rgba(239, 68, 68, 0.6)',
+        borderWidth: 1,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false,
+        order: 2,
     });
 
     if (backtestChart) {
@@ -910,28 +970,32 @@ function updateBacktestHistoryChart(data) {
                     bodyColor: '#9ca3af',
                     borderColor: '#374151',
                     borderWidth: 1,
+                    filter: function(tooltipItem) {
+                        // Only show tooltip for MAC Score dataset (index 4, after 4 zone datasets)
+                        return tooltipItem.datasetIndex === 4;
+                    },
                     callbacks: {
                         title: function(context) {
+                            if (context.length === 0) return '';
                             const point = timeSeries[context[0].dataIndex];
-                            if (point.crisis_event) {
+                            if (point && point.crisis_event) {
                                 return `${point.date} - ${point.crisis_event.name}`;
                             }
-                            return point.date;
+                            return point ? point.date : '';
                         },
                         label: function(context) {
-                            if (context.datasetIndex === 0) {
-                                const point = timeSeries[context.dataIndex];
-                                const lines = [`MAC: ${context.raw.toFixed(3)} (${point.status})`];
-                                if (point.crisis_event) {
-                                    lines.push(`Event: ${point.crisis_event.description}`);
-                                }
-                                return lines;
+                            const point = timeSeries[context.dataIndex];
+                            if (!point) return null;
+                            const lines = [`MAC: ${context.raw.toFixed(3)} (${point.status})`];
+                            if (point.crisis_event) {
+                                lines.push(`Event: ${point.crisis_event.description}`);
                             }
-                            return null;
+                            return lines;
                         },
                         afterBody: function(context) {
+                            if (context.length === 0) return [];
                             const point = timeSeries[context[0].dataIndex];
-                            if (point.breach_flags && point.breach_flags.length > 0) {
+                            if (point && point.breach_flags && point.breach_flags.length > 0) {
                                 return [`Breaches: ${point.breach_flags.join(', ')}`];
                             }
                             return [];
@@ -952,6 +1016,7 @@ function updateBacktestHistoryChart(data) {
                 y: {
                     min: 0,
                     max: 1,
+                    reverse: true,  // Invert Y-axis: low MAC (danger) at top, like VIX
                     grid: {
                         color: '#1f2937',
                     },
@@ -959,6 +1024,14 @@ function updateBacktestHistoryChart(data) {
                         color: '#9ca3af',
                         callback: function(value) {
                             return value.toFixed(1);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '← Vulnerable | Resilient →',
+                        color: '#9ca3af',
+                        font: {
+                            size: 11
                         }
                     }
                 }

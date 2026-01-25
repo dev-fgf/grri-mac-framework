@@ -1,14 +1,16 @@
+"""Backtest endpoint - returns historical MAC data from storage or FRED."""
+
 import json
 import sys
 import os
 from datetime import datetime, timedelta
 import azure.functions as func
 
-# Add shared module to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.fred_client import FREDClient
 from shared.mac_scorer import calculate_mac
+from shared.database import get_database
 
 
 # Define historical crisis events for annotation
@@ -43,61 +45,80 @@ def get_status(mac_score: float) -> str:
         return "CRITICAL"
 
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    """Fetch full historical MAC time series from FRED using bulk data fetch."""
+def add_crisis_events(time_series: list) -> list:
+    """Add crisis event annotations to time series data."""
+    for point in time_series:
+        point_date = datetime.strptime(point["date"], "%Y-%m-%d")
+        for event_date, event_info in CRISIS_EVENTS.items():
+            event_dt = datetime.strptime(event_date, "%Y-%m-%d")
+            if abs((point_date - event_dt).days) <= 3:
+                point["crisis_event"] = {
+                    "name": event_info["name"],
+                    "description": event_info["description"],
+                    "event_date": event_date
+                }
+                break
+    return time_series
 
-    client = FREDClient()
 
-    if not client.api_key:
-        return func.HttpResponse(
-            json.dumps({
-                "error": "FRED_API_KEY not configured",
-                "message": "Set FRED_API_KEY environment variable to fetch real historical data"
-            }),
-            status_code=500,
-            mimetype="application/json"
-        )
+def calculate_crisis_analysis(time_series: list, start_date, end_date) -> list:
+    """Calculate crisis prediction analysis."""
+    crisis_analysis = []
 
-    # Get parameters - default start to 2006 (pre-GFC, using Fed Funds spread as liquidity proxy)
-    start_date_str = req.params.get('start', '2006-01-01')
-    end_date_str = req.params.get('end', datetime.now().strftime('%Y-%m-%d'))
-    interval_days = int(req.params.get('interval', '7'))  # Weekly by default
+    for event_date, event_info in CRISIS_EVENTS.items():
+        event_dt = datetime.strptime(event_date, "%Y-%m-%d")
+        if event_dt < start_date or event_dt > end_date:
+            continue
 
-    try:
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-    except ValueError:
-        return func.HttpResponse(
-            json.dumps({"error": "Invalid date format. Use YYYY-MM-DD"}),
-            status_code=400,
-            mimetype="application/json"
-        )
+        pre_event_points = [
+            p for p in time_series
+            if datetime.strptime(p["date"], "%Y-%m-%d") <= event_dt
+            and datetime.strptime(p["date"], "%Y-%m-%d") >= event_dt - timedelta(days=90)
+        ]
 
-    # Fetch all FRED series in bulk (10 API calls total instead of thousands)
+        if pre_event_points:
+            first_warning = None
+            first_stretched = None
+            for p in pre_event_points:
+                if p["status"] != "COMFORTABLE" and first_warning is None:
+                    first_warning = p
+                if p["status"] in ["STRETCHED", "CRITICAL"] and first_stretched is None:
+                    first_stretched = p
+
+            event_point = pre_event_points[-1] if pre_event_points else None
+
+            crisis_analysis.append({
+                "event": event_info["name"],
+                "event_date": event_date,
+                "mac_at_event": event_point["mac_score"] if event_point else None,
+                "status_at_event": event_point["status"] if event_point else None,
+                "first_warning_date": first_warning["date"] if first_warning else None,
+                "days_of_warning": (
+                    event_dt - datetime.strptime(first_warning["date"], "%Y-%m-%d")
+                ).days if first_warning else 0,
+                "first_stretched_date": first_stretched["date"] if first_stretched else None,
+                "days_stretched": (
+                    event_dt - datetime.strptime(first_stretched["date"], "%Y-%m-%d")
+                ).days if first_stretched else 0,
+            })
+
+    return crisis_analysis
+
+
+def fetch_from_fred(client, start_date, end_date, interval_days) -> list:
+    """Fetch data from FRED API (fallback when no stored data)."""
     bulk_data = client.get_all_bulk_series(start_date, end_date)
-
     if not bulk_data:
-        return func.HttpResponse(
-            json.dumps({
-                "error": "Failed to fetch FRED data",
-                "message": "Could not retrieve bulk data from FRED API"
-            }),
-            status_code=500,
-            mimetype="application/json"
-        )
+        return []
 
-    # Generate dates to sample
     time_series = []
     current_date = start_date
 
     while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d")
-
-        # Calculate indicators from pre-fetched bulk data
         indicators = client.calculate_indicators_from_bulk(bulk_data, date_str)
 
-        if indicators and len(indicators) >= 3:  # Need at least some data
-            # Calculate MAC score with real data
+        if indicators and len(indicators) >= 3:
             mac_result = calculate_mac(indicators)
             mac_score = mac_result.get("mac_score", 0)
             pillars = mac_result.get("pillar_scores", {})
@@ -115,101 +136,126 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     "policy": round(pillars.get("policy", {}).get("score", 0), 4),
                 },
                 "breach_flags": mac_result.get("breach_flags", []),
-                "indicators": {k: round(v, 2) if isinstance(v, float) else v for k, v in indicators.items()},
+                "indicators": {
+                    k: round(v, 2) if isinstance(v, float) else v
+                    for k, v in indicators.items()
+                },
             }
-
-            # Check if this date is near a crisis event
-            for event_date, event_info in CRISIS_EVENTS.items():
-                event_dt = datetime.strptime(event_date, "%Y-%m-%d")
-                if abs((current_date - event_dt).days) <= 3:
-                    point["crisis_event"] = {
-                        "name": event_info["name"],
-                        "description": event_info["description"],
-                        "event_date": event_date
-                    }
-                    break
-
             time_series.append(point)
 
         current_date += timedelta(days=interval_days)
 
+    return time_series
+
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    """Return historical MAC time series - from storage first, FRED as fallback."""
+
+    # Get parameters
+    start_date_str = req.params.get('start', '2006-01-01')
+    end_date_str = req.params.get('end', datetime.now().strftime('%Y-%m-%d'))
+    interval_days = int(req.params.get('interval', '7'))
+
+    try:
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid date format. Use YYYY-MM-DD"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    # Try to get from storage first
+    db = get_database()
+    time_series = []
+    data_source = "Unknown"
+
+    if db.connected:
+        stored_data = db.get_backtest_history(start_date_str, end_date_str)
+        if stored_data:
+            # Filter by interval
+            if interval_days > 1:
+                filtered = []
+                last_date = None
+                for point in stored_data:
+                    if last_date is None:
+                        filtered.append(point)
+                        last_date = datetime.strptime(point["date"], "%Y-%m-%d")
+                    else:
+                        current = datetime.strptime(point["date"], "%Y-%m-%d")
+                        if (current - last_date).days >= interval_days:
+                            filtered.append(point)
+                            last_date = current
+                time_series = filtered
+            else:
+                time_series = stored_data
+            data_source = "Pre-computed (Azure Table Storage)"
+
+    # Fall back to FRED if no stored data
+    if not time_series:
+        client = FREDClient()
+        if not client.api_key:
+            return func.HttpResponse(
+                json.dumps({
+                    "error": "No stored data and FRED_API_KEY not configured",
+                    "message": "Run POST /api/backtest/seed to precompute data"
+                }),
+                status_code=500,
+                mimetype="application/json"
+            )
+
+        time_series = fetch_from_fred(client, start_date, end_date, interval_days)
+        data_source = "FRED API (Real-time)"
+
+    if not time_series:
+        return func.HttpResponse(
+            json.dumps({
+                "error": "No data available",
+                "message": "Run POST /api/backtest/seed to precompute historical data"
+            }),
+            status_code=500,
+            mimetype="application/json"
+        )
+
+    # Add crisis event annotations
+    time_series = add_crisis_events(time_series)
+
     # Calculate statistics
-    if time_series:
-        mac_scores = [p["mac_score"] for p in time_series]
+    mac_scores = [p["mac_score"] for p in time_series]
+    crisis_analysis = calculate_crisis_analysis(time_series, start_date, end_date)
 
-        # Find periods where MAC was stretched before each crisis
-        crisis_analysis = []
-        for event_date, event_info in CRISIS_EVENTS.items():
-            event_dt = datetime.strptime(event_date, "%Y-%m-%d")
-            if event_dt < start_date or event_dt > end_date:
-                continue
-
-            # Look at points leading up to the event
-            pre_event_points = [
-                p for p in time_series
-                if datetime.strptime(p["date"], "%Y-%m-%d") <= event_dt
-                and datetime.strptime(p["date"], "%Y-%m-%d") >= event_dt - timedelta(days=90)
-            ]
-
-            if pre_event_points:
-                # Find first warning (dropped below COMFORTABLE)
-                first_warning = None
-                first_stretched = None
-                for p in pre_event_points:
-                    if p["status"] != "COMFORTABLE" and first_warning is None:
-                        first_warning = p
-                    if p["status"] in ["STRETCHED", "CRITICAL"] and first_stretched is None:
-                        first_stretched = p
-
-                event_point = pre_event_points[-1] if pre_event_points else None
-
-                crisis_analysis.append({
-                    "event": event_info["name"],
-                    "event_date": event_date,
-                    "mac_at_event": event_point["mac_score"] if event_point else None,
-                    "status_at_event": event_point["status"] if event_point else None,
-                    "first_warning_date": first_warning["date"] if first_warning else None,
-                    "days_of_warning": (event_dt - datetime.strptime(first_warning["date"], "%Y-%m-%d")).days if first_warning else 0,
-                    "first_stretched_date": first_stretched["date"] if first_stretched else None,
-                    "days_stretched": (event_dt - datetime.strptime(first_stretched["date"], "%Y-%m-%d")).days if first_stretched else 0,
-                })
-
-        response = {
-            "data_source": "FRED API (Real Historical Data)",
-            "parameters": {
-                "start_date": start_date_str,
-                "end_date": end_date_str,
-                "interval_days": interval_days,
-                "data_points": len(time_series)
-            },
-            "summary": {
-                "min_mac": round(min(mac_scores), 4),
-                "max_mac": round(max(mac_scores), 4),
-                "avg_mac": round(sum(mac_scores) / len(mac_scores), 4),
-                "current_mac": time_series[-1]["mac_score"] if time_series else None,
-                "current_status": time_series[-1]["status"] if time_series else None,
-                "periods_in_comfortable": sum(1 for p in time_series if p["status"] == "COMFORTABLE"),
-                "periods_in_cautious": sum(1 for p in time_series if p["status"] == "CAUTIOUS"),
-                "periods_in_stretched": sum(1 for p in time_series if p["status"] == "STRETCHED"),
-                "periods_in_critical": sum(1 for p in time_series if p["status"] == "CRITICAL"),
-            },
-            "crisis_prediction_analysis": crisis_analysis,
-            "time_series": time_series,
-            "crisis_events": CRISIS_EVENTS,
-            "interpretation_guide": {
-                "status_levels": {
-                    "COMFORTABLE": "MAC > 0.65 - Markets can absorb shocks",
-                    "CAUTIOUS": "MAC 0.50-0.65 - Elevated vigilance recommended",
-                    "STRETCHED": "MAC 0.35-0.50 - Reduced shock absorption capacity",
-                    "CRITICAL": "MAC < 0.35 - High vulnerability to cascading selloffs"
-                }
+    response = {
+        "data_source": data_source,
+        "parameters": {
+            "start_date": start_date_str,
+            "end_date": end_date_str,
+            "interval_days": interval_days,
+            "data_points": len(time_series)
+        },
+        "summary": {
+            "min_mac": round(min(mac_scores), 4),
+            "max_mac": round(max(mac_scores), 4),
+            "avg_mac": round(sum(mac_scores) / len(mac_scores), 4),
+            "current_mac": time_series[-1]["mac_score"] if time_series else None,
+            "current_status": time_series[-1]["status"] if time_series else None,
+            "periods_in_comfortable": sum(1 for p in time_series if p["status"] == "COMFORTABLE"),
+            "periods_in_cautious": sum(1 for p in time_series if p["status"] == "CAUTIOUS"),
+            "periods_in_stretched": sum(1 for p in time_series if p["status"] == "STRETCHED"),
+            "periods_in_critical": sum(1 for p in time_series if p["status"] == "CRITICAL"),
+        },
+        "crisis_prediction_analysis": crisis_analysis,
+        "time_series": time_series,
+        "crisis_events": CRISIS_EVENTS,
+        "interpretation_guide": {
+            "status_levels": {
+                "COMFORTABLE": "MAC > 0.65 - Markets can absorb shocks",
+                "CAUTIOUS": "MAC 0.50-0.65 - Elevated vigilance recommended",
+                "STRETCHED": "MAC 0.35-0.50 - Reduced shock absorption capacity",
+                "CRITICAL": "MAC < 0.35 - High vulnerability to cascading selloffs"
             }
         }
-    else:
-        response = {
-            "error": "No data retrieved",
-            "message": "Could not fetch FRED data for the specified date range"
-        }
+    }
 
     return func.HttpResponse(
         json.dumps(response),
