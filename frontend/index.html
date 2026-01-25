@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRRI-MAC Framework | Market Absorption Capacity</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>GRRI-MAC</h1>
+                <span class="subtitle">Market Absorption Capacity Framework</span>
+            </div>
+            <nav class="nav">
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#backtest" class="nav-link">Backtest</a>
+                <a href="#simulator" class="nav-link">Simulator</a>
+                <a href="#thresholds" class="nav-link">Thresholds</a>
+            </nav>
+            <div class="status-indicator" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="section-header">
+                <h2>Current MAC Assessment</h2>
+                <button class="btn btn-primary" onclick="refreshMAC()">Refresh</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- MAC Score Card -->
+                <div class="card card-large mac-score-card">
+                    <div class="card-header">
+                        <h3>MAC Composite Score</h3>
+                        <span class="timestamp" id="macTimestamp">--</span>
+                    </div>
+                    <div class="mac-score-display">
+                        <div class="score-gauge">
+                            <canvas id="macGauge"></canvas>
+                            <div class="score-value" id="macScoreValue">--</div>
+                        </div>
+                        <div class="score-details">
+                            <div class="interpretation" id="macInterpretation">Loading...</div>
+                            <div class="multiplier">
+                                <span class="label">Transmission Multiplier</span>
+                                <span class="value" id="macMultiplier">--</span>
+                                <span class="tier" id="macTier">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pillar Scores -->
+                <div class="card pillar-card">
+                    <div class="card-header">
+                        <h3>Pillar Breakdown</h3>
+                    </div>
+                    <div class="pillar-grid" id="pillarGrid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Pillar Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>Pillar Visualization</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pillarRadar"></canvas>
+                    </div>
+                </div>
+
+                <!-- Breach Alerts -->
+                <div class="card alerts-card">
+                    <div class="card-header">
+                        <h3>Active Alerts</h3>
+                    </div>
+                    <div class="alerts-list" id="alertsList">
+                        <div class="alert-placeholder">No active breaches</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Backtest Section -->
+        <section id="backtest" class="section">
+            <div class="section-header">
+                <h2>Historical Backtest</h2>
+                <button class="btn btn-primary" onclick="runBacktest()">Run Backtest</button>
+            </div>
+
+            <div class="backtest-summary" id="backtestSummary">
+                <div class="summary-card">
+                    <span class="summary-value" id="btTotal">--</span>
+                    <span class="summary-label">Scenarios</span>
+                </div>
+                <div class="summary-card success">
+                    <span class="summary-value" id="btPassed">--</span>
+                    <span class="summary-label">Passed</span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-value" id="btMacAccuracy">--%</span>
+                    <span class="summary-label">MAC Accuracy</span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-value" id="btBreachAccuracy">--%</span>
+                    <span class="summary-label">Breach Accuracy</span>
+                </div>
+                <div class="summary-card highlight">
+                    <span class="summary-value" id="btHedgeAccuracy">--%</span>
+                    <span class="summary-label">Hedge Prediction</span>
+                </div>
+            </div>
+
+            <div class="backtest-results" id="backtestResults">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>MAC Score</th>
+                            <th>Multiplier</th>
+                            <th>Breaches</th>
+                            <th>Hedge Worked</th>
+                            <th>Prediction</th>
+                            <th>Key Insight</th>
+                        </tr>
+                    </thead>
+                    <tbody id="backtestTableBody">
+                        <tr><td colspan="8" class="placeholder">Click "Run Backtest" to load results</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section id="simulator" class="section">
+            <div class="section-header">
+                <h2>Shock Simulator</h2>
+            </div>
+
+            <div class="simulator-grid">
+                <div class="card simulator-inputs">
+                    <div class="card-header">
+                        <h3>Input Parameters</h3>
+                    </div>
+                    <div class="input-group">
+                        <label>Shock Magnitude</label>
+                        <input type="range" id="shockMagnitude" min="0.5" max="3" step="0.1" value="1">
+                        <span class="range-value" id="shockValue">1.0x</span>
+                    </div>
+                    <div class="input-group">
+                        <label>GRRI Country Modifier</label>
+                        <input type="range" id="grriModifier" min="0.8" max="1.5" step="0.05" value="1">
+                        <span class="range-value" id="grriValue">1.00x</span>
+                    </div>
+                    <div class="input-group">
+                        <label>MAC Score Override (optional)</label>
+                        <input type="range" id="macOverride" min="0" max="1" step="0.05" value="0.5">
+                        <span class="range-value" id="macOverrideValue">0.50</span>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="runSimulation()">
+                        Simulate Impact
+                    </button>
+                </div>
+
+                <div class="card simulator-output">
+                    <div class="card-header">
+                        <h3>Simulation Results</h3>
+                    </div>
+                    <div class="simulation-results" id="simulationResults">
+                        <div class="result-equation">
+                            <span class="eq-part">Market Impact</span>
+                            <span class="eq-equals">=</span>
+                            <span class="eq-part" id="eqShock">Shock</span>
+                            <span class="eq-times">×</span>
+                            <span class="eq-part" id="eqGrri">GRRI</span>
+                            <span class="eq-times">×</span>
+                            <span class="eq-part" id="eqMac">MAC</span>
+                        </div>
+                        <div class="result-impact">
+                            <span class="impact-label">Total Market Impact</span>
+                            <span class="impact-value" id="impactValue">--</span>
+                        </div>
+                        <div class="result-tier" id="riskTier">
+                            <span class="tier-label">Risk Tier:</span>
+                            <span class="tier-value">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Thresholds Section -->
+        <section id="thresholds" class="section">
+            <div class="section-header">
+                <h2>Calibrated Thresholds</h2>
+            </div>
+
+            <div class="thresholds-grid" id="thresholdsGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <span>GRRI-MAC Framework v1.0</span>
+            <span>Market Absorption Capacity Assessment Tool</span>
+            <a href="https://github.com/dev-fgf/grri-mac-framework" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

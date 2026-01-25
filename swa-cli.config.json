@@ -1,0 +1,15 @@
+{
+  "configurations": {
+    "grri-mac": {
+      "appLocation": "frontend",
+      "apiLocation": "api",
+      "outputLocation": ".",
+      "apiLanguage": "python",
+      "apiVersion": "3.11",
+      "appBuildCommand": "",
+      "apiBuildCommand": "pip install -r requirements.txt",
+      "run": "",
+      "appDevserverUrl": ""
+    }
+  }
+}

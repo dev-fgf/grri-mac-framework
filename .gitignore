@@ -59,3 +59,11 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Azure
+.azure/
+local.settings.json
+*.funcignore
+
+# SWA CLI
+.swa/

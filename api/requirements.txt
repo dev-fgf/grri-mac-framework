@@ -1,0 +1,7 @@
+# Azure Functions Python dependencies
+azure-functions>=1.17.0
+
+# GRRI-MAC Framework dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+yfinance>=0.2.36
