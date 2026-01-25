@@ -99,8 +99,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     db = get_database()
     history = db.get_history(days)
 
-    # Use demo data if database is empty
-    if not history:
+    # Use demo data if database has insufficient historical data
+    # (need at least 50% of requested days, or minimum 30 records)
+    min_records = max(30, days // 2)
+    if len(history) < min_records:
         history = generate_demo_history(days)
         source = "demo"
     else:
