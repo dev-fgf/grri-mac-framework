@@ -169,19 +169,47 @@ def score_valuation(indicators: dict) -> tuple[float, str]:
 
 def score_positioning(indicators: dict) -> tuple[float, str]:
     """Score positioning pillar from CFTC Commitments of Traders data."""
+    score, status, _ = score_positioning_with_details(indicators)
+    return score, status
+
+
+def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
+    """Score positioning pillar and return CFTC metadata for transparency."""
     try:
         from shared.cftc_client import get_cftc_client
         client = get_cftc_client()
+
+        # Get detailed positioning indicators
+        positioning_data = client.get_positioning_indicators(lookback_weeks=52)
         score, status = client.get_aggregate_positioning_score(lookback_weeks=52)
 
         if status == "NO_DATA":
             logger.warning("No CFTC data available, using neutral positioning")
-            return 0.55, "THIN"
+            return 0.55, "THIN", {"source": "fallback", "reason": "no_data"}
 
-        return score, status
+        # Build metadata showing what data was used
+        metadata = {
+            "source": "CFTC_COT",
+            "contracts": {},
+        }
+
+        latest_date = None
+        for contract_key, data in positioning_data.items():
+            metadata["contracts"][contract_key] = {
+                "name": data.get("name"),
+                "percentile": data.get("percentile"),
+                "signal": data.get("signal"),
+                "date": data.get("date"),
+            }
+            if data.get("date"):
+                latest_date = data.get("date")
+
+        metadata["latest_report_date"] = latest_date
+
+        return score, status, metadata
     except Exception as e:
         logger.error(f"Failed to fetch CFTC positioning data: {e}")
-        return 0.55, "THIN"
+        return 0.55, "THIN", {"source": "fallback", "reason": str(e)}
 
 
 def score_volatility(indicators: dict) -> tuple[float, str]:
@@ -249,7 +277,7 @@ def calculate_mac(indicators: dict) -> dict:
     """Calculate full MAC score from indicators."""
     liq_score, liq_status = score_liquidity(indicators)
     val_score, val_status = score_valuation(indicators)
-    pos_score, pos_status = score_positioning(indicators)
+    pos_score, pos_status, pos_metadata = score_positioning_with_details(indicators)
     vol_score, vol_status = score_volatility(indicators)
     pol_score, pol_status = score_policy(indicators)
 
@@ -302,4 +330,5 @@ def calculate_mac(indicators: dict) -> dict:
         "pillar_scores": pillar_scores,
         "breach_flags": breach_flags,
         "indicators": indicators,
+        "positioning_metadata": pos_metadata,
     }
