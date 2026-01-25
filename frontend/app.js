@@ -602,11 +602,15 @@ function formatDate(dateStr) {
 
 // History Chart
 async function fetchHistoricalData(days) {
+    console.log(`Fetching history for ${days} days...`);
     try {
         const response = await fetch(`${API_BASE}/mac/history?days=${days}`);
         if (response.ok) {
             const result = await response.json();
             console.log(`History loaded: ${result.count} records from ${result.source}`);
+            if (result.data && result.data.length > 0) {
+                console.log(`Date range: ${result.data[0].date} to ${result.data[result.data.length-1].date}`);
+            }
             return result.data;
         }
     } catch (error) {
@@ -614,7 +618,10 @@ async function fetchHistoricalData(days) {
     }
 
     // Fallback to generated demo data
-    return generateDemoHistory(days);
+    console.log(`Using frontend demo data for ${days} days`);
+    const demoData = generateDemoHistory(days);
+    console.log(`Generated ${demoData.length} demo records, dates: ${demoData[0]?.date} to ${demoData[demoData.length-1]?.date}`);
+    return demoData;
 }
 
 function generateDemoHistory(days) {
