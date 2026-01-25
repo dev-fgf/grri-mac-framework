@@ -34,7 +34,7 @@ def get_status(mac_score: float) -> str:
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    """Fetch full historical MAC time series from FRED."""
+    """Fetch full historical MAC time series from FRED using bulk data fetch."""
 
     client = FREDClient()
 
@@ -48,8 +48,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 
-    # Get parameters
-    start_date_str = req.params.get('start', '2019-01-01')
+    # Get parameters - default start to 2020 (SOFR/IORB availability)
+    start_date_str = req.params.get('start', '2020-01-01')
     end_date_str = req.params.get('end', datetime.now().strftime('%Y-%m-%d'))
     interval_days = int(req.params.get('interval', '7'))  # Weekly by default
 
@@ -63,6 +63,19 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 
+    # Fetch all FRED series in bulk (10 API calls total instead of thousands)
+    bulk_data = client.get_all_bulk_series(start_date, end_date)
+
+    if not bulk_data:
+        return func.HttpResponse(
+            json.dumps({
+                "error": "Failed to fetch FRED data",
+                "message": "Could not retrieve bulk data from FRED API"
+            }),
+            status_code=500,
+            mimetype="application/json"
+        )
+
     # Generate dates to sample
     time_series = []
     current_date = start_date
@@ -70,8 +83,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d")
 
-        # Fetch real FRED indicators for this date
-        indicators = client.get_indicators_at_date(current_date)
+        # Calculate indicators from pre-fetched bulk data
+        indicators = client.calculate_indicators_from_bulk(bulk_data, date_str)
 
         if indicators and len(indicators) >= 3:  # Need at least some data
             # Calculate MAC score with real data

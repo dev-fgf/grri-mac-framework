@@ -244,3 +244,122 @@ class FREDClient:
             indicators["vix_level"] = vix
 
         return indicators
+
+    def get_bulk_series(
+        self,
+        series_id: str,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> dict:
+        """Fetch entire time series and return as date->value dict."""
+        if not self.api_key:
+            return {}
+
+        params = {
+            "series_id": series_id,
+            "api_key": self.api_key,
+            "file_type": "json",
+            "observation_start": start_date.strftime("%Y-%m-%d"),
+            "observation_end": end_date.strftime("%Y-%m-%d"),
+            "sort_order": "asc",
+            "limit": 10000,  # Get all observations
+        }
+
+        try:
+            response = requests.get(FRED_BASE_URL, params=params, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+
+            result = {}
+            for obs in data.get("observations", []):
+                if obs.get("value") and obs["value"] != ".":
+                    try:
+                        result[obs["date"]] = float(obs["value"])
+                    except ValueError:
+                        continue
+            return result
+        except Exception as e:
+            logger.error(f"FRED bulk API error for {series_id}: {e}")
+            return {}
+
+    def get_all_bulk_series(self, start_date: datetime, end_date: datetime) -> dict:
+        """Fetch all indicator series in bulk (one API call per series)."""
+        if not self.api_key:
+            return {}
+
+        series_to_fetch = [
+            "SOFR", "IORB", "CP_3M", "TREASURY_3M",
+            "TREASURY_10Y", "TREASURY_2Y", "BAA_SPREAD", "AAA_SPREAD",
+            "FED_FUNDS", "VIX"
+        ]
+
+        bulk_data = {}
+        for series_name in series_to_fetch:
+            series_id = FRED_SERIES.get(series_name)
+            if series_id:
+                logger.info(f"Fetching bulk data for {series_name} ({series_id})")
+                bulk_data[series_name] = self.get_bulk_series(series_id, start_date, end_date)
+
+        return bulk_data
+
+    def interpolate_value(self, series_data: dict, target_date: str) -> Optional[float]:
+        """Get value for target date, using most recent available if exact date missing."""
+        if target_date in series_data:
+            return series_data[target_date]
+
+        # Find most recent date before target
+        target_dt = datetime.strptime(target_date, "%Y-%m-%d")
+        best_value = None
+        best_date = None
+
+        for date_str, value in series_data.items():
+            try:
+                dt = datetime.strptime(date_str, "%Y-%m-%d")
+                if dt <= target_dt:
+                    if best_date is None or dt > best_date:
+                        best_date = dt
+                        best_value = value
+            except ValueError:
+                continue
+
+        return best_value
+
+    def calculate_indicators_from_bulk(self, bulk_data: dict, target_date: str) -> dict:
+        """Calculate MAC indicators for a specific date using bulk-fetched data."""
+        indicators = {}
+
+        # Get values using interpolation
+        sofr = self.interpolate_value(bulk_data.get("SOFR", {}), target_date)
+        iorb = self.interpolate_value(bulk_data.get("IORB", {}), target_date)
+        cp_rate = self.interpolate_value(bulk_data.get("CP_3M", {}), target_date)
+        treasury_3m = self.interpolate_value(bulk_data.get("TREASURY_3M", {}), target_date)
+        treasury_10y = self.interpolate_value(bulk_data.get("TREASURY_10Y", {}), target_date)
+        treasury_2y = self.interpolate_value(bulk_data.get("TREASURY_2Y", {}), target_date)
+        baa_spread = self.interpolate_value(bulk_data.get("BAA_SPREAD", {}), target_date)
+        aaa_spread = self.interpolate_value(bulk_data.get("AAA_SPREAD", {}), target_date)
+        fed_funds = self.interpolate_value(bulk_data.get("FED_FUNDS", {}), target_date)
+        vix = self.interpolate_value(bulk_data.get("VIX", {}), target_date)
+
+        # Liquidity
+        if sofr is not None and iorb is not None:
+            indicators["sofr_iorb_spread_bps"] = (sofr - iorb) * 100
+        if cp_rate is not None and treasury_3m is not None:
+            indicators["cp_treasury_spread_bps"] = (cp_rate - treasury_3m) * 100
+
+        # Valuation
+        if treasury_10y is not None and treasury_2y is not None:
+            indicators["term_premium_10y_bps"] = (treasury_10y - treasury_2y) * 100
+        if aaa_spread is not None:
+            indicators["ig_oas_bps"] = aaa_spread * 100
+        if baa_spread is not None:
+            indicators["hy_oas_bps"] = baa_spread * 100
+
+        # Policy
+        if fed_funds is not None:
+            indicators["fed_funds_vs_neutral_bps"] = (fed_funds - 2.5) * 100
+
+        # Volatility
+        if vix is not None:
+            indicators["vix_level"] = vix
+
+        return indicators
