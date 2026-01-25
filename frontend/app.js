@@ -557,7 +557,23 @@ function formatDate(dateStr) {
 }
 
 // History Chart
-function generateHistoricalData(days) {
+async function fetchHistoricalData(days) {
+    try {
+        const response = await fetch(`${API_BASE}/mac/history?days=${days}`);
+        if (response.ok) {
+            const result = await response.json();
+            console.log(`History loaded: ${result.count} records from ${result.source}`);
+            return result.data;
+        }
+    } catch (error) {
+        console.error('Failed to fetch history:', error);
+    }
+
+    // Fallback to generated demo data
+    return generateDemoHistory(days);
+}
+
+function generateDemoHistory(days) {
     const data = [];
     const now = new Date();
 
@@ -602,11 +618,11 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
 
-function initHistoryChart() {
+async function initHistoryChart() {
     const ctx = document.getElementById('historyChart');
     if (!ctx) return;
 
-    const historicalData = generateHistoricalData(historyDays);
+    const historicalData = await fetchHistoricalData(historyDays);
 
     const chartData = {
         labels: historicalData.map(d => {
@@ -745,13 +761,13 @@ function togglePillarLines() {
     historyChart.update();
 }
 
-function updateHistoryRange() {
+async function updateHistoryRange() {
     const select = document.getElementById('historyRange');
     historyDays = parseInt(select.value);
 
     if (!historyChart) return;
 
-    const historicalData = generateHistoricalData(historyDays);
+    const historicalData = await fetchHistoricalData(historyDays);
 
     historyChart.data.labels = historicalData.map(d => {
         const date = new Date(d.date);

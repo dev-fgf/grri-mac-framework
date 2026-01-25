@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.fred_client import FREDClient
 from shared.mac_scorer import calculate_mac
+from shared.database import get_database
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -36,11 +37,18 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     # Calculate MAC
     result = calculate_mac(indicators)
+    result["is_live"] = is_live
+
+    # Save snapshot to database
+    db = get_database()
+    saved = db.save_snapshot(result)
 
     response = {
         "timestamp": datetime.utcnow().isoformat(),
         "is_live": is_live,
         "data_source": "FRED API" if is_live else "Demo Data",
+        "saved_to_db": saved,
+        "db_connected": db.connected,
         **result,
     }
 
