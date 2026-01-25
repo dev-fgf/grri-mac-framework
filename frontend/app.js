@@ -12,6 +12,9 @@ let backtestData = null;
 let thresholdsData = null;
 let pillarRadarChart = null;
 let macGaugeChart = null;
+let historyChart = null;
+let showPillars = false;
+let historyDays = 30;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkHealth();
     refreshMAC();
     loadThresholds();
+    initHistoryChart();
 });
 
 // Navigation
@@ -550,4 +554,216 @@ function formatDate(dateStr) {
     if (!dateStr) return '--';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// History Chart
+function generateHistoricalData(days) {
+    const data = [];
+    const now = new Date();
+
+    // Base values with some realistic variation
+    let mac = 0.58;
+    let liquidity = 0.72;
+    let valuation = 0.55;
+    let positioning = 0.48;
+    let volatility = 0.62;
+    let policy = 0.52;
+
+    for (let i = days; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+
+        // Add some random walk with mean reversion
+        mac = clamp(mac + (Math.random() - 0.5) * 0.04 + (0.55 - mac) * 0.02, 0.15, 0.85);
+        liquidity = clamp(liquidity + (Math.random() - 0.5) * 0.05 + (0.65 - liquidity) * 0.02, 0.2, 0.9);
+        valuation = clamp(valuation + (Math.random() - 0.5) * 0.04 + (0.55 - valuation) * 0.02, 0.2, 0.85);
+        positioning = clamp(positioning + (Math.random() - 0.5) * 0.06 + (0.50 - positioning) * 0.02, 0.15, 0.8);
+        volatility = clamp(volatility + (Math.random() - 0.5) * 0.05 + (0.60 - volatility) * 0.02, 0.2, 0.85);
+        policy = clamp(policy + (Math.random() - 0.5) * 0.03 + (0.52 - policy) * 0.02, 0.25, 0.75);
+
+        // Recalculate MAC as average
+        mac = (liquidity + valuation + positioning + volatility + policy) / 5;
+
+        data.push({
+            date: date.toISOString().split('T')[0],
+            mac: mac,
+            liquidity: liquidity,
+            valuation: valuation,
+            positioning: positioning,
+            volatility: volatility,
+            policy: policy
+        });
+    }
+
+    return data;
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function initHistoryChart() {
+    const ctx = document.getElementById('historyChart');
+    if (!ctx) return;
+
+    const historicalData = generateHistoricalData(historyDays);
+
+    const chartData = {
+        labels: historicalData.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [
+            {
+                label: 'MAC Composite',
+                data: historicalData.map(d => d.mac),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.3,
+                borderWidth: 2,
+            },
+            {
+                label: 'Liquidity',
+                data: historicalData.map(d => d.liquidity),
+                borderColor: '#06b6d4',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
+            },
+            {
+                label: 'Valuation',
+                data: historicalData.map(d => d.valuation),
+                borderColor: '#8b5cf6',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
+            },
+            {
+                label: 'Positioning',
+                data: historicalData.map(d => d.positioning),
+                borderColor: '#f59e0b',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
+            },
+            {
+                label: 'Volatility',
+                data: historicalData.map(d => d.volatility),
+                borderColor: '#ef4444',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
+            },
+            {
+                label: 'Policy',
+                data: historicalData.map(d => d.policy),
+                borderColor: '#10b981',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
+            }
+        ]
+    };
+
+    historyChart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    backgroundColor: '#1a2332',
+                    titleColor: '#f3f4f6',
+                    bodyColor: '#9ca3af',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw.toFixed(3)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: '#1f2937',
+                    },
+                    ticks: {
+                        color: '#9ca3af',
+                        maxTicksLimit: 10,
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: 1,
+                    grid: {
+                        color: '#1f2937',
+                    },
+                    ticks: {
+                        color: '#9ca3af',
+                        callback: function(value) {
+                            return value.toFixed(1);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function togglePillarLines() {
+    if (!historyChart) return;
+
+    showPillars = !showPillars;
+    const btn = document.getElementById('togglePillars');
+    btn.textContent = showPillars ? 'Hide Pillars' : 'Show Pillars';
+    btn.classList.toggle('active', showPillars);
+
+    // Toggle visibility of pillar datasets (indices 1-5)
+    for (let i = 1; i <= 5; i++) {
+        historyChart.data.datasets[i].hidden = !showPillars;
+    }
+
+    // Update legend visibility
+    const legendItems = document.querySelectorAll('.legend-item');
+    legendItems.forEach((item, index) => {
+        if (index > 0) {
+            item.classList.toggle('hidden', !showPillars);
+        }
+    });
+
+    historyChart.update();
+}
+
+function updateHistoryRange() {
+    const select = document.getElementById('historyRange');
+    historyDays = parseInt(select.value);
+
+    if (!historyChart) return;
+
+    const historicalData = generateHistoricalData(historyDays);
+
+    historyChart.data.labels = historicalData.map(d => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    historyChart.data.datasets[0].data = historicalData.map(d => d.mac);
+    historyChart.data.datasets[1].data = historicalData.map(d => d.liquidity);
+    historyChart.data.datasets[2].data = historicalData.map(d => d.valuation);
+    historyChart.data.datasets[3].data = historicalData.map(d => d.positioning);
+    historyChart.data.datasets[4].data = historicalData.map(d => d.volatility);
+    historyChart.data.datasets[5].data = historicalData.map(d => d.policy);
+
+    historyChart.update();
 }
