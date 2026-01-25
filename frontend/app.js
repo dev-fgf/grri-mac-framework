@@ -124,28 +124,31 @@ async function refreshMAC() {
 }
 
 function updateMACDisplay(data) {
-    // Update score value
-    document.getElementById('macScoreValue').textContent = data.mac_score.toFixed(2);
+    // Convert to depletion score (1 - MAC): high = stressed, low = healthy
+    const depletionScore = 1 - data.mac_score;
+
+    // Update score value (show depletion)
+    document.getElementById('macScoreValue').textContent = depletionScore.toFixed(2);
     document.getElementById('macTimestamp').textContent = formatTimestamp(data.timestamp);
 
-    // Update interpretation
+    // Update interpretation (based on depletion)
     const interpEl = document.getElementById('macInterpretation');
-    interpEl.textContent = data.interpretation;
-    interpEl.className = 'interpretation ' + getInterpretationClass(data.mac_score);
+    interpEl.textContent = getDepletionInterpretation(depletionScore);
+    interpEl.className = 'interpretation ' + getDepletionClass(depletionScore);
 
     // Update multiplier
     document.getElementById('macMultiplier').textContent = `${data.multiplier.toFixed(2)}x`;
     document.getElementById('macTier').textContent = data.multiplier_tier;
 
-    // Update pillars
+    // Update pillars (as depletion)
     updatePillarGrid(data.pillar_scores);
     updatePillarRadar(data.pillar_scores);
 
     // Update alerts
     updateAlerts(data.breach_flags);
 
-    // Update gauge
-    updateMACGauge(data.mac_score);
+    // Update gauge (as depletion)
+    updateMACGauge(depletionScore);
 
     // Update data status banner
     updateDataStatus(data);
@@ -195,12 +198,24 @@ function getTimeAgo(date) {
     return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+// Depletion interpretation: high = bad, low = good
+function getDepletionInterpretation(depletion) {
+    if (depletion >= 0.65) return "CRITICAL - Severe stress, high contagion risk";
+    if (depletion >= 0.50) return "STRETCHED - Elevated stress, reduced resilience";
+    if (depletion >= 0.35) return "CAUTIOUS - Moderate stress, vigilance needed";
+    return "COMFORTABLE - Low stress, markets resilient";
+}
+
+function getDepletionClass(depletion) {
+    if (depletion >= 0.65) return 'breach';      // red
+    if (depletion >= 0.50) return 'stretched';   // orange
+    if (depletion >= 0.35) return 'thin';        // yellow
+    return 'comfortable';                         // green
+}
+
+// Legacy function for backwards compatibility
 function getInterpretationClass(score) {
-    if (score >= 0.8) return 'ample';
-    if (score >= 0.6) return 'comfortable';
-    if (score >= 0.4) return 'thin';
-    if (score >= 0.2) return 'stretched';
-    return 'breach';
+    return getDepletionClass(1 - score);
 }
 
 function updatePillarGrid(pillars) {
@@ -208,15 +223,26 @@ function updatePillarGrid(pillars) {
     grid.innerHTML = '';
 
     for (const [name, data] of Object.entries(pillars)) {
+        // Convert to depletion: high = stressed
+        const depletion = 1 - data.score;
+        const depletionStatus = getDepletionStatus(depletion);
+
         const item = document.createElement('div');
-        item.className = `pillar-item ${data.status.toLowerCase()}`;
+        item.className = `pillar-item ${depletionStatus.toLowerCase()}`;
         item.innerHTML = `
             <div class="name">${name}</div>
-            <div class="score">${data.score.toFixed(2)}</div>
-            <div class="status">${data.status}</div>
+            <div class="score">${depletion.toFixed(2)}</div>
+            <div class="status">${depletionStatus}</div>
         `;
         grid.appendChild(item);
     }
+}
+
+function getDepletionStatus(depletion) {
+    if (depletion >= 0.65) return 'CRITICAL';
+    if (depletion >= 0.50) return 'STRETCHED';
+    if (depletion >= 0.35) return 'CAUTIOUS';
+    return 'COMFORTABLE';
 }
 
 function updatePillarRadar(pillars) {
@@ -224,11 +250,19 @@ function updatePillarRadar(pillars) {
     if (!ctx) return;
 
     const labels = Object.keys(pillars).map(p => p.charAt(0).toUpperCase() + p.slice(1));
-    const scores = Object.values(pillars).map(p => p.score);
+    // Convert to depletion: high values spike outward = danger
+    const depletions = Object.values(pillars).map(p => 1 - p.score);
+
+    // Color based on average depletion
+    const avgDepletion = depletions.reduce((a, b) => a + b, 0) / depletions.length;
+    const radarColor = getDepletionColor(avgDepletion);
 
     if (pillarRadarChart) {
         pillarRadarChart.data.labels = labels;
-        pillarRadarChart.data.datasets[0].data = scores;
+        pillarRadarChart.data.datasets[0].data = depletions;
+        pillarRadarChart.data.datasets[0].backgroundColor = radarColor.bg;
+        pillarRadarChart.data.datasets[0].borderColor = radarColor.border;
+        pillarRadarChart.data.datasets[0].pointBackgroundColor = radarColor.border;
         pillarRadarChart.update();
     } else {
         pillarRadarChart = new Chart(ctx, {
@@ -236,15 +270,15 @@ function updatePillarRadar(pillars) {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Pillar Scores',
-                    data: scores,
+                    label: 'Pillar Stress',
+                    data: depletions,
                     fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    backgroundColor: radarColor.bg,
+                    borderColor: radarColor.border,
+                    pointBackgroundColor: radarColor.border,
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgb(59, 130, 246)'
+                    pointHoverBorderColor: radarColor.border
                 }]
             },
             options: {
@@ -282,29 +316,38 @@ function updatePillarRadar(pillars) {
     }
 }
 
-function updateMACGauge(score) {
+function getDepletionColor(depletion) {
+    // High depletion = red (danger), low = green (safe)
+    if (depletion >= 0.65) return { bg: 'rgba(239, 68, 68, 0.3)', border: '#ef4444' };   // red
+    if (depletion >= 0.50) return { bg: 'rgba(249, 115, 22, 0.3)', border: '#f97316' };  // orange
+    if (depletion >= 0.35) return { bg: 'rgba(251, 191, 36, 0.3)', border: '#fbbf24' };  // yellow
+    return { bg: 'rgba(16, 185, 129, 0.3)', border: '#10b981' };                          // green
+}
+
+function updateMACGauge(depletion) {
+    // depletion score is already passed in (1 - MAC)
     const ctx = document.getElementById('macGauge');
     if (!ctx) return;
 
-    const getColor = (s) => {
-        if (s >= 0.8) return '#10b981';
-        if (s >= 0.6) return '#34d399';
-        if (s >= 0.4) return '#fbbf24';
-        if (s >= 0.2) return '#f97316';
-        return '#ef4444';
+    // High depletion = red (danger), low = green (safe)
+    const getGaugeColor = (d) => {
+        if (d >= 0.65) return '#ef4444';  // red - critical
+        if (d >= 0.50) return '#f97316';  // orange - stretched
+        if (d >= 0.35) return '#fbbf24';  // yellow - cautious
+        return '#10b981';                  // green - comfortable
     };
 
     if (macGaugeChart) {
-        macGaugeChart.data.datasets[0].data = [score, 1 - score];
-        macGaugeChart.data.datasets[0].backgroundColor = [getColor(score), '#1f2937'];
+        macGaugeChart.data.datasets[0].data = [depletion, 1 - depletion];
+        macGaugeChart.data.datasets[0].backgroundColor = [getGaugeColor(depletion), '#1f2937'];
         macGaugeChart.update();
     } else {
         macGaugeChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [score, 1 - score],
-                    backgroundColor: [getColor(score), '#1f2937'],
+                    data: [depletion, 1 - depletion],
+                    backgroundColor: [getGaugeColor(depletion), '#1f2937'],
                     borderWidth: 0
                 }]
             },
@@ -625,6 +668,7 @@ async function initHistoryChart() {
 
     const historicalData = await fetchHistoricalData(historyDays);
 
+    // Convert to stress/depletion scores (1 - value): high = danger
     const chartData = {
         labels: historicalData.map(d => {
             const date = new Date(d.date);
@@ -632,8 +676,8 @@ async function initHistoryChart() {
         }),
         datasets: [
             {
-                label: 'MAC Composite',
-                data: historicalData.map(d => d.mac),
+                label: 'Stress Index',
+                data: historicalData.map(d => 1 - d.mac),
                 borderColor: '#3b82f6',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 fill: true,
@@ -641,40 +685,40 @@ async function initHistoryChart() {
                 borderWidth: 2,
             },
             {
-                label: 'Liquidity',
-                data: historicalData.map(d => d.liquidity),
+                label: 'Liquidity Stress',
+                data: historicalData.map(d => 1 - d.liquidity),
                 borderColor: '#06b6d4',
                 borderWidth: 1.5,
                 tension: 0.3,
                 hidden: true,
             },
             {
-                label: 'Valuation',
-                data: historicalData.map(d => d.valuation),
+                label: 'Valuation Stress',
+                data: historicalData.map(d => 1 - d.valuation),
                 borderColor: '#8b5cf6',
                 borderWidth: 1.5,
                 tension: 0.3,
                 hidden: true,
             },
             {
-                label: 'Positioning',
-                data: historicalData.map(d => d.positioning),
+                label: 'Positioning Stress',
+                data: historicalData.map(d => 1 - d.positioning),
                 borderColor: '#f59e0b',
                 borderWidth: 1.5,
                 tension: 0.3,
                 hidden: true,
             },
             {
-                label: 'Volatility',
-                data: historicalData.map(d => d.volatility),
+                label: 'Volatility Stress',
+                data: historicalData.map(d => 1 - d.volatility),
                 borderColor: '#ef4444',
                 borderWidth: 1.5,
                 tension: 0.3,
                 hidden: true,
             },
             {
-                label: 'Policy',
-                data: historicalData.map(d => d.policy),
+                label: 'Policy Stress',
+                data: historicalData.map(d => 1 - d.policy),
                 borderColor: '#10b981',
                 borderWidth: 1.5,
                 tension: 0.3,
@@ -775,12 +819,13 @@ async function updateHistoryRange() {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
 
-    historyChart.data.datasets[0].data = historicalData.map(d => d.mac);
-    historyChart.data.datasets[1].data = historicalData.map(d => d.liquidity);
-    historyChart.data.datasets[2].data = historicalData.map(d => d.valuation);
-    historyChart.data.datasets[3].data = historicalData.map(d => d.positioning);
-    historyChart.data.datasets[4].data = historicalData.map(d => d.volatility);
-    historyChart.data.datasets[5].data = historicalData.map(d => d.policy);
+    // Convert to stress/depletion (1 - value)
+    historyChart.data.datasets[0].data = historicalData.map(d => 1 - d.mac);
+    historyChart.data.datasets[1].data = historicalData.map(d => 1 - d.liquidity);
+    historyChart.data.datasets[2].data = historicalData.map(d => 1 - d.valuation);
+    historyChart.data.datasets[3].data = historicalData.map(d => 1 - d.positioning);
+    historyChart.data.datasets[4].data = historicalData.map(d => 1 - d.volatility);
+    historyChart.data.datasets[5].data = historicalData.map(d => 1 - d.policy);
 
     historyChart.update();
 }
@@ -822,7 +867,6 @@ function updateBacktestHistoryChart(data) {
     if (!ctx) return;
 
     const timeSeries = data.time_series || [];
-    const crisisEvents = data.crisis_events || {};
 
     // Prepare data
     const labels = timeSeries.map(d => {
@@ -830,103 +874,88 @@ function updateBacktestHistoryChart(data) {
         return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short' });
     });
 
-    const macScores = timeSeries.map(d => d.mac_score);
+    // Convert to depletion scores: high = stressed/danger
+    const depletionScores = timeSeries.map(d => 1 - d.mac_score);
 
-    // Find crisis event indices
-    const crisisAnnotations = [];
-    timeSeries.forEach((point, index) => {
-        if (point.crisis_event) {
-            crisisAnnotations.push({
-                index: index,
-                event: point.crisis_event
-            });
-        }
-    });
-
-    // Create background zone datasets (rendered first, behind the line)
-    // With inverted Y-axis: low values at top (danger), high values at bottom (safe)
+    // Create background zone datasets for DEPLETION (high = danger at top)
+    // Zones now use depletion thresholds:
+    // COMFORTABLE: 0 to 0.35 (bottom - safe)
+    // CAUTIOUS: 0.35 to 0.50
+    // STRETCHED: 0.50 to 0.65
+    // CRITICAL: 0.65 to 1.0 (top - danger)
     const zoneDatasets = [
-        // CRITICAL zone: 0 to 0.35 (top of chart - danger)
-        {
-            label: 'Critical Zone',
-            data: Array(timeSeries.length).fill(0.35),
-            borderColor: 'transparent',
-            backgroundColor: 'rgba(239, 68, 68, 0.15)',  // red
-            fill: { target: { value: 0 }, above: 'rgba(239, 68, 68, 0.15)' },
-            pointRadius: 0,
-            order: 4,
-        },
-        // STRETCHED zone: 0.35 to 0.50
-        {
-            label: 'Stretched Zone',
-            data: Array(timeSeries.length).fill(0.50),
-            borderColor: 'transparent',
-            backgroundColor: 'rgba(249, 115, 22, 0.12)',  // orange
-            fill: { target: { value: 0.35 }, above: 'rgba(249, 115, 22, 0.12)' },
-            pointRadius: 0,
-            order: 4,
-        },
-        // CAUTIOUS zone: 0.50 to 0.65
-        {
-            label: 'Cautious Zone',
-            data: Array(timeSeries.length).fill(0.65),
-            borderColor: 'transparent',
-            backgroundColor: 'rgba(251, 191, 36, 0.10)',  // yellow
-            fill: { target: { value: 0.50 }, above: 'rgba(251, 191, 36, 0.10)' },
-            pointRadius: 0,
-            order: 4,
-        },
-        // COMFORTABLE zone: 0.65 to 1.0 (bottom of chart - safe)
+        // COMFORTABLE zone: depletion 0 to 0.35 (bottom of chart - safe)
         {
             label: 'Comfortable Zone',
-            data: Array(timeSeries.length).fill(1.0),
+            data: Array(timeSeries.length).fill(0.35),
             borderColor: 'transparent',
             backgroundColor: 'rgba(16, 185, 129, 0.08)',  // green
-            fill: { target: { value: 0.65 }, above: 'rgba(16, 185, 129, 0.08)' },
+            fill: { target: { value: 0 }, above: 'rgba(16, 185, 129, 0.08)' },
+            pointRadius: 0,
+            order: 4,
+        },
+        // CAUTIOUS zone: depletion 0.35 to 0.50
+        {
+            label: 'Cautious Zone',
+            data: Array(timeSeries.length).fill(0.50),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(251, 191, 36, 0.10)',  // yellow
+            fill: { target: { value: 0.35 }, above: 'rgba(251, 191, 36, 0.10)' },
+            pointRadius: 0,
+            order: 4,
+        },
+        // STRETCHED zone: depletion 0.50 to 0.65
+        {
+            label: 'Stretched Zone',
+            data: Array(timeSeries.length).fill(0.65),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(249, 115, 22, 0.12)',  // orange
+            fill: { target: { value: 0.50 }, above: 'rgba(249, 115, 22, 0.12)' },
+            pointRadius: 0,
+            order: 4,
+        },
+        // CRITICAL zone: depletion 0.65 to 1.0 (top of chart - danger)
+        {
+            label: 'Critical Zone',
+            data: Array(timeSeries.length).fill(1.0),
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',  // red
+            fill: { target: { value: 0.65 }, above: 'rgba(239, 68, 68, 0.15)' },
             pointRadius: 0,
             order: 4,
         },
     ];
 
-    // Main MAC score line (rendered on top)
+    // Main depletion score line (rendered on top)
     const datasets = [
         ...zoneDatasets,
         {
-            label: 'MAC Score',
-            data: macScores,
+            label: 'Stress Index',
+            data: depletionScores,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             fill: false,
             tension: 0.3,
             borderWidth: 2,
             pointRadius: timeSeries.map(d => d.crisis_event ? 8 : 2),
-            pointBackgroundColor: timeSeries.map(d =>
-                d.crisis_event ? '#ef4444' :
-                d.status === 'CRITICAL' ? '#ef4444' :
-                d.status === 'STRETCHED' ? '#f97316' :
-                d.status === 'CAUTIOUS' ? '#fbbf24' : '#3b82f6'
-            ),
+            pointBackgroundColor: timeSeries.map((d, i) => {
+                const depletion = depletionScores[i];
+                if (d.crisis_event) return '#ef4444';
+                if (depletion >= 0.65) return '#ef4444';  // critical
+                if (depletion >= 0.50) return '#f97316';  // stretched
+                if (depletion >= 0.35) return '#fbbf24';  // cautious
+                return '#10b981';                          // comfortable
+            }),
             pointBorderColor: timeSeries.map(d => d.crisis_event ? '#fff' : 'transparent'),
             pointBorderWidth: timeSeries.map(d => d.crisis_event ? 2 : 0),
             order: 1,
         }
     ];
 
-    // Add threshold lines with zone labels
+    // Add threshold lines for depletion
     datasets.push({
-        label: 'Comfortable Threshold (0.65)',
-        data: Array(timeSeries.length).fill(0.65),
-        borderColor: 'rgba(16, 185, 129, 0.6)',
-        borderWidth: 1,
-        borderDash: [5, 5],
-        pointRadius: 0,
-        fill: false,
-        order: 2,
-    });
-
-    datasets.push({
-        label: 'Cautious Threshold (0.50)',
-        data: Array(timeSeries.length).fill(0.50),
+        label: 'Cautious Threshold (0.35)',
+        data: Array(timeSeries.length).fill(0.35),
         borderColor: 'rgba(251, 191, 36, 0.6)',
         borderWidth: 1,
         borderDash: [5, 5],
@@ -936,8 +965,19 @@ function updateBacktestHistoryChart(data) {
     });
 
     datasets.push({
-        label: 'Stretched Threshold (0.35)',
-        data: Array(timeSeries.length).fill(0.35),
+        label: 'Stretched Threshold (0.50)',
+        data: Array(timeSeries.length).fill(0.50),
+        borderColor: 'rgba(249, 115, 22, 0.6)',
+        borderWidth: 1,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false,
+        order: 2,
+    });
+
+    datasets.push({
+        label: 'Critical Threshold (0.65)',
+        data: Array(timeSeries.length).fill(0.65),
         borderColor: 'rgba(239, 68, 68, 0.6)',
         borderWidth: 1,
         borderDash: [5, 5],
@@ -971,7 +1011,7 @@ function updateBacktestHistoryChart(data) {
                     borderColor: '#374151',
                     borderWidth: 1,
                     filter: function(tooltipItem) {
-                        // Only show tooltip for MAC Score dataset (index 4, after 4 zone datasets)
+                        // Only show tooltip for Stress Index dataset (index 4, after 4 zone datasets)
                         return tooltipItem.datasetIndex === 4;
                     },
                     callbacks: {
@@ -986,7 +1026,9 @@ function updateBacktestHistoryChart(data) {
                         label: function(context) {
                             const point = timeSeries[context.dataIndex];
                             if (!point) return null;
-                            const lines = [`MAC: ${context.raw.toFixed(3)} (${point.status})`];
+                            const depletion = context.raw;
+                            const status = getDepletionStatus(depletion);
+                            const lines = [`Stress: ${depletion.toFixed(3)} (${status})`];
                             if (point.crisis_event) {
                                 lines.push(`Event: ${point.crisis_event.description}`);
                             }
@@ -1016,7 +1058,7 @@ function updateBacktestHistoryChart(data) {
                 y: {
                     min: 0,
                     max: 1,
-                    reverse: true,  // Invert Y-axis: low MAC (danger) at top, like VIX
+                    // No reverse needed: high depletion (danger) naturally at top
                     grid: {
                         color: '#1f2937',
                     },
@@ -1028,7 +1070,7 @@ function updateBacktestHistoryChart(data) {
                     },
                     title: {
                         display: true,
-                        text: '← Vulnerable | Resilient →',
+                        text: 'Stress Index (high = danger)',
                         color: '#9ca3af',
                         font: {
                             size: 11
@@ -1061,22 +1103,27 @@ function updateCrisisAnalysisTable(data) {
     }
 
     tbody.innerHTML = crisisAnalysis.map(crisis => {
-        const statusClass = crisis.mac_at_event < 0.35 ? 'badge-danger' :
-                           crisis.mac_at_event < 0.5 ? 'badge-warning' : 'badge-success';
+        // Convert to depletion: high = danger
+        const stressAtEvent = crisis.mac_at_event != null ? 1 - crisis.mac_at_event : null;
+        const statusClass = stressAtEvent >= 0.65 ? 'badge-danger' :
+                           stressAtEvent >= 0.50 ? 'badge-warning' : 'badge-success';
 
         const warningBadge = crisis.days_of_warning > 0 ?
             `<span class="badge badge-success">${crisis.days_of_warning} days</span>` :
             '<span class="badge badge-danger">None</span>';
 
+        // Convert status to depletion terminology
+        const depletionStatus = getDepletionStatus(stressAtEvent);
+
         return `
             <tr>
                 <td><strong>${crisis.event}</strong></td>
                 <td>${formatDate(crisis.event_date)}</td>
-                <td><span class="badge ${statusClass}">${crisis.mac_at_event?.toFixed(3) || 'N/A'}</span></td>
+                <td><span class="badge ${statusClass}">${stressAtEvent?.toFixed(3) || 'N/A'}</span></td>
                 <td>${crisis.first_warning_date ? formatDate(crisis.first_warning_date) : '-'}</td>
                 <td>${warningBadge}</td>
                 <td>${crisis.days_stretched > 0 ? `${crisis.days_stretched} days` : '-'}</td>
-                <td><span class="badge ${statusClass}">${crisis.status_at_event || 'N/A'}</span></td>
+                <td><span class="badge ${statusClass}">${depletionStatus || 'N/A'}</span></td>
             </tr>
         `;
     }).join('');

@@ -55,10 +55,10 @@
                     </div>
                 </div>
 
-                <!-- MAC Score Card -->
+                <!-- MAC Stress Index Card -->
                 <div class="card card-large mac-score-card">
                     <div class="card-header">
-                        <h3>MAC Composite Score</h3>
+                        <h3>Market Stress Index</h3>
                         <span class="timestamp" id="macTimestamp">--</span>
                     </div>
                     <div class="mac-score-display">
@@ -77,10 +77,10 @@
                     </div>
                 </div>
 
-                <!-- Pillar Scores -->
+                <!-- Pillar Stress Scores -->
                 <div class="card pillar-card">
                     <div class="card-header">
-                        <h3>Pillar Breakdown</h3>
+                        <h3>Pillar Stress Levels</h3>
                     </div>
                     <div class="pillar-grid" id="pillarGrid">
                         <!-- Populated by JavaScript -->
@@ -90,7 +90,7 @@
                 <!-- Pillar Chart -->
                 <div class="card chart-card">
                     <div class="card-header">
-                        <h3>Pillar Visualization</h3>
+                        <h3>Stress Radar</h3>
                     </div>
                     <div class="chart-container">
                         <canvas id="pillarRadar"></canvas>
@@ -110,7 +110,7 @@
                 <!-- Historical Chart -->
                 <div class="card card-full history-card">
                     <div class="card-header">
-                        <h3>MAC Score History</h3>
+                        <h3>Stress Index History</h3>
                         <div class="chart-controls">
                             <button class="btn btn-sm" id="togglePillars" onclick="togglePillarLines()">Show Pillars</button>
                             <select id="historyRange" onchange="updateHistoryRange()">
@@ -124,12 +124,12 @@
                         <canvas id="historyChart"></canvas>
                     </div>
                     <div class="chart-legend" id="chartLegend">
-                        <span class="legend-item mac"><span class="legend-color"></span>MAC Composite</span>
-                        <span class="legend-item liquidity hidden"><span class="legend-color"></span>Liquidity</span>
-                        <span class="legend-item valuation hidden"><span class="legend-color"></span>Valuation</span>
-                        <span class="legend-item positioning hidden"><span class="legend-color"></span>Positioning</span>
-                        <span class="legend-item volatility hidden"><span class="legend-color"></span>Volatility</span>
-                        <span class="legend-item policy hidden"><span class="legend-color"></span>Policy</span>
+                        <span class="legend-item mac"><span class="legend-color"></span>Stress Index</span>
+                        <span class="legend-item liquidity hidden"><span class="legend-color"></span>Liquidity Stress</span>
+                        <span class="legend-item valuation hidden"><span class="legend-color"></span>Valuation Stress</span>
+                        <span class="legend-item positioning hidden"><span class="legend-color"></span>Positioning Stress</span>
+                        <span class="legend-item volatility hidden"><span class="legend-color"></span>Volatility Stress</span>
+                        <span class="legend-item policy hidden"><span class="legend-color"></span>Policy Stress</span>
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
             <!-- Historical MAC Chart with Crisis Events -->
             <div class="card card-full backtest-chart-card">
                 <div class="card-header">
-                    <h3>MAC Score History with Crisis Events (Real FRED Data, 2006-Present)</h3>
+                    <h3>Market Stress Index with Crisis Events (Real FRED Data, 2006-Present)</h3>
                     <div class="chart-controls">
                         <select id="backtestInterval" onchange="loadBacktestHistory()">
                             <option value="7">Weekly</option>
@@ -158,12 +158,12 @@
                     <canvas id="backtestChart"></canvas>
                 </div>
                 <div class="chart-legend backtest-legend">
-                    <span class="legend-item mac"><span class="legend-color"></span>MAC Score</span>
+                    <span class="legend-item mac"><span class="legend-color"></span>Stress Index</span>
                     <span class="legend-item crisis"><span class="legend-color"></span>Crisis Event</span>
-                    <span class="legend-item zone-critical"><span class="legend-color"></span>Critical (&lt;0.35)</span>
-                    <span class="legend-item zone-stretched"><span class="legend-color"></span>Stretched (0.35-0.50)</span>
-                    <span class="legend-item zone-cautious"><span class="legend-color"></span>Cautious (0.50-0.65)</span>
-                    <span class="legend-item zone-comfortable"><span class="legend-color"></span>Comfortable (&gt;0.65)</span>
+                    <span class="legend-item zone-comfortable"><span class="legend-color"></span>Comfortable (&lt;0.35)</span>
+                    <span class="legend-item zone-cautious"><span class="legend-color"></span>Cautious (0.35-0.50)</span>
+                    <span class="legend-item zone-stretched"><span class="legend-color"></span>Stretched (0.50-0.65)</span>
+                    <span class="legend-item zone-critical"><span class="legend-color"></span>Critical (&gt;0.65)</span>
                 </div>
                 <div class="backtest-loading" id="backtestLoading">
                     <span>Loading historical FRED data...</span>
@@ -205,7 +205,7 @@
                             <tr>
                                 <th>Crisis Event</th>
                                 <th>Event Date</th>
-                                <th>MAC at Event</th>
+                                <th>Stress at Event</th>
                                 <th>First Warning</th>
                                 <th>Days of Warning</th>
                                 <th>Days Stretched</th>
