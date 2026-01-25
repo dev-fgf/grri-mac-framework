@@ -141,6 +141,53 @@ function updateMACDisplay(data) {
 
     // Update gauge
     updateMACGauge(data.mac_score);
+
+    // Update data status banner
+    updateDataStatus(data);
+}
+
+function updateDataStatus(data) {
+    const isLive = data.is_live === true;
+    const sourceIcon = document.getElementById('sourceIcon');
+    const sourceValue = document.getElementById('dataSource');
+    const refreshValue = document.getElementById('lastRefresh');
+    const refreshAgo = document.getElementById('refreshAgo');
+    const indicatorCount = document.querySelector('.indicator-count');
+
+    // Update source indicator
+    if (isLive) {
+        sourceIcon.className = 'source-icon live';
+        sourceValue.className = 'source-value live';
+        sourceValue.textContent = data.data_source || 'FRED API (Live)';
+    } else {
+        sourceIcon.className = 'source-icon demo';
+        sourceValue.className = 'source-value demo';
+        sourceValue.textContent = data.data_source || 'Demo Data';
+    }
+
+    // Update timestamp
+    if (data.timestamp) {
+        const timestamp = new Date(data.timestamp);
+        refreshValue.textContent = timestamp.toLocaleString();
+        refreshAgo.textContent = `(${getTimeAgo(timestamp)})`;
+    }
+
+    // Update indicator count
+    if (data.indicators) {
+        const count = Object.keys(data.indicators).length;
+        indicatorCount.textContent = `${count} indicators`;
+    } else {
+        indicatorCount.textContent = '5 pillars';
+    }
+}
+
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
 }
 
 function getInterpretationClass(score) {

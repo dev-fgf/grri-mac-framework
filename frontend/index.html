@@ -36,6 +36,25 @@
             </div>
 
             <div class="dashboard-grid">
+                <!-- Data Status Banner -->
+                <div class="card card-full data-status-card" id="dataStatusCard">
+                    <div class="data-status">
+                        <div class="data-source">
+                            <span class="source-icon" id="sourceIcon">&#9679;</span>
+                            <span class="source-label">Data Source:</span>
+                            <span class="source-value" id="dataSource">Checking...</span>
+                        </div>
+                        <div class="data-refresh">
+                            <span class="refresh-label">Last Updated:</span>
+                            <span class="refresh-value" id="lastRefresh">--</span>
+                            <span class="refresh-ago" id="refreshAgo"></span>
+                        </div>
+                        <div class="data-indicators" id="dataIndicators">
+                            <span class="indicator-count">-- indicators</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- MAC Score Card -->
                 <div class="card card-large mac-score-card">
                     <div class="card-header">
