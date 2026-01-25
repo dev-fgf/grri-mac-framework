@@ -13,8 +13,9 @@ FRED_BASE_URL = "https://api.stlouisfed.org/fred/series/observations"
 # Key FRED series for MAC indicators
 FRED_SERIES = {
     # Liquidity indicators
-    "SOFR": "SOFR",  # Secured Overnight Financing Rate
-    "IORB": "IORB",  # Interest on Reserve Balances
+    "SOFR": "SOFR",  # Secured Overnight Financing Rate (started 2018)
+    "IORB": "IORB",  # Interest on Reserve Balances (started July 2021)
+    "IOER": "IOER",  # Interest on Excess Reserves (Oct 2008 - July 2021, predecessor to IORB)
     "CP_3M": "DCPN3M",  # 3-Month AA Nonfinancial Commercial Paper Rate
     "TREASURY_3M": "DTB3",  # 3-Month Treasury Bill
 
@@ -288,7 +289,7 @@ class FREDClient:
             return {}
 
         series_to_fetch = [
-            "SOFR", "IORB", "CP_3M", "TREASURY_3M",
+            "SOFR", "IORB", "IOER", "CP_3M", "TREASURY_3M",
             "TREASURY_10Y", "TREASURY_2Y", "BAA_SPREAD", "AAA_SPREAD",
             "FED_FUNDS", "VIX"
         ]
@@ -331,6 +332,7 @@ class FREDClient:
         # Get values using interpolation
         sofr = self.interpolate_value(bulk_data.get("SOFR", {}), target_date)
         iorb = self.interpolate_value(bulk_data.get("IORB", {}), target_date)
+        ioer = self.interpolate_value(bulk_data.get("IOER", {}), target_date)
         cp_rate = self.interpolate_value(bulk_data.get("CP_3M", {}), target_date)
         treasury_3m = self.interpolate_value(bulk_data.get("TREASURY_3M", {}), target_date)
         treasury_10y = self.interpolate_value(bulk_data.get("TREASURY_10Y", {}), target_date)
@@ -340,9 +342,16 @@ class FREDClient:
         fed_funds = self.interpolate_value(bulk_data.get("FED_FUNDS", {}), target_date)
         vix = self.interpolate_value(bulk_data.get("VIX", {}), target_date)
 
-        # Liquidity
-        if sofr is not None and iorb is not None:
-            indicators["sofr_iorb_spread_bps"] = (sofr - iorb) * 100
+        # Use IORB if available, otherwise fall back to IOER (pre-July 2021)
+        reserve_rate = iorb if iorb is not None else ioer
+
+        # Liquidity - use SOFR spread if available, otherwise Fed Funds spread (pre-2018)
+        if sofr is not None and reserve_rate is not None:
+            # Post-2018: SOFR - IORB/IOER spread
+            indicators["sofr_iorb_spread_bps"] = (sofr - reserve_rate) * 100
+        elif fed_funds is not None and treasury_3m is not None:
+            # Pre-2018 fallback: Fed Funds - T-Bill spread (classic funding stress indicator)
+            indicators["sofr_iorb_spread_bps"] = (fed_funds - treasury_3m) * 100
         if cp_rate is not None and treasury_3m is not None:
             indicators["cp_treasury_spread_bps"] = (cp_rate - treasury_3m) * 100
 

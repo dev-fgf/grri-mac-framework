@@ -13,11 +13,21 @@ from shared.mac_scorer import calculate_mac
 
 # Define historical crisis events for annotation
 CRISIS_EVENTS = {
-    "2020-03-16": {"name": "COVID-19 Peak", "description": "Global pandemic selloff, VIX 82"},
+    # Pre-GFC
+    "2007-08-09": {"name": "BNP Paribas", "description": "Subprime contagion begins"},
+    "2008-03-16": {"name": "Bear Stearns", "description": "Bear Stearns collapse/rescue"},
+    "2008-09-15": {"name": "Lehman Brothers", "description": "Lehman bankruptcy, GFC peak"},
+    # Post-GFC
+    "2010-05-06": {"name": "Flash Crash", "description": "Dow drops 1000 pts intraday"},
+    "2011-08-08": {"name": "US Downgrade", "description": "S&P downgrades US debt"},
+    "2015-08-24": {"name": "China Deval", "description": "Yuan devaluation, EM selloff"},
+    "2018-12-24": {"name": "Fed Pivot", "description": "Q4 2018 selloff, Powell pivot"},
+    # Recent
+    "2020-03-16": {"name": "COVID-19 Peak", "description": "Pandemic selloff, VIX 82"},
     "2022-09-30": {"name": "2022 Rate Shock", "description": "Fed hikes, UK pension crisis"},
     "2023-03-10": {"name": "SVB Crisis", "description": "Regional banking stress"},
     "2024-08-05": {"name": "Yen Carry Unwind", "description": "BoJ rate hike"},
-    "2025-04-07": {"name": "April 2025 Tariff Crisis", "description": "Trade war escalation"},
+    "2025-04-07": {"name": "April 2025 Tariff", "description": "Trade war escalation"},
 }
 
 
@@ -48,8 +58,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 
-    # Get parameters - default start to 2020 (SOFR/IORB availability)
-    start_date_str = req.params.get('start', '2020-01-01')
+    # Get parameters - default start to 2006 (pre-GFC, using Fed Funds spread as liquidity proxy)
+    start_date_str = req.params.get('start', '2006-01-01')
     end_date_str = req.params.get('end', datetime.now().strftime('%Y-%m-%d'))
     interval_days = int(req.params.get('interval', '7'))  # Weekly by default
 

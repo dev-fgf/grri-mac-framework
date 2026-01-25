@@ -796,7 +796,7 @@ async function loadBacktestHistory() {
     const interval = document.getElementById('backtestInterval').value;
 
     try {
-        const response = await fetch(`${API_BASE}/backtest/run?start=2020-01-01&interval=${interval}`);
+        const response = await fetch(`${API_BASE}/backtest/run?start=2006-01-01&interval=${interval}`);
         if (!response.ok) throw new Error('Failed to load backtest data');
 
         backtestData = await response.json();
