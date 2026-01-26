@@ -15,13 +15,25 @@ class MACResult:
     multiplier: Optional[float] = None
 
 
-DEFAULT_WEIGHTS = {
+DEFAULT_WEIGHTS_5_PILLAR = {
     "liquidity": 0.2,
     "valuation": 0.2,
     "positioning": 0.2,
     "volatility": 0.2,
     "policy": 0.2,
 }
+
+DEFAULT_WEIGHTS_6_PILLAR = {
+    "liquidity": 1/6,
+    "valuation": 1/6,
+    "positioning": 1/6,
+    "volatility": 1/6,
+    "policy": 1/6,
+    "contagion": 1/6,
+}
+
+# Default to 6-pillar framework
+DEFAULT_WEIGHTS = DEFAULT_WEIGHTS_6_PILLAR
 
 
 def calculate_mac(
