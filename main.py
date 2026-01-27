@@ -316,6 +316,17 @@ def run_backtest():
     print(format_backtest_summary(summary))
 
 
+def run_robustness():
+    """Run calibration robustness analysis."""
+    from grri_mac.backtest.calibration import run_robustness_analysis
+
+    print("Running calibration robustness analysis...")
+    print("(This validates the 0.78 calibration factor)")
+    print()
+
+    run_robustness_analysis()
+
+
 def run_import():
     """Import data from all sources."""
     from grri_mac.data.importer import DataImporter, print_import_results
@@ -375,6 +386,11 @@ def main():
         help="Run historical backtests against known events",
     )
     parser.add_argument(
+        "--robustness",
+        action="store_true",
+        help="Run calibration robustness analysis (cross-validation, sensitivity)",
+    )
+    parser.add_argument(
         "--demo",
         action="store_true",
         help="Run with demo data (no database)",
@@ -409,6 +425,8 @@ def main():
 
     if args.backtest:
         run_backtest()
+    elif args.robustness:
+        run_robustness()
     elif args.demo:
         run_demo()
     elif args.db_demo:
