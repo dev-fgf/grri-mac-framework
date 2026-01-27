@@ -1,0 +1,8 @@
+Metric,Value
+Total Crises Evaluated,15
+Crises with Warning,4
+True Positive Rate,26.7%
+Average Lead Time (days),57.2
+Total Warnings Issued,224
+False Positives,197
+False Positive Rate,87.9%
