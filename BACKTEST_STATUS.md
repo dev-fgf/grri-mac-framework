@@ -136,7 +136,25 @@ python main.py --backtest
 
 # Import fresh data
 python main.py --import-data
+
+# Run calibration robustness analysis
+python main.py --robustness
+
+# Generate visualization figures
+python main.py --visualize
 ```
+
+### Visualization Outputs
+
+The `--visualize` command generates figures in the `figures/` directory:
+
+| Figure | Description |
+|--------|-------------|
+| `mac_vs_vix_conceptual.png` | Conceptual comparison of MAC vs VIX across crisis types |
+| `crisis_comparison.png` | Scatter plot of MAC vs VIX for all 14 events |
+| `positioning_hedge_relationship.png` | Key insight: positioning breach predicts hedge failure |
+| `mac_pillar_heatmap.png` | Heatmap of all pillar scores across events |
+| `pillar_breakdown_*.png` | Individual pillar decompositions for key crises |
 
 ### ML-Optimized Pillar Weights
 
@@ -179,6 +197,10 @@ Beyond equal weights (1/6 each), the framework now supports **ML-optimized weigh
 | `grri_mac/data/contagion.py` | Free data client for contagion indicators |
 | `grri_mac/data/historical_proxies.py` | **NEW**: Pre-1998 proxy data (toggle-controlled) |
 | `grri_mac/backtest/calibration.py` | **NEW**: Calibration validation, LOOCV, sensitivity analysis |
+| `grri_mac/visualization/crisis_plots.py` | **NEW**: MAC vs VIX plots, pillar breakdowns, heatmaps |
+| `grri_mac/predictive/monte_carlo.py` | **NEW**: Monte Carlo regime impact simulations |
+| `grri_mac/predictive/blind_backtest.py` | **NEW**: Blind backtesting without lookahead bias |
+| `grri_mac/predictive/shock_propagation.py` | **NEW**: Cascade dynamics and intervention modeling |
 
 ### Cross-Country Extensions
 
@@ -218,6 +240,55 @@ Extended coverage using proxy series (toggle with `use_historical_proxies=True`)
 
 **Example Use Case:** Russia-Ukraine 2022 analysis showed EU more stressed (MAC 0.34) than US (MAC 0.52) with Region→US contagion direction, correctly identifying it as a European-origin crisis.
 
+### Predictive Analytics (Forward-Looking)
+
+The framework includes forward-looking predictive capabilities:
+
+```bash
+# Monte Carlo regime impact analysis
+python main.py --monte-carlo
+
+# Blind backtest (no lookahead bias)
+python main.py --blind-test
+
+# Shock propagation cascade analysis
+python main.py --shock-propagation
+```
+
+**Monte Carlo Regime Analysis:**
+
+| Starting Regime | MAC Change | Hedge Fail Prob | Recovery Days |
+|-----------------|------------|-----------------|---------------|
+| AMPLE (MAC>0.65) | -0.04 | 5% | 18 |
+| THIN (0.50-0.65) | -0.10 | 26% | 46 |
+| STRETCHED (0.35-0.50) | -0.17 | 80% | 93 |
+| BREACH (<0.35) | -0.14 | 80% | 92 |
+
+**Key Finding:** Same 2-sigma shock is **3.5x worse** in breach regime vs ample regime.
+
+**Blind Backtest Results (No Lookahead Bias):**
+
+| Prediction Type | Accuracy |
+|-----------------|----------|
+| MAC Regime | 100% |
+| Hedge Outcome | 78.6% |
+| Breach Detection | 92.9% |
+| Severity Assessment | 100% |
+
+- 3 false positives, 0 false negatives (conservative errors)
+- Positioning-hedge correlation: 78.6%
+
+**Shock Propagation Cascade Analysis:**
+
+| Initial MAC | Cascade Probability |
+|-------------|---------------------|
+| 0.70 | 0% |
+| 0.55 | 0% |
+| 0.45 | 98% |
+| 0.35 | 100% |
+
+**Critical threshold: MAC < 0.45** - cascade risk spikes dramatically below this level.
+
 ### Academic Paper
 
 Full validation results documented in:
@@ -229,9 +300,10 @@ Full validation results documented in:
 2. ~~Cross-country G20 validation~~ COMPLETED - EU, JP, UK profiles implemented
 3. Real-time dashboard with live BIS/IMF data feeds
 4. ~~Sensitivity analysis on pillar weights~~ COMPLETED - See robustness analysis above
-5. G20 expansion: Add remaining G20 economies (BR, IN, MX, etc.)
+5. ~~Forward-looking predictive elements~~ COMPLETED - Monte Carlo, blind backtest, cascade analysis
+6. G20 expansion: Add remaining G20 economies (BR, IN, MX, etc.)
 
 ---
 
 *Last Updated: January 2026*
-*Framework Version: 4.1 (6-Pillar with Contagion + Multi-Country + Robustness Validation)*
+*Framework Version: 4.2 (6-Pillar + Multi-Country + Robustness + Predictive Analytics)*

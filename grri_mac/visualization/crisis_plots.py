@@ -636,10 +636,12 @@ def generate_all_crisis_figures(output_dir: str = "figures") -> None:
 
     # 5. Individual pillar breakdowns for key events
     key_events = [
-        "lehman_brothers_2008",
-        "covid_march_2020",
+        "lehman_2008",
+        "covid_crash_2020",
         "repo_spike_2019",
-        "april_tariff_2025",
+        "april_tariffs_2025",
+        "svb_crisis_2023",
+        "volmageddon_2018",
     ]
 
     print("5. Generating pillar breakdowns for key events...")

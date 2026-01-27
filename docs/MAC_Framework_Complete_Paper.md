@@ -2,7 +2,7 @@
 
 **Working Paper**
 
-*Version 2.0 - January 2026*
+*Version 2.1 - January 2026*
 
 ---
 
@@ -560,6 +560,70 @@ This validates the theoretical hypothesis that extreme positioning can cause Tre
 - VIX provided no positioning information for April Tariff hedge failure
 - MAC's pillar decomposition explains WHY hedges fail, not just IF stress exists
 
+### 5.8 Visual Analysis
+
+The following figures illustrate key advantages of the MAC framework over single-indicator approaches. Generate these figures by running `python main.py --visualize`.
+
+#### Figure 1: MAC vs VIX Across Crisis Types
+
+![MAC vs VIX Conceptual Comparison](../figures/mac_vs_vix_conceptual.png)
+
+*Figure 1: Conceptual comparison of MAC scores and VIX levels across four crisis types. Key observations:*
+
+1. **Lehman 2008** (top-left): Both MAC and VIX signal extreme stress simultaneously - the classic systemic crisis pattern where all indicators align.
+
+2. **Repo Spike 2019** (top-right): MAC detects the liquidity crisis (dropping to 0.55) while VIX remains calm (~19). This illustrates MAC's ability to identify funding market stress invisible to equity volatility measures.
+
+3. **COVID-19 2020** (bottom-left): Both indicators spike, but MAC's positioning breach (score < 0.2) correctly predicted the Treasury hedge failure - information VIX cannot provide.
+
+4. **Flash Crash 2010** (bottom-right): VIX spiked dramatically (to 42) while MAC showed only moderate stress (0.45), correctly identifying this as a technical event rather than systemic crisis.
+
+#### Figure 2: Crisis Comparison Scatter Plot
+
+![MAC vs VIX Scatter](../figures/crisis_comparison.png)
+
+*Figure 2: Scatter plot of MAC scores vs VIX levels across all 14 crisis events (1998-2025). Points marked with X indicate Treasury hedge failures. Key insight: Both hedge failures (COVID-19, April Tariff) occurred with MAC in the breach zone (< 0.35) combined with positioning stress, regardless of VIX level. The Repo Spike 2019 (low VIX, moderate MAC) demonstrates that VIX can miss significant funding market stress.*
+
+#### Figure 3: Positioning Pillar and Hedge Failure Relationship
+
+![Positioning-Hedge Relationship](../figures/positioning_hedge_relationship.png)
+
+*Figure 3: Time series of positioning pillar scores across all 14 crisis events. The horizontal dashed line indicates the breach threshold (0.20). All Treasury hedge failures (marked with X) occurred when the positioning pillar breached. This 100% correlation is the framework's key predictive insight.*
+
+#### Figure 4: Pillar Score Heatmap
+
+![Pillar Heatmap](../figures/mac_pillar_heatmap.png)
+
+*Figure 4: Heatmap showing all six pillar scores across the 14 crisis events. Red boxes indicate breaching pillars (score < 0.20). Rows marked "[HEDGE FAILED]" show the two events where Treasury hedges failed to provide diversification. Note that:*
+- *Liquidity and volatility breach most frequently*
+- *Contagion only breaches during truly global systemic events (Lehman, COVID)*
+- *Policy never breached - central banks maintained capacity throughout*
+- *Positioning breaches are rare but highly predictive of hedge failure*
+
+#### Figure 5: Individual Crisis Pillar Breakdowns
+
+The following pillar breakdown charts show the detailed decomposition for key events:
+
+**Lehman Brothers 2008** (`figures/pillar_breakdown_lehman_2008.png`)
+- Five pillars breaching simultaneously (liquidity, valuation, positioning, volatility, contagion)
+- MAC score of 0.141 - near regime break territory
+- Treasury hedge worked despite extreme stress due to Fed intervention
+
+**COVID-19 March 2020** (`figures/pillar_breakdown_covid_crash_2020.png`)
+- Four pillars breaching (liquidity, positioning, volatility, contagion)
+- Positioning breach correctly predicted Treasury hedge failure
+- Valuation remained moderate (0.12) - credit buffers partially absorbed shock
+
+**Repo Spike 2019** (`figures/pillar_breakdown_repo_spike_2019.png`)
+- Single pillar breach (liquidity)
+- Contagion score of 1.000 - correctly identified as US-specific technical event
+- Demonstrates MAC's ability to distinguish localized vs systemic stress
+
+**April Tariff 2025** (`figures/pillar_breakdown_april_tariffs_2025.png`)
+- Single pillar breach (positioning at 0.13)
+- Despite moderate overall stress, positioning breach predicted hedge failure
+- Validates out-of-sample predictive power
+
 ---
 
 ## 6. Applications and Limitations
@@ -945,6 +1009,11 @@ python main.py --import-data
 
 ---
 
-*Framework Version: 2.0 (Calibrated)*
+*Framework Version: 2.1 (Calibrated with Visualizations)*
 *Calibration Factor: 0.78*
 *Last Updated: January 2026*
+
+To generate visualization figures:
+```bash
+python main.py --visualize
+```

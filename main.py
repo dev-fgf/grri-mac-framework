@@ -327,6 +327,121 @@ def run_robustness():
     run_robustness_analysis()
 
 
+def run_visualize():
+    """Generate visualization figures."""
+    try:
+        from grri_mac.visualization import generate_all_crisis_figures
+    except ImportError:
+        print("Error: matplotlib required for visualization.")
+        print("Install with: pip install matplotlib")
+        return
+
+    generate_all_crisis_figures(output_dir="figures")
+
+
+def run_monte_carlo():
+    """Run Monte Carlo regime impact analysis."""
+    from grri_mac.predictive.monte_carlo import (
+        MonteCarloSimulator,
+        ShockType,
+        format_regime_comparison,
+    )
+
+    print("=" * 60)
+    print("MONTE CARLO REGIME IMPACT ANALYSIS")
+    print("=" * 60)
+    print()
+
+    simulator = MonteCarloSimulator(seed=42)
+
+    # Run analysis for different shock types
+    for shock_type in [ShockType.VOLATILITY, ShockType.LIQUIDITY, ShockType.COMBINED]:
+        print(f"Analyzing {shock_type.value} shock (2 std dev)...")
+        analysis = simulator.run_regime_comparison(
+            shock_type=shock_type,
+            shock_magnitude=2.0,
+            n_simulations=500,
+        )
+        print(format_regime_comparison(analysis))
+        print()
+
+
+def run_blind_test():
+    """Run blind backtest (no lookahead bias)."""
+    from grri_mac.predictive.blind_backtest import (
+        run_blind_backtest,
+        format_blind_results,
+    )
+
+    print("=" * 60)
+    print("BLIND BACKTEST - REAL-TIME SIMULATION")
+    print("=" * 60)
+    print()
+
+    results = run_blind_backtest()
+    print(format_blind_results(results))
+
+
+def run_shock_propagation():
+    """Run shock propagation cascade analysis."""
+    from grri_mac.predictive.shock_propagation import (
+        ShockPropagationModel,
+        InterventionType,
+        format_propagation_result,
+        format_cascade_analysis,
+    )
+
+    print("=" * 60)
+    print("SHOCK PROPAGATION CASCADE ANALYSIS")
+    print("=" * 60)
+    print()
+
+    model = ShockPropagationModel()
+
+    # Example: Liquidity shock from moderate starting point
+    print("Scenario 1: Liquidity shock without intervention")
+    print("-" * 50)
+
+    initial_pillars = {
+        "liquidity": 0.55,
+        "valuation": 0.60,
+        "positioning": 0.50,
+        "volatility": 0.55,
+        "policy": 0.70,
+        "contagion": 0.58,
+    }
+
+    result = model.propagate(
+        initial_pillars=initial_pillars,
+        shock_pillar="liquidity",
+        shock_magnitude=0.35,
+        periods=20,
+    )
+    print(format_propagation_result(result))
+    print()
+
+    # With intervention
+    print("Scenario 2: Same shock WITH coordinated intervention at period 5")
+    print("-" * 50)
+
+    result_intervention = model.propagate(
+        initial_pillars=initial_pillars,
+        shock_pillar="liquidity",
+        shock_magnitude=0.35,
+        periods=20,
+        intervention=InterventionType.COORDINATED,
+        intervention_period=5,
+    )
+    print(format_propagation_result(result_intervention))
+    print()
+
+    # Cascade analysis
+    print("Cascade Dynamics Analysis")
+    print("-" * 50)
+    cascade = model.analyze_cascade_dynamics(n_simulations=100)
+    print(format_cascade_analysis(cascade))
+
+
 def run_import():
     """Import data from all sources."""
     from grri_mac.data.importer import DataImporter, print_import_results
@@ -411,6 +526,26 @@ def main():
         help="Import data from all sources (FRED, CFTC, ETF, Treasury)",
     )
     parser.add_argument(
+        "--visualize",
+        action="store_true",
+        help="Generate visualization figures (MAC vs VIX, pillar breakdowns, etc.)",
+    )
+    parser.add_argument(
+        "--monte-carlo",
+        action="store_true",
+        help="Run Monte Carlo regime impact analysis (forward-looking)",
+    )
+    parser.add_argument(
+        "--blind-test",
+        action="store_true",
+        help="Run blind backtest (no lookahead bias, real-time simulation)",
+    )
+    parser.add_argument(
+        "--shock-propagation",
+        action="store_true",
+        help="Run shock propagation cascade analysis",
+    )
+    parser.add_argument(
         "--version",
         action="store_true",
         help="Show version",
@@ -435,6 +570,14 @@ def main():
         run_history()
     elif args.import_data:
         run_import()
+    elif args.visualize:
+        run_visualize()
+    elif args.monte_carlo:
+        run_monte_carlo()
+    elif args.blind_test:
+        run_blind_test()
+    elif args.shock_propagation:
+        run_shock_propagation()
     else:
         run_dashboard()
 
