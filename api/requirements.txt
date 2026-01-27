@@ -7,3 +7,7 @@ python-dotenv>=1.0.0
 
 # Database (Azure Table Storage)
 azure-data-tables>=12.4.0
+
+# CFTC COT positioning data
+cot-reports>=1.0.0
+pandas>=2.0.0

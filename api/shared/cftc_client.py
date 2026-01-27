@@ -4,104 +4,151 @@ import os
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
-import requests
 
 logger = logging.getLogger(__name__)
 
-# Nasdaq Data Link (formerly Quandl) base URL for CFTC data
-NASDAQ_BASE_URL = "https://data.nasdaq.com/api/v3/datasets"
-
-# CFTC COT report codes for key futures
-# Using "Futures Only" reports with "Legacy" format
+# Contract market names as they appear in COT reports
 CFTC_CONTRACTS = {
-    # S&P 500 E-mini - key equity sentiment indicator
     "SP500": {
-        "code": "CFTC/088691_F_L_ALL",  # S&P 500 STOCK INDEX - CHICAGO MERCANTILE EXCHANGE
+        "market_name": "E-MINI S&P 500",
         "name": "S&P 500 E-mini",
     },
-    # 10-Year Treasury Note - key rates sentiment
     "TREASURY_10Y": {
-        "code": "CFTC/043602_F_L_ALL",  # 10-YEAR U.S. TREASURY NOTES - CHICAGO BOARD OF TRADE
+        "market_name": "10-YEAR U.S. TREASURY NOTES",
         "name": "10-Year Treasury",
     },
-    # VIX Futures - volatility expectations
     "VIX": {
-        "code": "CFTC/1170E1_F_L_ALL",  # CBOE VOLATILITY INDEX - CBOE FUTURES EXCHANGE
+        "market_name": "VIX FUTURES",
         "name": "VIX Futures",
     },
-    # 2-Year Treasury Note - short-end rates
     "TREASURY_2Y": {
-        "code": "CFTC/042601_F_L_ALL",  # 2-YEAR U.S. TREASURY NOTES - CHICAGO BOARD OF TRADE
+        "market_name": "2-YEAR U.S. TREASURY NOTES",
         "name": "2-Year Treasury",
     },
 }
 
+# Try to import cot_reports
+try:
+    from cot_reports.cot_reports import cot_year
+    COT_REPORTS_AVAILABLE = True
+except ImportError:
+    COT_REPORTS_AVAILABLE = False
+    logger.warning("cot-reports not installed - run: pip install cot-reports")
+
 
 class CFTCClient:
-    """Client for CFTC Commitments of Traders data via Nasdaq Data Link."""
+    """Client for CFTC Commitments of Traders data via cot-reports package."""
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get("NASDAQ_DATA_LINK_API_KEY") or os.environ.get("QUANDL_API_KEY")
-        if not self.api_key:
-            logger.warning("NASDAQ_DATA_LINK_API_KEY not set - CFTC data may be rate-limited")
+    def __init__(self):
+        self._cache = {}
+        self._cache_time = None
+        self._cache_ttl = timedelta(hours=6)  # COT data updates weekly
+
+    def _get_cot_dataframe(self, report_type: str = "legacy_fut"):
+        """Fetch COT data using cot-reports package with caching."""
+        if not COT_REPORTS_AVAILABLE:
+            logger.error("cot-reports package not available")
+            return None
+
+        now = datetime.utcnow()
+
+        # Check cache
+        cache_key = report_type
+        if (
+            cache_key in self._cache
+            and self._cache_time
+            and (now - self._cache_time) < self._cache_ttl
+        ):
+            return self._cache[cache_key]
+
+        try:
+            # Fetch current year's COT report
+            current_year = now.year
+            df = cot_year(year=current_year, cot_report_type=report_type,
+                          store_txt=False, verbose=False)
+
+            if df is not None and not df.empty:
+                self._cache[cache_key] = df
+                self._cache_time = now
+                logger.info(f"Fetched COT data: {len(df)} records")
+                return df
+            else:
+                logger.warning("COT data fetch returned empty")
+                return None
+
+        except Exception as e:
+            logger.error(f"Failed to fetch COT data: {e}")
+            return None
 
     def get_cot_data(
         self,
         contract: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        limit: int = 52,  # ~1 year of weekly data
+        limit: int = 52,
     ) -> list:
         """
         Fetch COT data for a specific contract.
 
-        Returns list of records with columns:
-        - Date
-        - Open Interest
-        - Non-Commercial Long/Short/Spreading
-        - Commercial Long/Short
-        - etc.
+        Returns list of records with positioning data.
         """
         if contract not in CFTC_CONTRACTS:
             logger.error(f"Unknown CFTC contract: {contract}")
             return []
 
+        df = self._get_cot_dataframe()
+        if df is None:
+            return []
+
         contract_info = CFTC_CONTRACTS[contract]
-        url = f"{NASDAQ_BASE_URL}/{contract_info['code']}.json"
-
-        params = {
-            "limit": limit,
-            "order": "desc",  # Most recent first
-        }
-
-        if self.api_key:
-            params["api_key"] = self.api_key
-
-        if start_date:
-            params["start_date"] = start_date.strftime("%Y-%m-%d")
-        if end_date:
-            params["end_date"] = end_date.strftime("%Y-%m-%d")
+        market_name = contract_info["market_name"]
 
         try:
-            response = requests.get(url, params=params, timeout=30)
-            response.raise_for_status()
-            data = response.json()
+            # Filter by market name (case-insensitive partial match)
+            mask = df["Market and Exchange Names"].str.contains(
+                market_name, case=False, na=False
+            )
+            contract_df = df[mask].copy()
 
-            dataset = data.get("dataset", {})
-            column_names = dataset.get("column_names", [])
-            rows = dataset.get("data", [])
+            if contract_df.empty:
+                # Try alternate search
+                alt_names = {
+                    "E-MINI S&P 500": ["S&P 500", "SP 500", "E-MINI"],
+                    "10-YEAR U.S. TREASURY NOTES": ["10-YEAR", "10 YEAR", "10YR"],
+                    "VIX FUTURES": ["VIX", "VOLATILITY INDEX"],
+                    "2-YEAR U.S. TREASURY NOTES": ["2-YEAR", "2 YEAR", "2YR"],
+                }
+                for alt in alt_names.get(market_name, []):
+                    mask = df["Market and Exchange Names"].str.contains(
+                        alt, case=False, na=False
+                    )
+                    contract_df = df[mask]
+                    if not contract_df.empty:
+                        break
+
+            if contract_df.empty:
+                logger.warning(f"No COT data found for {market_name}")
+                return []
+
+            # Sort by date descending and limit
+            if "As of Date in Form YYYY-MM-DD" in contract_df.columns:
+                contract_df = contract_df.sort_values(
+                    "As of Date in Form YYYY-MM-DD", ascending=False
+                )
+            elif "Report_Date_as_YYYY-MM-DD" in contract_df.columns:
+                contract_df = contract_df.sort_values(
+                    "Report_Date_as_YYYY-MM-DD", ascending=False
+                )
+
+            contract_df = contract_df.head(limit)
 
             # Convert to list of dicts
-            results = []
-            for row in rows:
-                record = dict(zip(column_names, row))
-                results.append(record)
-
-            logger.info(f"Fetched {len(results)} COT records for {contract_info['name']}")
+            results = contract_df.to_dict("records")
+            logger.info(
+                f"Found {len(results)} COT records for {contract_info['name']}"
+            )
             return results
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to fetch CFTC data for {contract}: {e}")
+        except Exception as e:
+            logger.error(f"Error processing COT data for {contract}: {e}")
             return []
 
     def calculate_net_positioning(self, cot_data: list) -> dict:
@@ -117,25 +164,44 @@ class CFTCClient:
         # Get the latest record
         latest = cot_data[0]
 
-        # Non-commercial (speculator) positions
-        # Column names vary by report format, try common variations
-        non_comm_long = (
-            latest.get("Noncommercial Long") or
-            latest.get("Non-Commercial Long") or
-            latest.get("Money Manager Longs") or
-            0
-        )
-        non_comm_short = (
-            latest.get("Noncommercial Short") or
-            latest.get("Non-Commercial Short") or
-            latest.get("Money Manager Shorts") or
-            0
-        )
+        # Try various column name formats from cot-reports
+        non_comm_long = None
+        non_comm_short = None
 
-        try:
-            non_comm_long = float(non_comm_long)
-            non_comm_short = float(non_comm_short)
-        except (ValueError, TypeError):
+        # Column name variations
+        long_cols = [
+            "Noncommercial Positions-Long (All)",
+            "NonComm_Positions_Long_All",
+            "Noncommercial Long",
+            "Non-Commercial Long",
+            "M_Money_Positions_Long_All",
+        ]
+        short_cols = [
+            "Noncommercial Positions-Short (All)",
+            "NonComm_Positions_Short_All",
+            "Noncommercial Short",
+            "Non-Commercial Short",
+            "M_Money_Positions_Short_All",
+        ]
+
+        for col in long_cols:
+            if col in latest and latest[col] is not None:
+                try:
+                    non_comm_long = float(latest[col])
+                    break
+                except (ValueError, TypeError):
+                    continue
+
+        for col in short_cols:
+            if col in latest and latest[col] is not None:
+                try:
+                    non_comm_short = float(latest[col])
+                    break
+                except (ValueError, TypeError):
+                    continue
+
+        if non_comm_long is None or non_comm_short is None:
+            logger.warning(f"Could not find positioning columns. Keys: {list(latest.keys())[:10]}")
             return None
 
         net_position = non_comm_long - non_comm_short
@@ -144,17 +210,21 @@ class CFTCClient:
         historical_nets = []
         for record in cot_data:
             try:
-                hist_long = float(
-                    record.get("Noncommercial Long") or
-                    record.get("Non-Commercial Long") or
-                    record.get("Money Manager Longs") or 0
-                )
-                hist_short = float(
-                    record.get("Noncommercial Short") or
-                    record.get("Non-Commercial Short") or
-                    record.get("Money Manager Shorts") or 0
-                )
-                historical_nets.append(hist_long - hist_short)
+                hist_long = None
+                hist_short = None
+
+                for col in long_cols:
+                    if col in record and record[col] is not None:
+                        hist_long = float(record[col])
+                        break
+
+                for col in short_cols:
+                    if col in record and record[col] is not None:
+                        hist_short = float(record[col])
+                        break
+
+                if hist_long is not None and hist_short is not None:
+                    historical_nets.append(hist_long - hist_short)
             except (ValueError, TypeError):
                 continue
 
@@ -166,8 +236,6 @@ class CFTCClient:
         percentile = below_count / len(historical_nets)
 
         # Generate signal
-        # High percentile (>75%) = crowded long = low absorption capacity
-        # Low percentile (<25%) = crowded short = contrarian buy signal
         if percentile > 0.75:
             signal = "CROWDED_LONG"
         elif percentile < 0.25:
@@ -175,11 +243,23 @@ class CFTCClient:
         else:
             signal = "NEUTRAL"
 
+        # Get date
+        date_val = None
+        date_cols = [
+            "As of Date in Form YYYY-MM-DD",
+            "Report_Date_as_YYYY-MM-DD",
+            "Date",
+        ]
+        for col in date_cols:
+            if col in latest and latest[col]:
+                date_val = str(latest[col])
+                break
+
         return {
             "net_position": net_position,
             "percentile": round(percentile, 3),
             "signal": signal,
-            "date": latest.get("Date"),
+            "date": date_val,
         }
 
     def get_positioning_indicators(self, lookback_weeks: int = 52) -> dict:
@@ -202,7 +282,9 @@ class CFTCClient:
 
         return indicators
 
-    def get_aggregate_positioning_score(self, lookback_weeks: int = 52) -> tuple[float, str]:
+    def get_aggregate_positioning_score(
+        self, lookback_weeks: int = 52
+    ) -> tuple[float, str]:
         """
         Calculate aggregate positioning score across all contracts.
 
@@ -210,8 +292,8 @@ class CFTCClient:
             tuple of (score 0-1, status string)
 
         Score interpretation:
-        - High score (>0.65) = defensive/light positioning = good absorption capacity
-        - Low score (<0.35) = crowded/extended positioning = poor absorption capacity
+        - High score (>0.65) = defensive positioning = good absorption capacity
+        - Low score (<0.35) = crowded positioning = poor absorption capacity
         """
         indicators = self.get_positioning_indicators(lookback_weeks)
 
@@ -221,10 +303,10 @@ class CFTCClient:
 
         # Weight different contracts
         weights = {
-            "SP500": 0.40,       # Equity sentiment most important
-            "TREASURY_10Y": 0.25,  # Rates sentiment
-            "VIX": 0.20,        # Vol expectations
-            "TREASURY_2Y": 0.15,  # Short-end rates
+            "SP500": 0.40,
+            "TREASURY_10Y": 0.25,
+            "VIX": 0.20,
+            "TREASURY_2Y": 0.15,
         }
 
         total_weight = 0
@@ -237,13 +319,11 @@ class CFTCClient:
             percentile = data.get("percentile", 0.5)
             weight = weights[contract_key]
 
-            # Invert percentile for equity/treasury (high long = crowded = bad)
+            # Invert for equity/treasury (high long = crowded = bad)
             # Don't invert for VIX (high long = hedged = good)
             if contract_key == "VIX":
-                # High VIX positioning = market hedged = good absorption
                 score = percentile
             else:
-                # High equity/treasury long = crowded = poor absorption
                 score = 1 - percentile
 
             weighted_score += score * weight
