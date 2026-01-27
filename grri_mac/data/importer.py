@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
 
+import pandas as pd
+
 from dotenv import load_dotenv
 
 from .fred import FREDClient
@@ -165,9 +167,14 @@ class DataImporter:
                 fetched += len(data)
 
                 for _, row in data.iterrows():
+                    # Convert pandas Timestamp to Python datetime
+                    ts = row["Report_Date_as_YYYY-MM-DD"]
+                    if hasattr(ts, 'to_pydatetime'):
+                        ts = ts.to_pydatetime()
+
                     # Store spec net position
                     indicator = IndicatorValue(
-                        timestamp=row["Report_Date_as_YYYY-MM-DD"],
+                        timestamp=ts,
                         indicator_name=f"CFTC_SPEC_NET_{contract}",
                         value=float(row["spec_net"]),
                         source="CFTC",
@@ -176,16 +183,17 @@ class DataImporter:
                     self.repo.save_indicator(indicator)
                     stored += 1
 
-                    # Store open interest
-                    indicator_oi = IndicatorValue(
-                        timestamp=row["Report_Date_as_YYYY-MM-DD"],
-                        indicator_name=f"CFTC_OI_{contract}",
-                        value=float(row["Open_Interest_All"]),
-                        source="CFTC",
-                        series_id=CFTCClient.TREASURY_CONTRACTS[contract],
-                    )
-                    self.repo.save_indicator(indicator_oi)
-                    stored += 1
+                    # Store open interest if available
+                    if "Open_Interest_All" in row and pd.notna(row["Open_Interest_All"]):
+                        indicator_oi = IndicatorValue(
+                            timestamp=ts,
+                            indicator_name=f"CFTC_OI_{contract}",
+                            value=float(row["Open_Interest_All"]),
+                            source="CFTC",
+                            series_id=CFTCClient.TREASURY_CONTRACTS[contract],
+                        )
+                        self.repo.save_indicator(indicator_oi)
+                        stored += 1
 
             except Exception as e:
                 errors.append(f"{contract}: {str(e)}")

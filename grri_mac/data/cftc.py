@@ -1,32 +1,38 @@
-"""CFTC Commitments of Traders (COT) data parser."""
+"""CFTC Commitments of Traders (COT) data parser using cot-reports package."""
 
 from datetime import datetime, timedelta
 from typing import Optional
 import pandas as pd
-import requests
-from io import StringIO
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Try to import cot_reports
+try:
+    from cot_reports.cot_reports import cot_year, cot_all
+    COT_REPORTS_AVAILABLE = True
+except ImportError:
+    COT_REPORTS_AVAILABLE = False
+    logger.warning("cot-reports not installed - run: pip install cot-reports")
 
 
 class CFTCClient:
     """Client for fetching CFTC Commitments of Traders data."""
 
-    # COT report URLs
-    BASE_URL = "https://www.cftc.gov/files/dea/history"
-    LEGACY_FUTURES_URL = f"{BASE_URL}/deacot{{year}}.zip"
-    DISAGGREGATED_URL = f"{BASE_URL}/fut_disagg_txt_{{year}}.zip"
-
-    # Treasury futures contract codes
+    # Treasury futures market names as they appear in COT reports (cot-reports format)
     TREASURY_CONTRACTS = {
-        "2Y": "042601",  # 2-Year T-Note
-        "5Y": "044601",  # 5-Year T-Note
-        "10Y": "043602",  # 10-Year T-Note
-        "30Y": "020601",  # T-Bond
-        "ULTRA": "043607",  # Ultra T-Bond
+        "2Y": "UST 2Y NOTE",
+        "5Y": "UST 5Y NOTE",
+        "10Y": "UST 10Y NOTE",
+        "30Y": "UST BOND",
+        "ULTRA": "ULTRA UST BOND",
     }
 
     def __init__(self):
         """Initialize CFTC client."""
         self._cache: dict[str, pd.DataFrame] = {}
+        self._cache_time: Optional[datetime] = None
+        self._cache_ttl = timedelta(hours=6)
 
     def get_cot_data(
         self,
@@ -43,33 +49,38 @@ class CFTCClient:
         Returns:
             DataFrame with COT data
         """
+        if not COT_REPORTS_AVAILABLE:
+            raise RuntimeError("cot-reports package not installed")
+
         if year is None:
             year = datetime.now().year
 
         cache_key = f"cot_{year}"
-        if use_cache and cache_key in self._cache:
+        now = datetime.now()
+
+        if (
+            use_cache
+            and cache_key in self._cache
+            and self._cache_time
+            and (now - self._cache_time) < self._cache_ttl
+        ):
             return self._cache[cache_key]
 
-        url = self.LEGACY_FUTURES_URL.format(year=year)
-
         try:
-            response = requests.get(url, timeout=30)
-            response.raise_for_status()
+            df = cot_year(
+                year=year,
+                cot_report_type="legacy_fut",
+                store_txt=False,
+                verbose=False
+            )
 
-            # Parse the ZIP file content
-            import zipfile
-            from io import BytesIO
-
-            with zipfile.ZipFile(BytesIO(response.content)) as zf:
-                # Get the first file in the archive
-                filename = zf.namelist()[0]
-                with zf.open(filename) as f:
-                    df = pd.read_csv(f)
-
-            if use_cache:
+            if df is not None and not df.empty:
                 self._cache[cache_key] = df
-
-            return df
+                self._cache_time = now
+                logger.info(f"Fetched COT data for {year}: {len(df)} records")
+                return df
+            else:
+                raise RuntimeError(f"No COT data available for {year}")
 
         except Exception as e:
             raise RuntimeError(f"Failed to fetch COT data: {e}")
@@ -89,8 +100,8 @@ class CFTCClient:
         Returns:
             DataFrame with positioning data
         """
-        contract_code = self.TREASURY_CONTRACTS.get(contract)
-        if not contract_code:
+        market_name = self.TREASURY_CONTRACTS.get(contract)
+        if not market_name:
             raise ValueError(f"Unknown contract: {contract}")
 
         # Fetch current and previous year data
@@ -101,7 +112,8 @@ class CFTCClient:
             try:
                 df = self.get_cot_data(year)
                 dfs.append(df)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Could not fetch COT data for {year}: {e}")
                 continue
 
         if not dfs:
@@ -109,33 +121,83 @@ class CFTCClient:
 
         combined = pd.concat(dfs, ignore_index=True)
 
-        # Filter for Treasury contract
-        treasury = combined[
-            combined["CFTC_Contract_Market_Code"].astype(str) == contract_code
-        ].copy()
+        # Filter for Treasury contract (case-insensitive partial match)
+        mask = combined["Market and Exchange Names"].str.contains(
+            market_name, case=False, na=False
+        )
+        treasury = combined[mask].copy()
+
+        if treasury.empty:
+            # Try alternate names
+            alt_names = {
+                "2-YEAR U.S. TREASURY NOTES": ["2-YEAR", "2 YEAR", "2YR"],
+                "5-YEAR U.S. TREASURY NOTES": ["5-YEAR", "5 YEAR", "5YR"],
+                "10-YEAR U.S. TREASURY NOTES": ["10-YEAR", "10 YEAR", "10YR"],
+                "U.S. TREASURY BONDS": ["TREASURY BONDS", "T-BOND"],
+                "ULTRA U.S. TREASURY BONDS": ["ULTRA", "ULTRA BOND"],
+            }
+            for alt in alt_names.get(market_name, []):
+                mask = combined["Market and Exchange Names"].str.contains(
+                    alt, case=False, na=False
+                )
+                treasury = combined[mask].copy()
+                if not treasury.empty:
+                    break
 
         if treasury.empty:
             raise ValueError(f"No data found for contract {contract}")
 
+        # Find date column
+        date_col = None
+        for col in ["As of Date in Form YYYY-MM-DD", "Report_Date_as_YYYY-MM-DD"]:
+            if col in treasury.columns:
+                date_col = col
+                break
+
+        if date_col is None:
+            raise ValueError("Could not find date column in COT data")
+
         # Parse dates and sort
-        treasury["Report_Date_as_YYYY-MM-DD"] = pd.to_datetime(
-            treasury["Report_Date_as_YYYY-MM-DD"]
-        )
-        treasury = treasury.sort_values("Report_Date_as_YYYY-MM-DD")
+        treasury[date_col] = pd.to_datetime(treasury[date_col])
+        treasury = treasury.sort_values(date_col)
+
+        # Find positioning columns
+        long_col = None
+        short_col = None
+        oi_col = None
+
+        for col in treasury.columns:
+            col_lower = col.lower()
+            if "noncomm" in col_lower and "long" in col_lower and long_col is None:
+                long_col = col
+            elif "noncomm" in col_lower and "short" in col_lower and short_col is None:
+                short_col = col
+            elif "open_interest" in col_lower and "all" in col_lower and oi_col is None:
+                oi_col = col
+
+        if long_col is None or short_col is None:
+            raise ValueError(f"Could not find positioning columns. Available: {treasury.columns.tolist()[:10]}")
 
         # Calculate net speculative position
         treasury["spec_net"] = (
-            treasury["NonComm_Positions_Long_All"]
-            - treasury["NonComm_Positions_Short_All"]
+            treasury[long_col].astype(float) - treasury[short_col].astype(float)
         )
 
         # Get last N weeks
         cutoff = datetime.now() - timedelta(weeks=lookback_weeks)
-        treasury = treasury[treasury["Report_Date_as_YYYY-MM-DD"] >= cutoff]
+        treasury = treasury[treasury[date_col] >= cutoff]
 
-        return treasury[
-            ["Report_Date_as_YYYY-MM-DD", "spec_net", "Open_Interest_All"]
-        ].reset_index(drop=True)
+        # Prepare output columns
+        result_cols = [date_col, "spec_net"]
+        if oi_col:
+            result_cols.append(oi_col)
+            treasury = treasury.rename(columns={oi_col: "Open_Interest_All"})
+            result_cols[-1] = "Open_Interest_All"
+
+        treasury = treasury.rename(columns={date_col: "Report_Date_as_YYYY-MM-DD"})
+        result_cols[0] = "Report_Date_as_YYYY-MM-DD"
+
+        return treasury[result_cols].reset_index(drop=True)
 
     def get_spec_net_percentile(
         self,
@@ -165,3 +227,4 @@ class CFTCClient:
     def clear_cache(self):
         """Clear the data cache."""
         self._cache.clear()
+        self._cache_time = None
