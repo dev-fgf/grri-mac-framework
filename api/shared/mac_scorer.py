@@ -27,6 +27,14 @@ THRESHOLDS = {
         "balance_sheet_gdp": {"ample": 20, "thin": 30, "breach": 38},
         "core_pce_vs_target": {"ample": 30, "thin": 80, "breach": 150},
     },
+    "contagion": {
+        # Cross-currency basis (absolute value in bps)
+        "cross_currency_basis": {"ample": 15, "thin": 30, "breach": 60},
+        # Financial sector OAS spread (G-SIB stress proxy)
+        "financial_oas": {"ample": 100, "thin": 150, "breach": 250},
+        # IG-HY spread differential (credit contagion)
+        "ig_hy_spread_ratio": {"ample": 2.5, "thin": 3.5, "breach": 5.0},
+    },
 }
 
 
@@ -271,6 +279,80 @@ def score_policy(indicators: dict) -> tuple[float, str]:
     return score, get_status(score)
 
 
+def score_contagion(indicators: dict) -> tuple[float, str]:
+    """Score contagion pillar from cross-border stress indicators.
+    
+    Uses:
+    - Cross-currency basis (EUR/USD, JPY/USD funding stress)
+    - IG-HY spread ratio (credit contagion risk)
+    - Financial sector stress (G-SIB proxy)
+    """
+    scores = []
+    
+    # Cross-currency basis (if available)
+    if "cross_currency_basis_bps" in indicators:
+        t = THRESHOLDS["contagion"]["cross_currency_basis"]
+        scores.append(score_indicator_simple(
+            abs(indicators["cross_currency_basis_bps"]),
+            t["ample"], t["thin"], t["breach"],
+            lower_is_better=True,
+        ))
+    
+    # IG-HY spread ratio (credit contagion)
+    if "ig_oas_bps" in indicators and "hy_oas_bps" in indicators:
+        ig_oas = indicators["ig_oas_bps"]
+        hy_oas = indicators["hy_oas_bps"]
+        if ig_oas > 0:
+            ratio = hy_oas / ig_oas
+            t = THRESHOLDS["contagion"]["ig_hy_spread_ratio"]
+            # Lower ratio = tighter spreads = more complacency risk
+            # Higher ratio = flight to quality = stress
+            if ratio <= t["ample"]:
+                scores.append(1.0)
+            elif ratio <= t["thin"]:
+                range_size = t["thin"] - t["ample"]
+                position = ratio - t["ample"]
+                scores.append(1.0 - (position / range_size) * 0.5)
+            elif ratio <= t["breach"]:
+                range_size = t["breach"] - t["thin"]
+                position = ratio - t["thin"]
+                scores.append(0.5 - (position / range_size) * 0.5)
+            else:
+                scores.append(0.0)
+    
+    # Financial sector OAS (G-SIB stress proxy)
+    if "financial_oas_bps" in indicators:
+        t = THRESHOLDS["contagion"]["financial_oas"]
+        scores.append(score_indicator_simple(
+            indicators["financial_oas_bps"],
+            t["ample"], t["thin"], t["breach"],
+            lower_is_better=True,
+        ))
+    
+    # Default: derive from available spreads
+    if not scores:
+        # Use IG OAS as proxy for financial stress
+        if "ig_oas_bps" in indicators:
+            ig_oas = indicators["ig_oas_bps"]
+            # Approximate financial sector stress from IG spreads
+            if ig_oas <= 80:
+                scores.append(1.0)
+            elif ig_oas <= 120:
+                scores.append(0.75)
+            elif ig_oas <= 180:
+                scores.append(0.5)
+            elif ig_oas <= 250:
+                scores.append(0.25)
+            else:
+                scores.append(0.0)
+    
+    if not scores:
+        return 0.5, "NO_DATA"
+    
+    score = sum(scores) / len(scores)
+    return score, get_status(score)
+
+
 def get_status(score: float) -> str:
     """Get status label for a score."""
     if score >= 0.8:
@@ -290,6 +372,7 @@ def calculate_mac(indicators: dict) -> dict:
     pos_score, pos_status, pos_metadata = score_positioning_with_details(indicators)
     vol_score, vol_status = score_volatility(indicators)
     pol_score, pol_status = score_policy(indicators)
+    con_score, con_status = score_contagion(indicators)
 
     pillar_scores = {
         "liquidity": {"score": round(liq_score, 3), "status": liq_status},
@@ -297,10 +380,11 @@ def calculate_mac(indicators: dict) -> dict:
         "positioning": {"score": round(pos_score, 3), "status": pos_status},
         "volatility": {"score": round(vol_score, 3), "status": vol_status},
         "policy": {"score": round(pol_score, 3), "status": pol_status},
+        "contagion": {"score": round(con_score, 3), "status": con_status},
     }
 
-    # Calculate composite (equal weighted)
-    mac_score = (liq_score + val_score + pos_score + vol_score + pol_score) / 5
+    # Calculate composite (equal weighted across 6 pillars)
+    mac_score = (liq_score + val_score + pos_score + vol_score + pol_score + con_score) / 6
 
     # Identify breaches
     breach_flags = [

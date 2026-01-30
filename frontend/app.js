@@ -113,7 +113,8 @@ async function refreshMAC() {
                 valuation: { score: 0.58, status: "THIN" },
                 positioning: { score: 0.45, status: "THIN" },
                 volatility: { score: 0.65, status: "THIN" },
-                policy: { score: 0.55, status: "THIN" }
+                policy: { score: 0.55, status: "THIN" },
+                contagion: { score: 0.60, status: "THIN" }
             },
             breach_flags: [],
             is_demo: true,
@@ -185,7 +186,7 @@ function updateDataStatus(data) {
         const count = Object.keys(data.indicators).length;
         indicatorCount.textContent = `${count} indicators`;
     } else {
-        indicatorCount.textContent = '5 pillars';
+        indicatorCount.textContent = '6 pillars';
     }
 }
 
