@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshMAC();
     loadThresholds();
     initHistoryChart();
+    loadBacktestHistory(); // Auto-load backtest data on page load
 });
 
 // Navigation
