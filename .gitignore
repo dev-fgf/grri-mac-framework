@@ -57,8 +57,12 @@ Thumbs.db
 
 # Testing
 .pytest_cache/
+.mypy_cache/
 .coverage
 htmlcov/
+
+# Type checking
+.mypy_cache/
 
 # Azure
 .azure/
@@ -67,3 +71,6 @@ local.settings.json
 
 # SWA CLI
 .swa/
+
+# Temporary analysis outputs
+real_data_pull.json
