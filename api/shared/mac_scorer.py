@@ -192,7 +192,12 @@ def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
             from api.shared.cftc_client import get_cftc_client, COT_REPORTS_AVAILABLE
         
         if not COT_REPORTS_AVAILABLE:
-            return 0.55, "THIN", {"source": "fallback", "reason": "cot_reports_not_installed"}
+            # Use neutral positioning with explanation
+            return 0.55, "THIN", {
+                "source": "fallback",
+                "reason": "cot_reports_not_installed",
+                "note": "CFTC COT data requires cot-reports package"
+            }
         
         client = get_cftc_client()
 
@@ -200,7 +205,24 @@ def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
         positioning_data = client.get_positioning_indicators(lookback_weeks=52)
         
         if not positioning_data:
-            return 0.55, "THIN", {"source": "fallback", "reason": "cftc_fetch_failed"}
+            # Azure Functions may have network restrictions fetching from CFTC
+            # Use neutral positioning with current VIX as hint
+            vix = indicators.get("vix_level", 18)
+            if vix < 15:
+                # Low VIX = complacent positioning likely
+                score, status = 0.45, "THIN"
+            elif vix > 25:
+                # High VIX = some hedging likely
+                score, status = 0.65, "ADEQUATE"
+            else:
+                score, status = 0.55, "THIN"
+            
+            return score, status, {
+                "source": "vix_proxy",
+                "reason": "cftc_fetch_failed",
+                "note": "Using VIX as positioning proxy. CFTC COT data unavailable in serverless environment.",
+                "vix_level": vix
+            }
         
         score, status = client.get_aggregate_positioning_score(lookback_weeks=52)
 

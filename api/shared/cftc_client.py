@@ -64,6 +64,7 @@ class CFTCClient:
         try:
             # Fetch current year's COT report
             current_year = now.year
+            logger.info(f"Fetching COT data for year {current_year}, report type {report_type}")
             df = cot_year(year=current_year, cot_report_type=report_type,
                           store_txt=False, verbose=False)
 
@@ -73,11 +74,11 @@ class CFTCClient:
                 logger.info(f"Fetched COT data: {len(df)} records")
                 return df
             else:
-                logger.warning("COT data fetch returned empty")
+                logger.warning("COT data fetch returned empty dataframe")
                 return None
 
         except Exception as e:
-            logger.error(f"Failed to fetch COT data: {e}")
+            logger.error(f"Failed to fetch COT data: {type(e).__name__}: {e}")
             return None
 
     def get_cot_data(
