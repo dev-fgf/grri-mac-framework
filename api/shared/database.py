@@ -656,6 +656,100 @@ class MACDatabase:
             logger.error(f"Failed to count GRRI: {e}")
             return 0
 
+    # ==================== CACHED BACKTEST RESULTS ====================
+
+    BACKTEST_CACHE_TABLE = "backtestcache"
+
+    def _get_backtest_cache_table(self):
+        """Get or create the backtest cache table client."""
+        if not self.connected or not self.connection_string:
+            return None
+
+        try:
+            service_client = TableServiceClient.from_connection_string(
+                self.connection_string
+            )
+            try:
+                service_client.create_table(self.BACKTEST_CACHE_TABLE)
+                logger.info(f"Created table: {self.BACKTEST_CACHE_TABLE}")
+            except ResourceExistsError:
+                pass
+            return service_client.get_table_client(self.BACKTEST_CACHE_TABLE)
+        except Exception as e:
+            logger.error(f"Failed to get backtest cache table: {e}")
+            return None
+
+    def save_backtest_cache(self, backtest_response: dict, cache_key: str = "default") -> bool:
+        """Save pre-computed backtest results to cache.
+        
+        Args:
+            backtest_response: Full backtest API response to cache
+            cache_key: Cache identifier (e.g., "default", "2006-2026")
+        
+        Returns:
+            True if saved successfully
+        """
+        table = self._get_backtest_cache_table()
+        if not table:
+            return False
+
+        try:
+            now = datetime.utcnow()
+            
+            # Store as JSON since response is complex
+            entity = {
+                "PartitionKey": "CACHE",
+                "RowKey": cache_key,
+                "timestamp": now.isoformat(),
+                "updated_at": now.isoformat(),
+                "response_json": json.dumps(backtest_response),
+                "data_points": backtest_response.get("parameters", {}).get("data_points", 0),
+                "start_date": backtest_response.get("parameters", {}).get("start_date", ""),
+                "end_date": backtest_response.get("parameters", {}).get("end_date", ""),
+            }
+
+            table.upsert_entity(entity, mode="replace")
+            logger.info(f"Saved backtest cache: {cache_key}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save backtest cache: {e}")
+            return False
+
+    def get_backtest_cache(self, cache_key: str = "default") -> Optional[dict]:
+        """Get cached backtest results.
+        
+        Returns:
+            Dict with cached response and metadata, or None if not available
+        """
+        table = self._get_backtest_cache_table()
+        if not table:
+            return None
+
+        try:
+            entity = table.get_entity("CACHE", cache_key)
+            
+            response_json = entity.get("response_json", "{}")
+            timestamp = entity.get("timestamp", datetime.utcnow().isoformat())
+            
+            age_seconds = (datetime.utcnow() - datetime.fromisoformat(timestamp)).total_seconds()
+            
+            return {
+                "timestamp": timestamp,
+                "age_seconds": age_seconds,
+                "cached_response": json.loads(response_json),
+            }
+        except Exception as e:
+            logger.warning(f"No backtest cache for {cache_key}: {e}")
+            return None
+
+    def is_backtest_cache_fresh(self, cache_key: str = "default", max_age_hours: int = 24) -> bool:
+        """Check if backtest cache is fresh enough."""
+        cached = self.get_backtest_cache(cache_key)
+        if not cached:
+            return False
+        
+        return cached.get("age_seconds", float("inf")) < (max_age_hours * 3600)
+
 
 # Singleton instance
 _db_instance = None

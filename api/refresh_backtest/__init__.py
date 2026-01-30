@@ -1,4 +1,4 @@
-"""Backtest endpoint - returns historical MAC data from storage or FRED."""
+"""Pre-compute and cache backtest results for instant loading."""
 
 import json
 import sys
@@ -15,16 +15,13 @@ from shared.database import get_database
 
 # Define historical crisis events for annotation
 CRISIS_EVENTS = {
-    # Pre-GFC
     "2007-08-09": {"name": "BNP Paribas", "description": "Subprime contagion begins"},
     "2008-03-16": {"name": "Bear Stearns", "description": "Bear Stearns collapse/rescue"},
     "2008-09-15": {"name": "Lehman Brothers", "description": "Lehman bankruptcy, GFC peak"},
-    # Post-GFC
     "2010-05-06": {"name": "Flash Crash", "description": "Dow drops 1000 pts intraday"},
     "2011-08-08": {"name": "US Downgrade", "description": "S&P downgrades US debt"},
     "2015-08-24": {"name": "China Deval", "description": "Yuan devaluation, EM selloff"},
     "2018-12-24": {"name": "Fed Pivot", "description": "Q4 2018 selloff, Powell pivot"},
-    # Recent
     "2020-03-16": {"name": "COVID-19 Peak", "description": "Pandemic selloff, VIX 82"},
     "2022-09-30": {"name": "2022 Rate Shock", "description": "Fed hikes, UK pension crisis"},
     "2023-03-10": {"name": "SVB Crisis", "description": "Regional banking stress"},
@@ -34,7 +31,6 @@ CRISIS_EVENTS = {
 
 
 def get_status(mac_score: float) -> str:
-    """Get status label from MAC score."""
     if mac_score >= 0.65:
         return "COMFORTABLE"
     elif mac_score >= 0.50:
@@ -105,24 +101,68 @@ def calculate_crisis_analysis(time_series: list, start_date, end_date) -> list:
     return crisis_analysis
 
 
-def fetch_from_fred(client, start_date, end_date, interval_days) -> list:
-    """Fetch data from FRED API (fallback when no stored data)."""
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    """Pre-compute backtest and cache results for instant loading.
+    
+    This fetches data from FRED, computes the full backtest analysis,
+    and stores it in Azure Table Storage cache.
+    """
+    
+    db = get_database()
+    client = FREDClient()
+    
+    if not client.api_key:
+        return func.HttpResponse(
+            json.dumps({"error": "FRED_API_KEY not configured"}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+    if not db.connected:
+        return func.HttpResponse(
+            json.dumps({"error": "Database not connected"}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+    # Parameters - default to full backtest range
+    start_date_str = req.params.get('start', '2006-01-01')
+    end_date_str = req.params.get('end', datetime.now().strftime('%Y-%m-%d'))
+    interval_days = int(req.params.get('interval', '7'))
+    
+    try:
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid date format"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+    
+    # Fetch all FRED data in bulk
     bulk_data = client.get_all_bulk_series(start_date, end_date)
+    
     if not bulk_data:
-        return []
-
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to fetch FRED data"}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+    # Generate time series
     time_series = []
     current_date = start_date
-
+    
     while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d")
         indicators = client.calculate_indicators_from_bulk(bulk_data, date_str)
-
+        
         if indicators and len(indicators) >= 3:
             mac_result = calculate_mac(indicators)
             mac_score = mac_result.get("mac_score", 0)
             pillars = mac_result.get("pillar_scores", {})
-
+            
             point = {
                 "date": date_str,
                 "mac_score": round(mac_score, 4),
@@ -134,6 +174,7 @@ def fetch_from_fred(client, start_date, end_date, interval_days) -> list:
                     "positioning": round(pillars.get("positioning", {}).get("score", 0), 4),
                     "volatility": round(pillars.get("volatility", {}).get("score", 0), 4),
                     "policy": round(pillars.get("policy", {}).get("score", 0), 4),
+                    "contagion": round(pillars.get("contagion", {}).get("score", 0), 4),
                 },
                 "breach_flags": mac_result.get("breach_flags", []),
                 "indicators": {
@@ -142,139 +183,37 @@ def fetch_from_fred(client, start_date, end_date, interval_days) -> list:
                 },
             }
             time_series.append(point)
-
-        current_date += timedelta(days=interval_days)
-
-    return time_series
-
-
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    """Return historical MAC time series - from cache first, storage second, FRED last."""
-
-    # Get parameters
-    start_date_str = req.params.get('start', '2006-01-01')
-    end_date_str = req.params.get('end', datetime.now().strftime('%Y-%m-%d'))
-    interval_days = int(req.params.get('interval', '7'))
-    
-    # Generate cache key from parameters
-    cache_key = f"{start_date_str}_{end_date_str}_{interval_days}"
-
-    try:
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-    except ValueError:
-        return func.HttpResponse(
-            json.dumps({"error": "Invalid date format. Use YYYY-MM-DD"}),
-            status_code=400,
-            mimetype="application/json"
-        )
-
-    db = get_database()
-    
-    # === PRIORITY 1: Try cached pre-computed results ===
-    if db.connected:
-        cached = db.get_backtest_cache(cache_key)
-        if cached and cached.get("cached_response"):
-            response = cached["cached_response"]
-            response["data_source"] = "Cached (Azure Table)"
-            response["cache_age_seconds"] = cached.get("age_seconds", 0)
-            return func.HttpResponse(
-                json.dumps(response),
-                mimetype="application/json"
-            )
         
-        # Also try default cache if no specific cache exists
-        if cache_key != "default":
-            cached = db.get_backtest_cache("default")
-            if cached and cached.get("cached_response"):
-                response = cached["cached_response"]
-                response["data_source"] = "Cached (Azure Table - default)"
-                response["cache_age_seconds"] = cached.get("age_seconds", 0)
-                return func.HttpResponse(
-                    json.dumps(response),
-                    mimetype="application/json"
-                )
-
-    # === PRIORITY 2: Try stored historical data points ===
-    time_series = []
-    data_source = "Unknown"
-
-    if db.connected:
-        stored_data = db.get_backtest_history(start_date_str, end_date_str)
-        if stored_data:
-            # Filter by interval
-            if interval_days > 1:
-                filtered = []
-                last_date = None
-                for point in stored_data:
-                    if last_date is None:
-                        filtered.append(point)
-                        last_date = datetime.strptime(point["date"], "%Y-%m-%d")
-                    else:
-                        current = datetime.strptime(point["date"], "%Y-%m-%d")
-                        if (current - last_date).days >= interval_days:
-                            filtered.append(point)
-                            last_date = current
-                time_series = filtered
-            else:
-                time_series = stored_data
-            data_source = "Pre-computed (Azure Table Storage)"
-
-    # === PRIORITY 3: Fall back to FRED (slow) ===
-    if not time_series:
-        client = FREDClient()
-        if not client.api_key:
-            return func.HttpResponse(
-                json.dumps({
-                    "error": "No cached data and FRED_API_KEY not configured",
-                    "message": "Run POST /api/backtest/seed to precompute data, or POST /api/refresh/backtest to cache"
-                }),
-                status_code=500,
-                mimetype="application/json"
-            )
-                    "error": "No stored data and FRED_API_KEY not configured",
-                    "message": "Run POST /api/backtest/seed to precompute data"
-                }),
-                status_code=500,
-                mimetype="application/json"
-            )
-
-        time_series = fetch_from_fred(client, start_date, end_date, interval_days)
-        data_source = "FRED API (Real-time)"
-
+        current_date += timedelta(days=interval_days)
+    
     if not time_series:
         return func.HttpResponse(
-            json.dumps({
-                "error": "No data available",
-                "message": "Run POST /api/backtest/seed to precompute historical data"
-            }),
+            json.dumps({"error": "No data generated"}),
             status_code=500,
             mimetype="application/json"
         )
-
-    # Add crisis event annotations
+    
+    # Add crisis annotations
     time_series = add_crisis_events(time_series)
-
+    
     # Calculate statistics
     mac_scores = [p["mac_score"] for p in time_series]
     crisis_analysis = calculate_crisis_analysis(time_series, start_date, end_date)
-
-    # Calculate prediction metrics from crisis analysis
+    
+    # Calculate prediction metrics
     total_crises = len(crisis_analysis)
     crises_with_warning = sum(1 for c in crisis_analysis if c["days_of_warning"] > 0)
     crises_stretched = sum(1 for c in crisis_analysis if c["days_stretched"] > 0)
-
-    avg_lead_time = 0
-    avg_days_stretched = 0
-    if total_crises > 0:
-        avg_lead_time = sum(c["days_of_warning"] for c in crisis_analysis) / total_crises
-        avg_days_stretched = sum(c["days_stretched"] for c in crisis_analysis) / total_crises
-
+    
+    avg_lead_time = sum(c["days_of_warning"] for c in crisis_analysis) / total_crises if total_crises > 0 else 0
+    avg_days_stretched = sum(c["days_stretched"] for c in crisis_analysis) / total_crises if total_crises > 0 else 0
     warning_rate = (crises_with_warning / total_crises * 100) if total_crises > 0 else 0
     prediction_accuracy = (crises_stretched / total_crises * 100) if total_crises > 0 else 0
-
+    
+    # Build the full response
     response = {
-        "data_source": data_source,
+        "data_source": "Pre-computed (cached)",
+        "computed_at": datetime.utcnow().isoformat(),
         "parameters": {
             "start_date": start_date_str,
             "end_date": end_date_str,
@@ -309,8 +248,27 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             }
         }
     }
-
+    
+    # Save to cache
+    cache_key = f"{start_date_str}_{end_date_str}_{interval_days}"
+    cache_saved = db.save_backtest_cache(response, cache_key)
+    
+    # Also save as default cache
+    default_saved = db.save_backtest_cache(response, "default")
+    
     return func.HttpResponse(
-        json.dumps(response),
+        json.dumps({
+            "status": "success",
+            "message": "Backtest results computed and cached",
+            "data_points": len(time_series),
+            "crises_analyzed": len(crisis_analysis),
+            "prediction_accuracy": f"{prediction_accuracy:.0f}%",
+            "cache_saved": {
+                "specific": cache_saved,
+                "default": default_saved,
+                "cache_key": cache_key
+            },
+            "computed_at": response["computed_at"]
+        }),
         mimetype="application/json"
     )
