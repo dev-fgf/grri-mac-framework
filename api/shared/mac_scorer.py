@@ -187,13 +187,21 @@ def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
     try:
         # Handle both Azure Functions context and standalone execution
         try:
-            from shared.cftc_client import get_cftc_client
+            from shared.cftc_client import get_cftc_client, COT_REPORTS_AVAILABLE
         except ImportError:
-            from api.shared.cftc_client import get_cftc_client
+            from api.shared.cftc_client import get_cftc_client, COT_REPORTS_AVAILABLE
+        
+        if not COT_REPORTS_AVAILABLE:
+            return 0.55, "THIN", {"source": "fallback", "reason": "cot_reports_not_installed"}
+        
         client = get_cftc_client()
 
         # Get detailed positioning indicators
         positioning_data = client.get_positioning_indicators(lookback_weeks=52)
+        
+        if not positioning_data:
+            return 0.55, "THIN", {"source": "fallback", "reason": "cftc_fetch_failed"}
+        
         score, status = client.get_aggregate_positioning_score(lookback_weeks=52)
 
         if status == "NO_DATA":
