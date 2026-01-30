@@ -750,6 +750,50 @@ class MACDatabase:
         
         return cached.get("age_seconds", float("inf")) < (max_age_hours * 3600)
 
+    def get_backtest_cache_chunked(self) -> Optional[dict]:
+        """Get cached backtest results stored in chunked format.
+        
+        Reads summary from CACHE/summary and time_series from TIMESERIES/chunk_* partitions.
+        
+        Returns:
+            Full backtest response dict or None if not available
+        """
+        table = self._get_backtest_cache_table()
+        if not table:
+            return None
+
+        try:
+            # 1. Get summary
+            summary_entity = table.get_entity("CACHE", "summary")
+            summary_json = summary_entity.get("response_json", "{}")
+            response = json.loads(summary_json)
+            
+            timestamp = summary_entity.get("timestamp", datetime.utcnow().isoformat())
+            age_seconds = (datetime.utcnow() - datetime.fromisoformat(timestamp)).total_seconds()
+            
+            # 2. Get time series chunks
+            time_series = []
+            chunk_entities = list(table.query_entities("PartitionKey eq 'TIMESERIES'"))
+            
+            # Sort by chunk index
+            chunk_entities.sort(key=lambda x: x.get("chunk_index", 0))
+            
+            for chunk_entity in chunk_entities:
+                chunk_data = json.loads(chunk_entity.get("data_json", "[]"))
+                time_series.extend(chunk_data)
+            
+            # 3. Combine
+            response["time_series"] = time_series
+            response["data_source"] = "Cached (Azure Table)"
+            response["cache_age_seconds"] = age_seconds
+            
+            logger.info(f"Loaded backtest cache: {len(time_series)} points from {len(chunk_entities)} chunks")
+            return response
+            
+        except Exception as e:
+            logger.warning(f"Failed to get chunked backtest cache: {e}")
+            return None
+
 
 # Singleton instance
 _db_instance = None

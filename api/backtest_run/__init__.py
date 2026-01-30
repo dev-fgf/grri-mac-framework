@@ -171,25 +171,74 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     db = get_database()
     
-    # === PRIORITY 1: Try cached pre-computed results ===
+    # === PRIORITY 1: Try chunked cache (uploaded from local) ===
     if db.connected:
-        cached = db.get_backtest_cache(cache_key)
-        if cached and cached.get("cached_response"):
-            response = cached["cached_response"]
-            response["data_source"] = "Cached (Azure Table)"
-            response["cache_age_seconds"] = cached.get("age_seconds", 0)
-            return func.HttpResponse(
-                json.dumps(response),
-                mimetype="application/json"
-            )
-        
-        # Also try default cache if no specific cache exists
-        if cache_key != "default":
-            cached = db.get_backtest_cache("default")
-            if cached and cached.get("cached_response"):
-                response = cached["cached_response"]
-                response["data_source"] = "Cached (Azure Table - default)"
-                response["cache_age_seconds"] = cached.get("age_seconds", 0)
+        cached = db.get_backtest_cache_chunked()
+        if cached and cached.get("time_series"):
+            # Filter time series by date range if needed
+            time_series = cached["time_series"]
+            
+            # Apply date filtering
+            filtered = [
+                p for p in time_series
+                if start_date_str <= p["date"] <= end_date_str
+            ]
+            
+            # Apply interval filtering
+            if interval_days > 1 and filtered:
+                spaced = []
+                last_date = None
+                for point in filtered:
+                    if last_date is None:
+                        spaced.append(point)
+                        last_date = datetime.strptime(point["date"], "%Y-%m-%d")
+                    else:
+                        current = datetime.strptime(point["date"], "%Y-%m-%d")
+                        if (current - last_date).days >= interval_days:
+                            spaced.append(point)
+                            last_date = current
+                filtered = spaced
+            
+            # Add crisis annotations if missing
+            filtered = add_crisis_events(filtered)
+            
+            # Recalculate summary for filtered data
+            if filtered:
+                mac_scores = [p["mac_score"] for p in filtered]
+                crisis_analysis = calculate_crisis_analysis(filtered, start_date, end_date)
+                
+                total_crises = len(crisis_analysis)
+                crises_stretched = sum(1 for c in crisis_analysis if c["days_stretched"] > 0)
+                prediction_accuracy = (crises_stretched / total_crises * 100) if total_crises > 0 else 0
+                
+                response = {
+                    "data_source": "Cached (Azure Table)",
+                    "cache_age_seconds": cached.get("cache_age_seconds", 0),
+                    "parameters": {
+                        "start_date": start_date_str,
+                        "end_date": end_date_str,
+                        "interval_days": interval_days,
+                        "data_points": len(filtered)
+                    },
+                    "summary": {
+                        "data_points": len(filtered),
+                        "min_mac": round(min(mac_scores), 4),
+                        "max_mac": round(max(mac_scores), 4),
+                        "avg_mac": round(sum(mac_scores) / len(mac_scores), 4),
+                        "current_mac": filtered[-1]["mac_score"],
+                        "current_status": filtered[-1]["status"],
+                        "prediction_accuracy": f"{prediction_accuracy:.0f}%",
+                        "periods_in_comfortable": sum(1 for p in filtered if p["status"] == "COMFORTABLE"),
+                        "periods_in_cautious": sum(1 for p in filtered if p["status"] == "CAUTIOUS"),
+                        "periods_in_stretched": sum(1 for p in filtered if p["status"] == "STRETCHED"),
+                        "periods_in_critical": sum(1 for p in filtered if p["status"] == "CRITICAL"),
+                    },
+                    "crisis_prediction_analysis": crisis_analysis,
+                    "time_series": filtered,
+                    "crisis_events": CRISIS_EVENTS,
+                    "interpretation_guide": cached.get("interpretation_guide", {}),
+                }
+                
                 return func.HttpResponse(
                     json.dumps(response),
                     mimetype="application/json"
