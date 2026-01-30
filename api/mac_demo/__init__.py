@@ -19,8 +19,29 @@ except Exception as e:
     IMPORT_ERROR = str(e)
 
 
+# Demo fallback data
+DEMO_INDICATORS = {
+    "sofr_iorb_spread_bps": 5,
+    "cp_treasury_spread_bps": 25,
+    "term_premium_10y_bps": 45,
+    "ig_oas_bps": 95,
+    "hy_oas_bps": 320,
+    "vix_level": 18.5,
+    "policy_room_bps": 433,
+    "fed_balance_sheet_gdp_pct": 28,
+    "core_pce_vs_target_bps": 65,
+}
+
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    """Get current MAC calculation with live data."""
+    """
+    Get current MAC calculation.
+    
+    Priority:
+    1. Read from Azure Table cache (fast, pre-computed)
+    2. Fetch live from FRED if cache is stale (> 6 hours)
+    3. Fallback to demo data if all else fails
+    """
     
     # Check imports first
     if not IMPORTS_OK:
@@ -31,38 +52,51 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
     
     try:
-        # Try to fetch live data
-        client = FREDClient()
-        indicators = client.get_all_indicators()
-
-        is_live = bool(indicators)
-
-        if not indicators:
-            # Fallback to demo data
-            indicators = {
-                "sofr_iorb_spread_bps": 5,
-                "cp_treasury_spread_bps": 25,
-                "term_premium_10y_bps": 45,
-                "ig_oas_bps": 95,
-                "hy_oas_bps": 320,
-                "vix_level": 18.5,
-                "policy_room_bps": 433,  # 4.33% fed funds
-                "fed_balance_sheet_gdp_pct": 28,
-                "core_pce_vs_target_bps": 65,
-            }
-
-        # Calculate MAC
-        result = calculate_mac(indicators)
-        result["is_live"] = is_live
-
-        # Save snapshot to database
         db = get_database()
+        indicators = None
+        data_source = "Demo Data"
+        cache_age = None
+        
+        # === PRIORITY 1: Try cached data from Azure Table ===
+        if db.connected:
+            cached = db.get_all_cached_indicators()
+            if cached and cached.get("indicators"):
+                indicators = cached["indicators"]
+                data_source = "Azure Table Cache"
+                # Get age of oldest source
+                for source, info in cached.get("sources", {}).items():
+                    age = info.get("age_seconds", 0)
+                    if cache_age is None or age > cache_age:
+                        cache_age = age
+        
+        # === PRIORITY 2: Fetch live if cache is stale (> 6 hours) ===
+        if not indicators or (cache_age and cache_age > 6 * 3600):
+            client = FREDClient()
+            live_indicators = client.get_all_indicators()
+            
+            if live_indicators:
+                indicators = live_indicators
+                data_source = "FRED API (Live)"
+                # Update the cache
+                db.save_indicators(indicators, source="FRED")
+        
+        # === PRIORITY 3: Fallback to demo data ===
+        if not indicators:
+            indicators = DEMO_INDICATORS.copy()
+            data_source = "Demo Data"
+
+        # Calculate MAC score
+        result = calculate_mac(indicators)
+        result["is_live"] = data_source != "Demo Data"
+
+        # Save MAC snapshot
         saved = db.save_snapshot(result)
 
         response = {
             "timestamp": datetime.utcnow().isoformat(),
-            "is_live": is_live,
-            "data_source": "FRED API" if is_live else "Demo Data",
+            "is_live": result["is_live"],
+            "data_source": data_source,
+            "cache_age_seconds": cache_age,
             "saved_to_db": saved,
             "db_connected": db.connected,
             **result,

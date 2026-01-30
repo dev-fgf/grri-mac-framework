@@ -25,12 +25,15 @@ class MACDatabase:
     TABLE_NAME = "machistory"
     BACKTEST_TABLE_NAME = "backtesthistory"
     GRRI_TABLE_NAME = "grridata"
+    INDICATORS_TABLE_NAME = "macindicators"  # Raw market data cache
 
     def __init__(self):
         self.connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
         self.connected = False
         self._memory_store = []  # Fallback in-memory storage
+        self._indicators_cache = {}  # In-memory indicator cache
         self._table_client = None
+        self._indicators_table = None
 
         if self.connection_string and TABLE_STORAGE_AVAILABLE:
             try:
@@ -43,14 +46,135 @@ class MACDatabase:
         """Initialize Table Storage table if needed."""
         service_client = TableServiceClient.from_connection_string(self.connection_string)
 
-        # Create table if it doesn't exist
-        try:
-            service_client.create_table(self.TABLE_NAME)
-            logger.info(f"Created table: {self.TABLE_NAME}")
-        except ResourceExistsError:
-            pass  # Table already exists
+        # Create tables if they don't exist
+        for table_name in [self.TABLE_NAME, self.INDICATORS_TABLE_NAME]:
+            try:
+                service_client.create_table(table_name)
+                logger.info(f"Created table: {table_name}")
+            except ResourceExistsError:
+                pass  # Table already exists
 
         self._table_client = service_client.get_table_client(self.TABLE_NAME)
+        self._indicators_table = service_client.get_table_client(self.INDICATORS_TABLE_NAME)
+
+    # ==================== RAW INDICATORS STORAGE ====================
+
+    def save_indicators(self, indicators: dict, source: str = "FRED") -> bool:
+        """Save raw market indicators to the cache table.
+        
+        Args:
+            indicators: Dict of indicator name -> value
+            source: Data source name (FRED, CFTC, etc.)
+        
+        Returns:
+            True if saved successfully
+        """
+        if not self.connected or not self._indicators_table:
+            # Fallback to memory
+            self._indicators_cache = {
+                "timestamp": datetime.utcnow().isoformat(),
+                "source": source,
+                **indicators
+            }
+            return True
+        
+        try:
+            now = datetime.utcnow()
+            # Use "CURRENT" partition for latest data, date partition for history
+            entity = {
+                "PartitionKey": "CURRENT",
+                "RowKey": source,
+                "timestamp": now.isoformat(),
+                "updated_at": now.isoformat(),
+            }
+            
+            # Add each indicator as a column
+            for key, value in indicators.items():
+                if value is not None:
+                    entity[key] = float(value) if isinstance(value, (int, float)) else str(value)
+            
+            # Upsert (create or update)
+            self._indicators_table.upsert_entity(entity, mode="replace")
+            
+            # Also save to historical partition
+            hist_entity = entity.copy()
+            hist_entity["PartitionKey"] = now.strftime("%Y-%m-%d")
+            hist_entity["RowKey"] = f"{source}_{now.strftime('%H%M%S')}"
+            self._indicators_table.upsert_entity(hist_entity, mode="replace")
+            
+            logger.info(f"Saved {len(indicators)} indicators from {source}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to save indicators: {e}")
+            return False
+
+    def get_cached_indicators(self, source: str = "FRED") -> Optional[dict]:
+        """Get the most recent cached indicators.
+        
+        Returns:
+            Dict with indicators and metadata, or None if not available
+        """
+        if not self.connected or not self._indicators_table:
+            # Return from memory cache
+            if self._indicators_cache:
+                return self._indicators_cache
+            return None
+        
+        try:
+            # Get from CURRENT partition
+            entity = self._indicators_table.get_entity("CURRENT", source)
+            
+            # Extract indicators (exclude metadata columns)
+            metadata_keys = {"PartitionKey", "RowKey", "timestamp", "updated_at", "etag"}
+            indicators = {
+                k: v for k, v in entity.items() 
+                if k not in metadata_keys and not k.startswith("odata")
+            }
+            
+            return {
+                "timestamp": entity.get("timestamp"),
+                "source": source,
+                "indicators": indicators,
+                "age_seconds": (datetime.utcnow() - datetime.fromisoformat(entity.get("timestamp", datetime.utcnow().isoformat()))).total_seconds()
+            }
+            
+        except Exception as e:
+            logger.warning(f"No cached indicators for {source}: {e}")
+            return None
+
+    def get_all_cached_indicators(self) -> dict:
+        """Get all cached indicators from all sources combined."""
+        result = {
+            "timestamp": None,
+            "indicators": {},
+            "sources": {},
+        }
+        
+        for source in ["FRED", "CFTC"]:
+            cached = self.get_cached_indicators(source)
+            if cached:
+                result["indicators"].update(cached.get("indicators", {}))
+                result["sources"][source] = {
+                    "timestamp": cached.get("timestamp"),
+                    "age_seconds": cached.get("age_seconds"),
+                }
+                # Use most recent timestamp
+                if not result["timestamp"] or cached.get("timestamp", "") > result["timestamp"]:
+                    result["timestamp"] = cached.get("timestamp")
+        
+        return result if result["indicators"] else None
+
+    def is_cache_fresh(self, source: str = "FRED", max_age_hours: int = 6) -> bool:
+        """Check if cached data is fresh enough."""
+        cached = self.get_cached_indicators(source)
+        if not cached:
+            return False
+        
+        age_seconds = cached.get("age_seconds", float("inf"))
+        return age_seconds < (max_age_hours * 3600)
+
+    # ==================== EXISTING MAC HISTORY METHODS ====================
 
     def save_snapshot(self, mac_data: dict) -> bool:
         """Save a MAC snapshot to the database."""

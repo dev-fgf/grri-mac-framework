@@ -2,7 +2,7 @@ name: Daily MAC Refresh
 
 on:
   schedule:
-    # Run at 6:00 AM UTC every day
+    # Run at 6:00 AM UTC every day (after US markets close)
     - cron: '0 6 * * *'
   workflow_dispatch:  # Allow manual trigger
 
@@ -10,29 +10,57 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger MAC refresh
+      - name: Refresh indicator cache
         run: |
-          echo "Triggering daily MAC data refresh..."
-          response=$(curl -s -w "\n%{http_code}" "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/mac_demo")
+          echo "=== Refreshing indicator cache ==="
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/refresh")
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
 
           echo "HTTP Status: $http_code"
-          echo "Response: $body"
+          echo "Response:"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
 
+          if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 207 ]; then
+            echo "✓ Indicator cache refresh completed"
+            
+            # Check individual sources
+            fred_status=$(echo "$body" | jq -r '.sources.FRED.status // "unknown"')
+            cftc_status=$(echo "$body" | jq -r '.sources.CFTC.status // "unknown"')
+            
+            echo "FRED Status: $fred_status"
+            echo "CFTC Status: $cftc_status"
+          else
+            echo "✗ Refresh failed with status $http_code"
+          fi
+
+      - name: Trigger MAC calculation
+        run: |
+          echo "=== Triggering MAC calculation ==="
+          response=$(curl -s -w "\n%{http_code}" "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/mac/demo")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          
           if [ "$http_code" -eq 200 ]; then
-            echo "✓ MAC refresh successful"
-            # Extract key values from JSON response
+            echo "✓ MAC calculation successful"
+            
             mac_score=$(echo "$body" | jq -r '.mac_score // "N/A"')
-            is_live=$(echo "$body" | jq -r '.is_live // "N/A"')
+            data_source=$(echo "$body" | jq -r '.data_source // "N/A"')
+            cache_age=$(echo "$body" | jq -r '.cache_age_seconds // "N/A"')
             db_connected=$(echo "$body" | jq -r '.db_connected // "N/A"')
-            saved=$(echo "$body" | jq -r '.saved_to_db // "N/A"')
 
             echo "MAC Score: $mac_score"
-            echo "Live Data: $is_live"
+            echo "Data Source: $data_source"
+            echo "Cache Age (seconds): $cache_age"
             echo "DB Connected: $db_connected"
-            echo "Saved to DB: $saved"
+            
+            # Show pillar scores
+            echo "Pillar Scores:"
+            echo "$body" | jq -r '.pillar_scores | to_entries[] | "  \(.key): \(.value.score) (\(.value.status))"'
           else
-            echo "✗ MAC refresh failed with status $http_code"
+            echo "✗ MAC calculation failed with status $http_code"
+            echo "$body"
             exit 1
           fi
