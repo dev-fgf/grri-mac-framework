@@ -248,10 +248,14 @@ This will show you how many data points have been processed and whether the back
 - Use `--frequency weekly` instead of daily for faster results
 - Daily frequency recommended only for final paper results
 
-### Missing pillars
-- Positioning pillar uses synthetic estimates (CFTC COT data not yet implemented)
-- Contagion pillar uses placeholder scores (BIS/IMF data not yet implemented)
-- These will be enhanced in future versions
+### Data Status
+All pillars now use **real data** from free public sources:
+- **Liquidity**: FRED SOFR-IORB/TED spread, CP-Treasury spread
+- **Valuation**: FRED credit spreads (IG/HY OAS), term premium (10Y-2Y)
+- **Positioning**: CFTC COT Treasury futures positioning
+- **Volatility**: FRED VIX, yfinance for RV-IV gap (SPY returns vs VIX)
+- **Policy**: FRED fed funds rate (policy room = distance from ELB)
+- **Contagion**: FRED EMBI proxy, DXY; yfinance for EM flows and global equity correlation
 
 ## Next Steps
 

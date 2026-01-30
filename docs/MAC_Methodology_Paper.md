@@ -175,21 +175,24 @@ The Volatility pillar uses implied volatility as a measure of market uncertainty
 
 ### 3.6 Policy Pillar
 
-The Policy pillar measures the stance of monetary policy relative to a neutral benchmark.
+The Policy pillar measures the central bank's operational capacity to respond to shocks.
 
-#### 3.6.1 Federal Funds vs. Neutral Rate
+#### 3.6.1 Policy Room (Distance from Effective Lower Bound)
 
-**Indicator**: Effective Federal Funds Rate minus estimated neutral rate (assumed 2.5%)
+**Indicator**: Effective Federal Funds Rate × 100 (expressed in basis points)
 
 **FRED Series**: DFF
 
-**Rationale**: When the Fed funds rate is substantially above neutral, monetary policy is restrictive—reducing liquidity, tightening financial conditions, and increasing the probability of a policy-induced slowdown. Conversely, deeply negative real rates may fuel asset bubbles and leverage.
+**Rationale**: Rather than estimating the unobservable neutral rate (r*), we measure the Fed's operational capacity using the distance from the Effective Lower Bound (ELB). This approach uses observable data and directly measures what matters: how much room the Fed has to cut rates in response to a shock. Higher values indicate more policy capacity.
+
+**Calculation**: `policy_room_bps = fed_funds_rate × 100`
 
 **Thresholds**:
-- Comfortable: Within 25 basis points of neutral
-- Cautious: 25-100 basis points above neutral
-- Stretched: 100-200 basis points above neutral
-- Critical: > 200 basis points above neutral
+- Ample: > 150 bps (Fed has substantial room to cut)
+- Thin: 50-150 bps (limited cutting capacity)
+- Breaching: < 50 bps (at or near ELB, constrained)
+
+**Interpretation**: At fed funds of 5%, policy room = 500 bps (ample). At fed funds of 0.25%, policy room = 25 bps (breaching). This directly captures the asymmetric policy constraints central banks face when rates approach zero.
 
 ---
 
@@ -402,11 +405,16 @@ Monin, P. J. (2019). The OFR financial stress index. *Risks*, 7(1), 25.
 
 ### B.4 Policy Pillar
 
-| Indicator | Comfortable | Cautious | Stretched | Critical |
-|-----------|-------------|----------|-----------|----------|
-| Fed Funds vs Neutral (bps) | -25 to 25 | 25-100 | 100-200 | > 200 |
+| Indicator | Ample | Thin | Breaching |
+|-----------|-------|------|-----------|
+| Policy Room / Distance from ELB (bps) | > 150 | 50-150 | < 50 |
+| Fed Balance Sheet / GDP (%) | < 25 | 25-35 | > 35 |
+| Core PCE vs Target (bps) | < 50 | 50-150 | > 150 |
+
+*Note: Policy room = fed_funds × 100, measuring distance from Effective Lower Bound (ELB).*
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: January 2025*
+*Document Version: 2.0*
+*Last Updated: January 2026*
+*Note: Framework updated to 6-pillar (adding Contagion) with all real data sources*

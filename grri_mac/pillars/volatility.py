@@ -23,6 +23,7 @@ class VolatilityIndicators:
     vix_term_structure: Optional[float] = None  # M2/M1 ratio
     realized_vol: Optional[float] = None
     implied_vol: Optional[float] = None
+    vix_history: Optional[list[float]] = None  # For persistence calculation
 
 
 @dataclass
@@ -141,6 +142,49 @@ class VolatilityPillar:
         else:
             return 0.0
 
+    def calculate_vix_persistence_penalty(
+        self,
+        vix_history: list[float],
+        lookback_days: int = 60,
+        low_vol_threshold: float = 15.0,
+        penalty_per_day: float = 0.003,
+        max_penalty: float = 0.15,
+    ) -> float:
+        """
+        Calculate penalty for extended periods of suppressed volatility.
+
+        Extended low-vol periods lead to complacency and vol-selling buildup,
+        creating conditions for sharp corrections (e.g., Feb 2018 Volmageddon).
+
+        Args:
+            vix_history: List of recent VIX values (most recent last)
+            lookback_days: Days to look back for persistence
+            low_vol_threshold: VIX level considered "suppressed"
+            penalty_per_day: Score reduction per day below threshold
+            max_penalty: Maximum penalty to apply
+
+        Returns:
+            Penalty factor (0.0 to max_penalty) to subtract from VIX score
+        """
+        if not vix_history:
+            return 0.0
+
+        # Use last N days
+        recent = vix_history[-lookback_days:] if len(vix_history) > lookback_days \
+            else vix_history
+
+        # Count consecutive days below threshold (from most recent)
+        low_vol_days = 0
+        for vix in reversed(recent):
+            if vix < low_vol_threshold:
+                low_vol_days += 1
+            else:
+                break  # Stop at first day above threshold
+
+        # Calculate penalty
+        penalty = low_vol_days * penalty_per_day
+        return min(penalty, max_penalty)
+
     def calculate_realized_vol(self, returns: list[float], annualize: bool = True) -> float:
         """
         Calculate realized volatility from returns.
@@ -167,12 +211,14 @@ class VolatilityPillar:
     def calculate(
         self,
         indicators: Optional[VolatilityIndicators] = None,
+        apply_persistence_penalty: bool = True,
     ) -> VolatilityScores:
         """
         Calculate volatility pillar scores.
 
         Args:
             indicators: Optional pre-fetched indicators. If None, will fetch.
+            apply_persistence_penalty: Apply penalty for extended low-vol
 
         Returns:
             VolatilityScores with individual and composite scores
@@ -209,6 +255,13 @@ class VolatilityPillar:
             if indicators.realized_vol is not None and indicators.implied_vol is not None:
                 total += scores.rv_iv_gap
             scores.composite = total / scored_count
+
+            # Apply VIX persistence penalty if enabled and history available
+            if apply_persistence_penalty and indicators.vix_history:
+                persistence_penalty = self.calculate_vix_persistence_penalty(
+                    indicators.vix_history
+                )
+                scores.composite = max(0.0, scores.composite - persistence_penalty)
         else:
             scores.composite = 0.5
 

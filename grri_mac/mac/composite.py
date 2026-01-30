@@ -13,6 +13,8 @@ class MACResult:
     breach_flags: list[str]
     adjusted_score: Optional[float] = None  # After China adjustment
     multiplier: Optional[float] = None
+    interaction_penalty: float = 0.0  # Non-linear breach penalty applied
+    raw_score: Optional[float] = None  # Score before interaction adjustment
 
 
 DEFAULT_WEIGHTS_5_PILLAR = {
@@ -63,11 +65,49 @@ INTERACTION_ADJUSTED_WEIGHTS = {
 # Default to 6-pillar framework with equal weights
 DEFAULT_WEIGHTS = DEFAULT_WEIGHTS_6_PILLAR
 
+# Non-linear interaction penalty configuration
+# When multiple pillars breach, risks compound non-linearly
+BREACH_INTERACTION_PENALTY = {
+    0: 0.00,    # No breaches - no penalty
+    1: 0.00,    # Single breach - no additional penalty
+    2: 0.03,    # 2 breaches - 3% penalty (modest interaction)
+    3: 0.08,    # 3 breaches - 8% penalty (significant)
+    4: 0.12,    # 4 breaches - 12% penalty (severe)
+    5: 0.15,    # 5+ breaches - 15% penalty (crisis)
+    6: 0.15,    # Cap at 15%
+}
+
+
+def calculate_breach_interaction_penalty(
+    pillar_scores: dict[str, float],
+    breach_threshold: float = 0.3,
+) -> float:
+    """
+    Calculate non-linear penalty for multiple simultaneous breaches.
+
+    The interaction effect captures that risks compound when multiple
+    pillars are stressed simultaneously (e.g., liquidity + positioning
+    creates forced selling spirals).
+
+    Args:
+        pillar_scores: Dict mapping pillar names to scores (0-1)
+        breach_threshold: Score below which a pillar is "stressed"
+
+    Returns:
+        Penalty factor (0.0-0.15) to subtract from MAC score
+    """
+    breach_count = sum(1 for s in pillar_scores.values() if s < breach_threshold)
+    # Cap at 6 for lookup
+    breach_count = min(breach_count, 6)
+    return BREACH_INTERACTION_PENALTY.get(breach_count, 0.15)
+
 
 def calculate_mac(
     pillars: dict[str, float],
     weights: Optional[dict[str, float]] = None,
     breach_threshold: float = 0.2,
+    apply_interaction_penalty: bool = True,
+    interaction_stress_threshold: float = 0.3,
 ) -> MACResult:
     """
     Calculate MAC composite score from pillar scores.
@@ -75,7 +115,9 @@ def calculate_mac(
     Args:
         pillars: Dict mapping pillar names to scores (0-1)
         weights: Optional custom weights (must sum to 1.0)
-        breach_threshold: Threshold below which a pillar is flagged as breaching
+        breach_threshold: Threshold below which pillar flagged as breaching
+        apply_interaction_penalty: Apply non-linear penalty for multi-breach
+        interaction_stress_threshold: Score below which pillar is "stressed"
 
     Returns:
         MACResult with composite score, individual scores, and breach flags
@@ -89,8 +131,18 @@ def calculate_mac(
         # Normalize weights
         weights = {p: weights.get(p, 0) / weight_sum for p in pillars}
 
-    # Calculate weighted average
-    mac_score = sum(pillars[p] * weights.get(p, 0) for p in pillars)
+    # Calculate weighted average (raw score)
+    raw_mac_score = sum(pillars[p] * weights.get(p, 0) for p in pillars)
+
+    # Apply non-linear interaction penalty if enabled
+    interaction_penalty = 0.0
+    if apply_interaction_penalty:
+        interaction_penalty = calculate_breach_interaction_penalty(
+            pillars, interaction_stress_threshold
+        )
+
+    # Final MAC score with penalty applied
+    mac_score = max(0.0, raw_mac_score - interaction_penalty)
 
     # Identify breach flags
     breach_flags = [p for p, score in pillars.items() if score < breach_threshold]
@@ -99,6 +151,8 @@ def calculate_mac(
         mac_score=mac_score,
         pillar_scores=pillars.copy(),
         breach_flags=breach_flags,
+        interaction_penalty=interaction_penalty,
+        raw_score=raw_mac_score,
     )
 
 

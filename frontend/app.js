@@ -554,7 +554,7 @@ function getDemoThresholds() {
             vix_level: { ample_low: 12, ample_high: 18, thin_low: 8, thin_high: 28, breach_low: 0, breach_high: 40 }
         },
         policy: {
-            fed_funds_vs_neutral: { ample: 25, thin: 100, breach: 200 },
+            policy_room: { ample: 150, thin: 50, breach: 25 },
             balance_sheet_gdp: { ample: 20, thin: 30, breach: 38 }
         }
     };

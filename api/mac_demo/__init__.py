@@ -30,7 +30,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "ig_oas_bps": 95,
             "hy_oas_bps": 320,
             "vix_level": 18.5,
-            "fed_funds_vs_neutral_bps": 175,
+            "policy_room_bps": 433,  # 4.33% fed funds
             "fed_balance_sheet_gdp_pct": 28,
             "core_pce_vs_target_bps": 65,
         }

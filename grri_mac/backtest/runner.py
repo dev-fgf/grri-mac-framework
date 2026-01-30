@@ -224,7 +224,10 @@ class BacktestRunner:
         indicators = PolicyIndicators()
 
         try:
-            indicators.fed_funds_vs_neutral_bps = self.fred.get_fed_funds_vs_neutral(date)
+            # Policy room = distance from ELB = fed funds * 100
+            fed_funds = self.fred.get_fed_funds(date)
+            if fed_funds is not None:
+                indicators.policy_room_bps = fed_funds * 100
         except Exception as e:
             print(f"Warning: Could not fetch fed funds for {date}: {e}")
 

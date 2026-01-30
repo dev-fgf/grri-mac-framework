@@ -208,14 +208,18 @@ class CalibratedBacktestEngine:
         """Score policy pillar with calibrated thresholds."""
         scores = []
 
-        if indicators.get("fed_funds_vs_neutral_bps") is not None:
-            t = self.pol["fed_funds_vs_neutral"]
-            # Use absolute value
-            scores.append(score_indicator_simple(
-                abs(indicators["fed_funds_vs_neutral_bps"]),
-                t["ample"], t["thin"], t["breach"],
-                lower_is_better=True,
-            ))
+        if indicators.get("policy_room_bps") is not None:
+            t = self.pol["policy_room"]
+            # Higher is better (more room to cut rates)
+            room = indicators["policy_room_bps"]
+            if room >= t["ample"]:
+                scores.append(1.0)
+            elif room >= t["thin"]:
+                scores.append(0.5 + 0.5 * (room - t["thin"]) / (t["ample"] - t["thin"]))
+            elif room >= t["breach"]:
+                scores.append(0.5 * (room - t["breach"]) / (t["thin"] - t["breach"]))
+            else:
+                scores.append(0.0)
 
         if indicators.get("fed_balance_sheet_gdp_pct") is not None:
             t = self.pol["balance_sheet_gdp"]

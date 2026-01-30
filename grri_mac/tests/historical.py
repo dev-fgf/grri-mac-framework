@@ -115,7 +115,7 @@ HISTORICAL_SNAPSHOTS = {
             vix_term_structure=0.85,  # Inverted
         ),
         policy=PolicyIndicators(
-            fed_funds_vs_neutral_bps=-50,
+            policy_room_bps=-50,
             fed_balance_sheet_gdp_pct=22,
         ),
     ),
@@ -139,7 +139,7 @@ HISTORICAL_SNAPSHOTS = {
             vix_term_structure=1.03,
         ),
         policy=PolicyIndicators(
-            fed_funds_vs_neutral_bps=0,
+            policy_room_bps=0,
             fed_balance_sheet_gdp_pct=18,
         ),
     ),
@@ -163,7 +163,7 @@ HISTORICAL_SNAPSHOTS = {
             vix_term_structure=0.70,  # Deep inversion
         ),
         policy=PolicyIndicators(
-            fed_funds_vs_neutral_bps=-150,  # At ELB
+            policy_room_bps=-150,  # At ELB
             fed_balance_sheet_gdp_pct=20,
         ),
     ),
@@ -187,7 +187,7 @@ HISTORICAL_SNAPSHOTS = {
             vix_term_structure=0.97,
         ),
         policy=PolicyIndicators(
-            fed_funds_vs_neutral_bps=-200,
+            policy_room_bps=-200,
             fed_balance_sheet_gdp_pct=35,
         ),
     ),
@@ -211,7 +211,7 @@ HISTORICAL_SNAPSHOTS = {
             vix_term_structure=0.98,
         ),
         policy=PolicyIndicators(
-            fed_funds_vs_neutral_bps=200,
+            policy_room_bps=200,
             fed_balance_sheet_gdp_pct=28,
         ),
     ),

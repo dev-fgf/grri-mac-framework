@@ -64,10 +64,25 @@ VALUATION_THRESHOLDS = {
 }
 
 POSITIONING_THRESHOLDS = {
+    # Basis trade thresholds calibrated from Fed research:
+    # - "Quantifying Treasury Cash-Futures Basis Trades" (Fed, March 2024)
+    #   Found: $260B-$574B in late 2023
+    # - "Recent Developments in Hedge Funds' Treasury Futures" (Fed, Aug 2023)
+    #   Found: Pre-March 2020 was ~$500-600B; end 2024 >$1T
+    # Proxy: CFTC Treasury futures non-commercial short positions
     "basis_trade": {
-        "ample": 300,   # < $300B
-        "thin": 550,    # $300-550B
-        "breach": 750,  # > $550B - crowding risk
+        "ample": 350,   # < $350B - normal conditions
+        "thin": 600,    # $350-600B - elevated
+        "breach": 800,  # > $800B - crowding risk
+    },
+    # Dynamic OI-relative thresholds (preferred over fixed $B)
+    # Adapts automatically as market grows
+    "basis_trade_oi_relative": {
+        "enabled": True,              # Use OI-relative by default
+        "ample_pct": 8,               # < 8% of total Treasury OI
+        "thin_pct": 12,               # 8-12% of OI
+        "breach_pct": 18,             # > 18% of OI - crowding
+        "min_oi_billions": 100,       # Minimum OI for valid calculation
     },
     "spec_net_percentile": {
         # Extreme positioning (either direction) is dangerous
@@ -88,12 +103,20 @@ POSITIONING_THRESHOLDS = {
 
 VOLATILITY_THRESHOLDS = {
     "vix_level": {
-        "ample_low": 14,    # (was 15)
-        "ample_high": 18,   # (was 20)
-        "thin_low": 11,     # (was 12)
-        "thin_high": 28,    # (was 35)
-        "breach_low": 9,    # (was 10)
-        "breach_high": 40,  # (was 50)
+        # Widened ample range per reviewer feedback (12-22 captures post-2017 regime)
+        "ample_low": 12,    # (was 14) - low vol is normal in modern era
+        "ample_high": 22,   # (was 18) - VIX 20-22 not necessarily stressed
+        "thin_low": 10,     # (was 11)
+        "thin_high": 30,    # (was 28)
+        "breach_low": 9,    # unchanged
+        "breach_high": 40,  # unchanged
+    },
+    # VIX persistence factor: penalize extended low-vol periods
+    "vix_persistence": {
+        "lookback_days": 60,        # 60-day rolling window
+        "low_vol_threshold": 15,    # VIX below this is "suppressed"
+        "penalty_per_day": 0.003,   # 0.3% penalty per day below threshold
+        "max_penalty": 0.15,        # Cap at 15% score reduction
     },
     "term_structure": {
         "ample_low": 1.00,   # (unchanged)
@@ -111,10 +134,12 @@ VOLATILITY_THRESHOLDS = {
 }
 
 POLICY_THRESHOLDS = {
-    "fed_funds_vs_neutral": {
-        "ample": 100,   # Within 100 bps of neutral
-        "thin": 200,    # 100-200 bps away
-        "breach": 275,  # > 200 bps - limited room to act
+    # Policy room = distance from ELB (0%) - more room to cut is better
+    # This replaces the r* approach as it uses observable data
+    "policy_room": {
+        "ample": 150,   # > 150 bps from zero - ample room to cut
+        "thin": 50,     # 50-150 bps - limited room
+        "breach": 25,   # < 50 bps - at or near ELB, constrained
     },
     "balance_sheet_gdp": {
         "ample": 24,    # < 24% of GDP
@@ -125,6 +150,13 @@ POLICY_THRESHOLDS = {
         "ample": 50,    # Within 50 bps of 2%
         "thin": 150,    # 50-150 bps
         "breach": 250,  # > 150 bps - inflation concern
+    },
+    # Fiscal space: Debt/GDP ratio - constrains policy flexibility
+    # Based on Reinhart-Rogoff research and IMF fiscal sustainability
+    "fiscal_space_debt_gdp": {
+        "ample": 70,    # < 70% - comfortable fiscal space
+        "thin": 90,     # 70-90% - elevated but manageable
+        "breach": 120,  # > 120% - constrained fiscal capacity
     },
 }
 
@@ -200,6 +232,46 @@ CONTAGION_THRESHOLDS = {
         "thin_high": 0.80,
         "breach_low": 0.15,     # Breach: < 0.15 (fragmented) or > 0.90 (panic)
         "breach_high": 0.90,
+    },
+
+    # Crypto-Equity Correlation (BTC-SPY 60-day rolling)
+    # Captures retail leverage/risk-on contagion channel
+    # High correlation = crypto acting as risk asset, amplifies selloffs
+    "crypto_equity_corr": {
+        "ample": 0.3,           # < 0.3 - crypto decoupled, limited contagion
+        "thin": 0.5,            # 0.3-0.5 - moderate correlation
+        "breach": 0.7,          # > 0.7 - high correlation, contagion risk
+    },
+
+    # G-SIB Proxy: Hybrid approach with regime-specific thresholds
+    # Primary: Financial OAS (FRED BAMLC0A4CBBB)
+    # Fallback: BKX 20-day realized volatility (regime-adaptive)
+    "gsib_proxy": {
+        "use_bkx_volatility": False,  # Toggle for BKX vol fallback
+        # Financial OAS thresholds (regime-specific)
+        "financial_oas": {
+            "pre_2010": {       # Pre-Dodd-Frank/Basel III
+                "ample": 100,
+                "thin": 200,
+                "breach": 350,
+            },
+            "2010_2014": {      # Transition period
+                "ample": 80,
+                "thin": 150,
+                "breach": 280,
+            },
+            "post_2015": {      # Modern regulatory regime
+                "ample": 60,
+                "thin": 120,
+                "breach": 200,
+            },
+        },
+        # BKX volatility thresholds (regime-adaptive fallback)
+        "bkx_volatility": {
+            "ample": 15,        # < 15% annualized vol
+            "thin": 25,         # 15-25%
+            "breach": 40,       # > 40%
+        },
     },
 }
 

@@ -187,6 +187,178 @@ class ETFClient:
 
         return result
 
+    def get_realized_volatility(
+        self,
+        symbol: str = "SPY",
+        lookback_days: int = 30,
+        annualize: bool = True,
+    ) -> float:
+        """
+        Calculate realized volatility from historical returns.
+
+        Args:
+            symbol: Ticker symbol (default SPY for S&P 500)
+            lookback_days: Number of days for rolling window
+            annualize: Whether to annualize (× √252)
+
+        Returns:
+            Realized volatility in percent (e.g., 15.5 for 15.5%)
+        """
+        import math
+
+        # Fetch enough data for the lookback + buffer
+        data = self.get_etf_data(symbol, period="3mo")
+        if data.empty or len(data) < lookback_days:
+            return 0.0
+
+        # Calculate daily returns
+        returns = data["Close"].pct_change().dropna()
+
+        # Get the last N days
+        returns = returns.iloc[-lookback_days:]
+
+        if len(returns) < 5:  # Need minimum data
+            return 0.0
+
+        # Calculate standard deviation
+        std = returns.std()
+
+        if annualize:
+            return std * math.sqrt(252) * 100
+        return std * 100
+
+    def get_rv_iv_gap(
+        self,
+        vix_level: float,
+        lookback_days: int = 30,
+    ) -> float:
+        """
+        Calculate the gap between realized and implied volatility.
+
+        RV-IV gap = abs(RV - VIX) / VIX × 100
+
+        Args:
+            vix_level: Current VIX level (implied volatility)
+            lookback_days: Days for realized vol calculation
+
+        Returns:
+            RV-IV gap as percentage (e.g., 25.0 for 25% gap)
+        """
+        if vix_level <= 0:
+            return 0.0
+
+        rv = self.get_realized_volatility("SPY", lookback_days)
+        if rv <= 0:
+            return 0.0
+
+        gap = abs(rv - vix_level) / vix_level * 100
+        return gap
+
+    def get_cross_currency_basis(
+        self,
+        usd_rate: float,
+        foreign_rates: dict = None,
+        days_to_expiry: int = 90,
+    ) -> dict:
+        """
+        Calculate cross-currency basis for major currency pairs.
+
+        The basis is the deviation from Covered Interest Parity (CIP).
+        A negative basis means USD is expensive to borrow via FX swaps.
+
+        Args:
+            usd_rate: USD overnight rate (SOFR) in percent (e.g., 4.35)
+            foreign_rates: Dict of foreign rates {currency: rate}.
+                          Defaults to current approximate rates.
+            days_to_expiry: Days until futures contract expiry (default 90)
+
+        Returns:
+            Dict with individual bases and weighted composite
+        """
+        # Default foreign rates (approximate current levels)
+        if foreign_rates is None:
+            foreign_rates = {
+                "EUR": 2.90,  # €STR
+                "JPY": 0.25,  # BOJ rate
+                "GBP": 4.50,  # SONIA
+                "CHF": 0.50,  # SARON
+            }
+
+        # Currency pair configs: (spot_symbol, futures_symbol, weight)
+        pairs = {
+            "EUR": ("EURUSD=X", "6E=F", 0.40),
+            "JPY": ("JPYUSD=X", "6J=F", 0.30),
+            "GBP": ("GBPUSD=X", "6B=F", 0.15),
+            "CHF": ("CHFUSD=X", "6S=F", 0.15),
+        }
+
+        results = {}
+        weighted_sum = 0.0
+        total_weight = 0.0
+
+        r_usd = usd_rate / 100
+
+        for ccy, (spot_sym, fut_sym, weight) in pairs.items():
+            try:
+                # Get spot
+                spot_data = self.get_etf_data(spot_sym, period="5d")
+                if spot_data.empty:
+                    continue
+                spot = spot_data["Close"].iloc[-1]
+
+                # Get futures
+                futures_ticker = yf.Ticker(fut_sym)
+                futures_data = futures_ticker.history(period="5d")
+                if futures_data.empty:
+                    continue
+                futures = futures_data["Close"].iloc[-1]
+
+                # Foreign rate
+                r_foreign = foreign_rates.get(ccy, 0) / 100
+
+                # Theoretical forward (CIP)
+                theoretical = spot * (1 + r_usd * days_to_expiry / 360) / \
+                              (1 + r_foreign * days_to_expiry / 360)
+
+                # Basis in bps
+                basis = (futures - theoretical) / spot * (360 / days_to_expiry) * 10000
+
+                results[f"{ccy}_basis_bps"] = round(basis, 1)
+                weighted_sum += basis * weight
+                total_weight += weight
+
+            except Exception as e:
+                print(f"Error calculating {ccy} basis: {e}")
+                continue
+
+        # Weighted composite
+        if total_weight > 0:
+            results["composite_bps"] = round(weighted_sum / total_weight * total_weight, 1)
+        else:
+            results["composite_bps"] = 0.0
+
+        return results
+
+    def get_cross_currency_basis_composite(
+        self,
+        usd_rate: float,
+        foreign_rates: dict = None,
+    ) -> float:
+        """
+        Get weighted composite cross-currency basis.
+
+        Weights: EUR 40%, JPY 30%, GBP 15%, CHF 15%
+
+        Args:
+            usd_rate: USD overnight rate (SOFR)
+            foreign_rates: Optional dict of foreign rates
+
+        Returns:
+            Composite basis in bps (negative = USD expensive)
+        """
+        result = self.get_cross_currency_basis(usd_rate, foreign_rates)
+        return result.get("composite_bps", 0.0)
+
     def clear_cache(self):
         """Clear the data cache."""
         self._cache.clear()

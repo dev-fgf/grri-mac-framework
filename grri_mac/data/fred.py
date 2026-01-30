@@ -307,23 +307,30 @@ class FREDClient:
 
         return value
 
-    def get_fed_funds_vs_neutral(self, date: Optional[datetime] = None, neutral_rate: float = 2.5) -> float:
-        """Get Fed funds rate deviation from neutral in basis points for a specific date."""
+    def get_fed_funds(self, date: Optional[datetime] = None) -> Optional[float]:
+        """Get Fed funds rate for a specific date."""
         if date is None:
             date = datetime.now()
 
         # Try target rate first (available 2008+)
         value = self.get_value_for_date("FED_FUNDS_TARGET", date, lookback_days=10)
         if value is not None:
-            return (value - neutral_rate) * 100
+            return value
 
         # Fallback to effective rate
         value = self.get_value_for_date("FEDFUNDS", date, lookback_days=10)
+        return value
 
-        if value is None:
-            raise ValueError(f"No fed funds data available for date {date}")
+    def get_policy_room(self, date: Optional[datetime] = None) -> Optional[float]:
+        """Get policy room (distance from ELB) in basis points.
 
-        return (value - neutral_rate) * 100
+        Policy room = fed_funds * 100 (distance from 0%).
+        This measures the Fed's operational capacity to cut rates.
+        """
+        fed_funds = self.get_fed_funds(date)
+        if fed_funds is None:
+            return None
+        return fed_funds * 100
 
     def get_fed_balance_sheet_to_gdp(self) -> float:
         """Get Fed balance sheet as percentage of GDP."""

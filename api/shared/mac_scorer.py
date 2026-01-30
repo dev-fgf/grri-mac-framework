@@ -22,7 +22,8 @@ THRESHOLDS = {
         "vix": {"ample_low": 12, "ample_high": 18, "thin_high": 28, "breach_high": 40},
     },
     "policy": {
-        "fed_funds_vs_neutral": {"ample": 25, "thin": 100, "breach": 200},
+        # Policy room = distance from ELB - more room is better
+        "policy_room": {"ample": 150, "thin": 50, "breach": 25},
         "balance_sheet_gdp": {"ample": 20, "thin": 30, "breach": 38},
         "core_pce_vs_target": {"ample": 30, "thin": 80, "breach": 150},
     },
@@ -176,7 +177,11 @@ def score_positioning(indicators: dict) -> tuple[float, str]:
 def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
     """Score positioning pillar and return CFTC metadata for transparency."""
     try:
-        from shared.cftc_client import get_cftc_client
+        # Handle both Azure Functions context and standalone execution
+        try:
+            from shared.cftc_client import get_cftc_client
+        except ImportError:
+            from api.shared.cftc_client import get_cftc_client
         client = get_cftc_client()
 
         # Get detailed positioning indicators
@@ -230,13 +235,18 @@ def score_policy(indicators: dict) -> tuple[float, str]:
     """Score policy pillar from indicators."""
     scores = []
 
-    if "fed_funds_vs_neutral_bps" in indicators:
-        t = THRESHOLDS["policy"]["fed_funds_vs_neutral"]
-        scores.append(score_indicator_simple(
-            abs(indicators["fed_funds_vs_neutral_bps"]),
-            t["ample"], t["thin"], t["breach"],
-            lower_is_better=True,
-        ))
+    if "policy_room_bps" in indicators:
+        t = THRESHOLDS["policy"]["policy_room"]
+        room = indicators["policy_room_bps"]
+        # Higher is better (more room to cut)
+        if room >= t["ample"]:
+            scores.append(1.0)
+        elif room >= t["thin"]:
+            scores.append(0.5 + 0.5 * (room - t["thin"]) / (t["ample"] - t["thin"]))
+        elif room >= t["breach"]:
+            scores.append(0.5 * (room - t["breach"]) / (t["thin"] - t["breach"]))
+        else:
+            scores.append(0.0)
 
     if "fed_balance_sheet_gdp_pct" in indicators:
         t = THRESHOLDS["policy"]["balance_sheet_gdp"]

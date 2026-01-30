@@ -38,7 +38,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "rv_iv_gap": {"ample": 3, "thin": 8, "breach": 15}
         },
         "policy": {
-            "fed_funds_vs_neutral": {"ample": 25, "thin": 100, "breach": 200},
+            "policy_room": {"ample": 150, "thin": 50, "breach": 25},
             "balance_sheet_gdp": {"ample": 20, "thin": 30, "breach": 38},
             "core_pce_vs_target": {"ample": 30, "thin": 80, "breach": 150}
         }

@@ -141,10 +141,9 @@ class FREDClient:
 
         indicators = {}
 
-        # Fed funds vs neutral (assuming 2.5% neutral)
+        # Policy room = distance from ELB (fed funds * 100)
         if fed_funds is not None:
-            neutral_rate = 2.5
-            indicators["fed_funds_vs_neutral_bps"] = (fed_funds - neutral_rate) * 100
+            indicators["policy_room_bps"] = fed_funds * 100
 
         # Fed balance sheet as % of GDP
         if fed_assets is not None and gdp is not None:
@@ -234,10 +233,10 @@ class FREDClient:
         if baa_spread is not None:
             indicators["hy_oas_bps"] = baa_spread * 100
 
-        # Policy
+        # Policy - distance from ELB
         fed_funds = self.get_value_at_date(FRED_SERIES["FED_FUNDS"], target_date)
         if fed_funds is not None:
-            indicators["fed_funds_vs_neutral_bps"] = (fed_funds - 2.5) * 100
+            indicators["policy_room_bps"] = fed_funds * 100
 
         # Volatility
         vix = self.get_value_at_date(FRED_SERIES["VIX"], target_date)
@@ -363,9 +362,9 @@ class FREDClient:
         if baa_spread is not None:
             indicators["hy_oas_bps"] = baa_spread * 100
 
-        # Policy
+        # Policy - distance from ELB
         if fed_funds is not None:
-            indicators["fed_funds_vs_neutral_bps"] = (fed_funds - 2.5) * 100
+            indicators["policy_room_bps"] = fed_funds * 100
 
         # Volatility
         if vix is not None:

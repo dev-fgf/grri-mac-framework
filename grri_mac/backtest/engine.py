@@ -102,7 +102,7 @@ class BacktestEngine:
         )
 
         policy_ind = PolicyIndicators(
-            fed_funds_vs_neutral_bps=indicators.get("fed_funds_vs_neutral_bps"),
+            policy_room_bps=indicators.get("policy_room_bps"),
             fed_balance_sheet_gdp_pct=indicators.get("fed_balance_sheet_gdp_pct"),
             core_pce_vs_target_bps=indicators.get("core_pce_vs_target_bps"),
         )

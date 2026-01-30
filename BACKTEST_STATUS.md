@@ -4,18 +4,18 @@
 
 The MAC framework has been calibrated and validated against 14 major crisis events spanning 27 years (1998-2025), now including the fully integrated **International Contagion pillar**.
 
-### Calibration Results (6-Pillar Framework)
+### Calibration Results (6-Pillar Framework with All Real Data)
 
 | Metric | Value |
 |--------|-------|
 | **MAC Range Accuracy** | **100.0%** (14/14) |
-| **Breach Detection Accuracy** | **100.0%** |
+| **Breach Detection Accuracy** | **71.4%** (10/14) |
 | **Hedge Prediction Accuracy** | **78.6%** (11/14) |
 | Number of Pillars | 6 (including Contagion) |
 | Calibration Factor | 0.78 |
 | Scenarios Tested | 14 |
-| Scenarios Passed | 11 |
 | Time Span | 1998-2025 (27 years) |
+| Data Sources | 100% Real (FRED, CFTC COT, yfinance) |
 
 ### Calibration Factor Robustness Analysis
 
@@ -78,26 +78,26 @@ The contagion pillar correctly identified global systemic events:
 | COVID-19 2020 | **0.100** | BREACH | EM flows -5%, Corr 0.92 |
 | Repo Spike 2019 | **1.000** | AMPLE | US-technical, no global spillover |
 
-### Validated Scenarios (6-Pillar)
+### Validated Scenarios (6-Pillar with Real Data)
 
-| Scenario | Date | MAC Score | Breaches | Hedge |
-|----------|------|-----------|----------|-------|
+| Scenario | Date | MAC Score | Expected Range | Breaches | Hedge |
+|----------|------|-----------|----------------|----------|-------|
 | **Pre-GFC Era** |
-| LTCM Crisis | 1998-09-23 | 0.313 | liq, pos, vol | Worked |
-| Dot-com Peak | 2000-03-10 | 0.527 | liq | Worked |
-| 9/11 Attacks | 2001-09-17 | 0.426 | liq, vol | Worked |
-| Dot-com Bottom | 2002-10-09 | 0.333 | liq, vol | Worked |
-| Bear Stearns | 2008-03-16 | 0.415 | liq, vol | Worked |
-| Lehman Brothers | 2008-09-15 | 0.141 | liq, val, pos, vol, **cont** | Worked |
-| Flash Crash | 2010-05-06 | 0.453 | vol | Worked |
-| US Downgrade | 2011-08-08 | 0.377 | vol, **cont** | Worked |
+| LTCM Crisis | 1998-09-23 | 0.346 | 0.20-0.40 | liq, pos, vol | Worked |
+| Dot-com Peak | 2000-03-10 | 0.604 | 0.55-0.70 | (none) | Worked |
+| 9/11 Attacks | 2001-09-17 | 0.426 | 0.25-0.45 | liq, vol | Worked |
+| Dot-com Bottom | 2002-10-09 | 0.349 | 0.20-0.40 | liq, vol | Worked |
+| Bear Stearns | 2008-03-16 | 0.420 | 0.30-0.50 | liq, vol | Worked |
+| Lehman Brothers | 2008-09-15 | 0.212 | 0.15-0.30 | liq, pos, vol, **cont** | Worked |
+| Flash Crash | 2010-05-06 | 0.446 | 0.40-0.60 | vol | Worked |
+| US Downgrade | 2011-08-08 | 0.370 | 0.30-0.50 | vol, **cont** | Worked |
 | **Post-GFC Era** |
-| Volmageddon | 2018-02-05 | 0.477 | pos, vol | Worked |
-| Repo Spike | 2019-09-17 | 0.630 | liq | Worked |
-| COVID-19 | 2020-03-16 | 0.146 | liq, val, pos, vol, **cont** | **FAILED** |
-| Russia-Ukraine | 2022-02-24 | 0.518 | (none) | Worked |
-| SVB Crisis | 2023-03-10 | 0.423 | liq | Worked |
-| April Tariff | 2025-04-02 | 0.435 | pos | **FAILED** |
+| Volmageddon | 2018-02-05 | 0.475 | 0.35-0.55 | pos, vol | Worked |
+| Repo Spike | 2019-09-17 | 0.634 | 0.50-0.70 | liq | Worked |
+| COVID-19 | 2020-03-16 | 0.239 | 0.10-0.25 | liq, pos, vol, **cont** | **FAILED** |
+| Russia-Ukraine | 2022-02-24 | 0.532 | 0.50-0.70 | policy | Worked |
+| SVB Crisis | 2023-03-10 | 0.569 | 0.50-0.65 | (none) | Worked |
+| April Tariff | 2025-04-02 | 0.536 | 0.45-0.60 | pos | **FAILED** |
 
 ### Key Insights Validated
 
@@ -113,20 +113,23 @@ The contagion pillar correctly identified global systemic events:
 - US-specific (Repo Spike): Contagion AMPLE (1.000)
 - This distinction is critical for understanding spillover risk
 
-### Data Sources
+### Data Sources (All Real Data)
 
-All data sources are **free** with no subscription fees required:
+All indicators now use **real data** from free public sources - no estimated values remain:
 
-| Pillar | Source | Package | Coverage |
-|--------|--------|---------|----------|
-| Liquidity | FRED | `fredapi` | SOFR 2018+, TED 1986-2022 |
-| Valuation | FRED | `fredapi` | Credit spreads Dec 1996+ |
-| Positioning | CFTC COT | `cot-reports` | Treasury futures 1986+ |
-| Volatility | FRED/CBOE | `fredapi` | VIX 1990+ |
-| Policy | FRED | `fredapi` | Fed funds 1954+ |
-| Contagion | FRED + yfinance | `fredapi`, `yfinance` | See table above |
+| Pillar | Source | Package | Key Indicators |
+|--------|--------|---------|----------------|
+| Liquidity | FRED, yfinance | `fredapi`, `yfinance` | SOFR-IORB spread, CP-Treasury spread, cross-currency basis (CIP-based) |
+| Valuation | FRED | `fredapi` | Term premium (10Y-2Y), IG OAS, HY OAS |
+| Positioning | CFTC COT | `cot-reports` | Treasury spec net percentile, basis trade size proxy |
+| Volatility | FRED, yfinance | `fredapi`, `yfinance` | VIX level, VIX term structure, RV-IV gap |
+| Policy | FRED | `fredapi` | Policy room (distance from ELB), balance sheet/GDP, core PCE |
+| Contagion | FRED, yfinance | `fredapi`, `yfinance` | EM flows, G-SIB proxy, DXY change, EMBI spread, global equity corr |
 
-**Note:** Free contagion sources provide complete coverage for 1998-2025 backtest period.
+**Key Formula Changes (v4.3):**
+- **Policy Room**: `policy_room_bps = fed_funds × 100` (distance from Effective Lower Bound) - simpler than r* estimation
+- **Cross-Currency Basis**: CIP deviation weighted composite (EUR 40%, JPY 30%, GBP 15%, CHF 15%) from spot vs futures
+- **RV-IV Gap**: `abs(realized_vol - VIX) / VIX × 100` using 20-day SPY returns annualized vs FRED VIX
 
 ### Running the Backtest
 
@@ -306,4 +309,4 @@ Full validation results documented in:
 ---
 
 *Last Updated: January 2026*
-*Framework Version: 4.2 (6-Pillar + Multi-Country + Robustness + Predictive Analytics)*
+*Framework Version: 4.3 (All Real Data + ELB Policy + CIP Cross-Currency Basis)*
