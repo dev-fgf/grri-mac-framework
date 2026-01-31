@@ -750,6 +750,68 @@ class MACDatabase:
         
         return cached.get("age_seconds", float("inf")) < (max_age_hours * 3600)
 
+    def save_backtest_cache_chunked(self, backtest_data: dict) -> bool:
+        """Save backtest results using chunked storage pattern.
+        
+        Stores summary in CACHE/summary and time_series in TIMESERIES/chunk_* partitions.
+        Uses 100 points per chunk to stay under Azure Table 64KB entity limit.
+        
+        Args:
+            backtest_data: Full backtest response dict with time_series
+            
+        Returns:
+            True if save succeeded, False otherwise
+        """
+        table = self._get_backtest_cache_table()
+        if not table:
+            return False
+            
+        try:
+            # Extract time series for chunked storage
+            time_series = backtest_data.pop("time_series", [])
+            
+            # 1. Save summary (without time_series)
+            summary_entity = {
+                "PartitionKey": "CACHE",
+                "RowKey": "summary",
+                "response_json": json.dumps(backtest_data),
+                "timestamp": datetime.utcnow().isoformat(),
+                "data_points": len(time_series),
+                "chunks": (len(time_series) + 99) // 100  # Ceiling division
+            }
+            table.upsert_entity(summary_entity)
+            
+            # 2. Delete old chunks first
+            old_chunks = list(table.query_entities("PartitionKey eq 'TIMESERIES'"))
+            for chunk in old_chunks:
+                table.delete_entity(chunk["PartitionKey"], chunk["RowKey"])
+            
+            # 3. Save new chunks (100 points each)
+            chunk_size = 100
+            for i in range(0, len(time_series), chunk_size):
+                chunk_data = time_series[i:i + chunk_size]
+                chunk_index = i // chunk_size
+                
+                chunk_entity = {
+                    "PartitionKey": "TIMESERIES",
+                    "RowKey": f"chunk_{chunk_index:04d}",
+                    "chunk_index": chunk_index,
+                    "data_json": json.dumps(chunk_data),
+                    "points": len(chunk_data),
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+                table.upsert_entity(chunk_entity)
+            
+            # Restore time_series to original dict
+            backtest_data["time_series"] = time_series
+            
+            logger.info(f"Saved backtest cache: {len(time_series)} points in {(len(time_series) + 99) // 100} chunks")
+            return True
+            
+        except Exception as e:
+            logger.exception(f"Failed to save chunked backtest cache: {e}")
+            return False
+
     def get_backtest_cache_chunked(self) -> Optional[dict]:
         """Get cached backtest results stored in chunked format.
         

@@ -65,5 +65,30 @@ jobs:
             exit 1
           fi
 
-      # Note: Backtest data is pre-cached in Azure Table Storage
-      # No daily refresh needed - data spans 2006-2024 and is static
+      - name: Update backtest cache
+        run: |
+          echo "=== Updating backtest cache ==="
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/backtest/update")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response:"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✓ Backtest cache updated"
+            
+            date_added=$(echo "$body" | jq -r '.date_added // "N/A"')
+            mac_score=$(echo "$body" | jq -r '.mac_score // "N/A"')
+            total_points=$(echo "$body" | jq -r '.total_points // "N/A"')
+            elapsed=$(echo "$body" | jq -r '.elapsed_seconds // "N/A"')
+
+            echo "Date Added: $date_added"
+            echo "MAC Score: $mac_score"  
+            echo "Total Points: $total_points"
+            echo "Elapsed: ${elapsed}s"
+          else
+            echo "⚠ Backtest update returned status $http_code"
+            echo "This is non-fatal - backtest history still has cached data"
+          fi
