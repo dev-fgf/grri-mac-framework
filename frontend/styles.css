@@ -308,6 +308,33 @@ body {
     border-radius: var(--radius-sm);
 }
 
+.data-frequency {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    background: var(--bg-secondary);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid var(--info);
+}
+
+.frequency-icon {
+    font-size: 0.9rem;
+}
+
+.update-badge {
+    font-size: 0.7rem;
+    color: var(--info);
+    background: rgba(6, 182, 212, 0.15);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
 /* Historical Chart */
 .history-card {
     margin-top: var(--space-md);

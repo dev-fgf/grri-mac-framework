@@ -1,9 +1,9 @@
-name: Daily MAC Refresh
+name: Weekly MAC Refresh
 
 on:
   schedule:
-    # Run at 6:00 AM UTC every day (after US markets close)
-    - cron: '0 6 * * *'
+    # Run at 6:00 AM UTC every Saturday (after CFTC data release on Friday)
+    - cron: '0 6 * * 6'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
