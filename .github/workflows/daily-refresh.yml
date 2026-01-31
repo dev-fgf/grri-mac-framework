@@ -64,29 +64,6 @@ jobs:
             echo "$body"
             exit 1
           fi
-      - name: Refresh backtest cache
-        run: |
-          echo "=== Refreshing backtest cache ==="
-          echo "This may take a few minutes as it computes historical data..."
-          
-          # Use longer timeout for backtest (it fetches ~20 years of data)
-          response=$(curl -s -w "\n%{http_code}" -X POST --max-time 300 "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/refresh/backtest")
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
 
-          echo "HTTP Status: $http_code"
-          
-          if [ "$http_code" -eq 200 ]; then
-            echo "✓ Backtest cache refresh completed"
-            
-            data_points=$(echo "$body" | jq -r '.data_points // "N/A"')
-            crises=$(echo "$body" | jq -r '.crises_analyzed // "N/A"')
-            accuracy=$(echo "$body" | jq -r '.prediction_accuracy // "N/A"')
-            
-            echo "Data Points: $data_points"
-            echo "Crises Analyzed: $crises"
-            echo "Prediction Accuracy: $accuracy"
-          else
-            echo "⚠ Backtest refresh failed (non-critical)"
-            echo "$body"
-          fi
+      # Note: Backtest data is pre-cached in Azure Table Storage
+      # No daily refresh needed - data spans 2006-2024 and is static
