@@ -1,5 +1,5 @@
 {
-  "analysis_date": "2026-01-31T19:21:15.615900",
+  "analysis_date": "2026-01-31T19:31:21.816452",
   "market_context": {
     "market_size": "$1.7 trillion (2024 estimate)",
     "growth_rate": "~400% since 2010",
@@ -34,13 +34,16 @@
     "integration_with_mac": "\n        Private Credit score can be integrated as a 7th pillar or as a\n        sub-component of the Credit pillar. Recommended weight: 10-15%\n        of total MAC score when data is available.\n        \n        Key insight: Private credit stress typically manifests 3-6 months\n        BEFORE public market stress because:\n        1. Private credit borrowers are weaker credits\n        2. Refinancing wall hits them first\n        3. Sponsors pull support before public distress\n        "
   },
   "current_state": {
-    "composite_score": 0.71,
+    "composite_score": 0.6799999999999999,
     "stress_level": "benign",
     "sloos_score": 0.5,
     "bdc_score": 0.8,
     "leveraged_loan_score": 0.8,
-    "pe_firm_score": 0.8,
-    "warnings": []
+    "pe_firm_score": 0.6,
+    "warnings": [
+      "WARNING: FSK at -37.3% discount (possible distress)",
+      "WARNING: PSEC at -57.0% discount (possible distress)"
+    ]
   },
   "stress_scenario": {
     "composite_score": 0.315,

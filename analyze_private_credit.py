@@ -7,10 +7,12 @@ in opaque structures where traditional indicators miss warning signs.
 
 This script:
 1. Fetches SLOOS data from FRED (lending standards)
-2. Simulates BDC and market data (would need real API)
+2. Fetches LIVE BDC/ETF/PE data from Yahoo Finance
 3. Shows how stress signals propagate
 
 Run: python analyze_private_credit.py
+
+Requirements: pip install yfinance requests
 """
 
 import sys
@@ -33,6 +35,18 @@ from grri_mac.pillars.private_credit import (
     get_bdc_tickers,
     get_pe_firm_tickers,
 )
+
+# Try to import Yahoo Finance client
+try:
+    from grri_mac.data.yahoo_client import (
+        YahooFinanceClient,
+        format_bdc_report,
+        calculate_weighted_bdc_discount,
+    )
+    YAHOO_AVAILABLE = True
+except ImportError:
+    YAHOO_AVAILABLE = False
+    print("Note: yfinance not installed. Using sample data.")
 
 
 def fetch_sloos_from_fred() -> SLOOSData:
@@ -78,47 +92,37 @@ def fetch_sloos_from_fred() -> SLOOSData:
 
 def create_sample_bdc_data() -> BDCData:
     """
-    Create sample BDC data.
-    
-    In production, this would fetch from a market data API.
-    Current values would represent hypothetical current state.
+    Create sample BDC data (fallback if Yahoo Finance unavailable).
     """
-    # Example: Normal conditions
-    # BDCs typically trade at slight discounts (-2% to +5%)
-    
-    # Stress scenario would show deeper discounts
-    # (these are illustrative - would need real API)
     return BDCData(
-        arcc_discount=-3.5,   # Ares Capital: 3.5% discount
-        main_discount=2.1,    # Main Street: 2.1% premium
-        fsk_discount=-8.2,    # FS KKR: 8.2% discount (stress signal!)
-        psec_discount=-12.5,  # Prospect: 12.5% discount (elevated risk)
-        gbdc_discount=-1.8,   # Golub: 1.8% discount
+        arcc_discount=-3.5,
+        main_discount=2.1,
+        fsk_discount=-8.2,
+        psec_discount=-12.5,
+        gbdc_discount=-1.8,
         observation_date=datetime.now(),
     )
 
 
 def create_sample_leveraged_loan_data() -> LeveragedLoanData:
     """
-    Create sample leveraged loan ETF data.
-    
-    BKLN and SRLN are liquid proxies for leveraged loan market health.
+    Create sample leveraged loan ETF data (fallback).
     """
     return LeveragedLoanData(
-        bkln_price_change_30d=-1.2,   # -1.2% in last 30 days (normal)
-        srln_price_change_30d=-0.8,   # -0.8% (normal)
-        clo_aaa_spread=120,           # bps over SOFR
-        clo_bbb_spread=450,           # bps over SOFR
+        bkln_price_change_30d=-1.2,
+        srln_price_change_30d=-0.8,
+        clo_aaa_spread=120,
+        clo_bbb_spread=450,
         observation_date=datetime.now(),
     )
 
 
 def create_sample_pe_firm_data() -> PEFirmData:
     """
-    Create sample PE firm stock data.
+    Create sample PE firm stock data (fallback).
     """
     return PEFirmData(
-        kkr_change_30d=-2.5,    # KKR down 2.5%
+        kkr_change_30d=-2.5,
         bx_change_30d=-3.1,     # Blackstone down 3.1%
         apo_change_30d=-4.2,    # Apollo down 4.2%
         cg_change_30d=-1.8,     # Carlyle down 1.8%
@@ -238,18 +242,93 @@ def main():
         )
     print()
     
+    # Fetch LIVE market data from Yahoo Finance
+    print("6b. LIVE MARKET DATA (Yahoo Finance)")
+    print("-" * 40)
+    
+    bdc_data = None
+    ll_data = None
+    pe_data = None
+    
+    if YAHOO_AVAILABLE:
+        try:
+            print("Fetching BDC, ETF, and PE firm data...")
+            client = YahooFinanceClient()
+            
+            # Get BDC data
+            bdc_quotes = client.get_bdc_data()
+            if bdc_quotes:
+                print("\n" + format_bdc_report(bdc_quotes))
+                
+                # Convert to our BDCData format
+                bdc_data = BDCData(
+                    arcc_discount=bdc_quotes.get("ARCC", {}).discount_premium if "ARCC" in bdc_quotes else None,
+                    main_discount=bdc_quotes.get("MAIN", {}).discount_premium if "MAIN" in bdc_quotes else None,
+                    fsk_discount=bdc_quotes.get("FSK", {}).discount_premium if "FSK" in bdc_quotes else None,
+                    psec_discount=bdc_quotes.get("PSEC", {}).discount_premium if "PSEC" in bdc_quotes else None,
+                    gbdc_discount=bdc_quotes.get("GBDC", {}).discount_premium if "GBDC" in bdc_quotes else None,
+                    observation_date=datetime.now(),
+                )
+            
+            # Get ETF data
+            etf_quotes = client.get_leveraged_loan_etf_data()
+            if etf_quotes:
+                print("\nLeveraged Loan ETFs:")
+                for ticker, quote in etf_quotes.items():
+                    change_str = f"{quote.change_30d_pct:+.1f}%" if quote.change_30d_pct else "N/A"
+                    print(f"  {ticker}: ${quote.price:.2f} | 30d: {change_str}")
+                
+                ll_data = LeveragedLoanData(
+                    bkln_price_change_30d=etf_quotes.get("BKLN", {}).change_30d_pct if "BKLN" in etf_quotes else None,
+                    srln_price_change_30d=etf_quotes.get("SRLN", {}).change_30d_pct if "SRLN" in etf_quotes else None,
+                    observation_date=datetime.now(),
+                )
+            
+            # Get PE firm data
+            pe_quotes = client.get_pe_firm_data()
+            if pe_quotes:
+                print("\nPE Firm Stocks:")
+                for ticker, quote in pe_quotes.items():
+                    change_str = f"{quote.change_30d_pct:+.1f}%" if quote.change_30d_pct else "N/A"
+                    print(f"  {ticker}: ${quote.price:.2f} | 30d: {change_str}")
+                
+                pe_data = PEFirmData(
+                    kkr_change_30d=pe_quotes.get("KKR", {}).change_30d_pct if "KKR" in pe_quotes else None,
+                    bx_change_30d=pe_quotes.get("BX", {}).change_30d_pct if "BX" in pe_quotes else None,
+                    apo_change_30d=pe_quotes.get("APO", {}).change_30d_pct if "APO" in pe_quotes else None,
+                    cg_change_30d=pe_quotes.get("CG", {}).change_30d_pct if "CG" in pe_quotes else None,
+                    observation_date=datetime.now(),
+                )
+                
+        except Exception as e:
+            print(f"  Error fetching Yahoo Finance data: {e}")
+            print("  Using sample data instead.")
+    else:
+        print("  yfinance not installed. Run: pip install yfinance")
+        print("  Using sample data instead.")
+    
+    # Use fallbacks if needed
+    if bdc_data is None:
+        bdc_data = create_sample_bdc_data()
+    if ll_data is None:
+        ll_data = create_sample_leveraged_loan_data()
+    if pe_data is None:
+        pe_data = create_sample_pe_firm_data()
+    
+    print()
+    
     # Calculate current state score
     print("7. CURRENT STATE ANALYSIS")
     print("-" * 40)
     
     pillar = PrivateCreditPillar()
     
-    # Use real SLOOS + sample market data
+    # Use real SLOOS + real or sample market data
     current_indicators = PrivateCreditIndicators(
         sloos=sloos,
-        bdc=create_sample_bdc_data(),
-        leveraged_loans=create_sample_leveraged_loan_data(),
-        pe_firms=create_sample_pe_firm_data(),
+        bdc=bdc_data,
+        leveraged_loans=ll_data,
+        pe_firms=pe_data,
     )
     
     scores = pillar.calculate_scores(current_indicators)
