@@ -142,6 +142,9 @@ function updateMACDisplay(data) {
     document.getElementById('macMultiplier').textContent = `${data.multiplier.toFixed(2)}x`;
     document.getElementById('macTier').textContent = data.multiplier_tier;
 
+    // Update momentum indicator (calculate from backtest history if available)
+    updateMomentumIndicator(data.mac_score);
+
     // Update pillars (as depletion)
     updatePillarGrid(data.pillar_scores);
     updatePillarRadar(data.pillar_scores);
@@ -154,6 +157,57 @@ function updateMACDisplay(data) {
 
     // Update data status banner
     updateDataStatus(data);
+}
+
+function updateMomentumIndicator(currentMAC) {
+    const trendArrow = document.getElementById('trendArrow');
+    const trendValue = document.getElementById('trendValue');
+    
+    if (!trendArrow || !trendValue) return;
+    
+    // Use backtest data if available
+    if (backtestData && backtestData.time_series && backtestData.time_series.length > 4) {
+        const series = backtestData.time_series;
+        const latest = series[series.length - 1];
+        const fourWeeksAgo = series[series.length - 5]; // ~4 weeks at weekly data
+        
+        if (latest && fourWeeksAgo) {
+            const momentum = latest.mac_score - fourWeeksAgo.mac_score;
+            const absChange = Math.abs(momentum);
+            
+            // Determine trend direction
+            let trendClass, arrow;
+            if (momentum > 0.03) {
+                trendClass = 'improving';
+                arrow = '↑';
+            } else if (momentum > -0.03) {
+                trendClass = 'stable';
+                arrow = '→';
+            } else if (momentum > -0.08) {
+                trendClass = 'declining';
+                arrow = '↓';
+            } else {
+                trendClass = 'rapidly-declining';
+                arrow = '⬇';
+            }
+            
+            // Update UI
+            trendArrow.textContent = arrow;
+            trendArrow.className = 'trend-arrow ' + trendClass;
+            
+            const sign = momentum > 0 ? '+' : '';
+            trendValue.textContent = `${sign}${momentum.toFixed(3)}`;
+            trendValue.className = 'trend-value ' + (momentum > 0.01 ? 'positive' : (momentum < -0.01 ? 'negative' : 'neutral'));
+            
+            return;
+        }
+    }
+    
+    // Default if no data
+    trendArrow.textContent = '→';
+    trendArrow.className = 'trend-arrow stable';
+    trendValue.textContent = '--';
+    trendValue.className = 'trend-value neutral';
 }
 
 function updateDataStatus(data) {

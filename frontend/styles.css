@@ -335,6 +335,59 @@ body {
     font-weight: 600;
 }
 
+/* Momentum Indicator */
+.momentum-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+}
+
+.momentum-indicator .label {
+    color: var(--text-muted);
+}
+
+.momentum-indicator .trend-arrow {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.momentum-indicator .trend-arrow.improving {
+    color: var(--success);
+}
+
+.momentum-indicator .trend-arrow.stable {
+    color: var(--text-muted);
+}
+
+.momentum-indicator .trend-arrow.declining {
+    color: var(--warning);
+}
+
+.momentum-indicator .trend-arrow.rapidly-declining {
+    color: var(--danger);
+}
+
+.momentum-indicator .trend-value {
+    font-weight: 600;
+}
+
+.momentum-indicator .trend-value.positive {
+    color: var(--success);
+}
+
+.momentum-indicator .trend-value.negative {
+    color: var(--danger);
+}
+
+.momentum-indicator .trend-value.neutral {
+    color: var(--text-muted);
+}
+
 /* Historical Chart */
 .history-card {
     margin-top: var(--space-md);
