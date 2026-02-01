@@ -1,0 +1,96 @@
+name: Weekly MAC Refresh
+
+on:
+  schedule:
+    # Run at 6:00 AM UTC every Saturday (after CFTC data release on Friday)
+    - cron: '0 6 * * 6'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh indicator cache
+        run: |
+          echo "=== Refreshing indicator cache + FRED series ==="
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/refresh")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response:"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
+
+          if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 207 ]; then
+            echo "✓ Indicator cache refresh completed"
+            
+            # Check individual sources
+            fred_status=$(echo "$body" | jq -r '.sources.FRED.status // "unknown"')
+            cftc_status=$(echo "$body" | jq -r '.sources.CFTC.status // "unknown"')
+            fred_series=$(echo "$body" | jq -r '.fred_series_update.series_updated // "N/A"')
+            
+            echo "FRED Status: $fred_status"
+            echo "CFTC Status: $cftc_status"
+            echo "FRED Series Updated: $fred_series"
+          else
+            echo "✗ Refresh failed with status $http_code"
+          fi
+
+      - name: Trigger MAC calculation
+        run: |
+          echo "=== Triggering MAC calculation ==="
+          response=$(curl -s -w "\n%{http_code}" "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/mac/demo")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          
+          if [ "$http_code" -eq 200 ]; then
+            echo "✓ MAC calculation successful"
+            
+            mac_score=$(echo "$body" | jq -r '.mac_score // "N/A"')
+            data_source=$(echo "$body" | jq -r '.data_source // "N/A"')
+            cache_age=$(echo "$body" | jq -r '.cache_age_seconds // "N/A"')
+            db_connected=$(echo "$body" | jq -r '.db_connected // "N/A"')
+
+            echo "MAC Score: $mac_score"
+            echo "Data Source: $data_source"
+            echo "Cache Age (seconds): $cache_age"
+            echo "DB Connected: $db_connected"
+            
+            # Show pillar scores
+            echo "Pillar Scores:"
+            echo "$body" | jq -r '.pillar_scores | to_entries[] | "  \(.key): \(.value.score) (\(.value.status))"'
+          else
+            echo "✗ MAC calculation failed with status $http_code"
+            echo "$body"
+            exit 1
+          fi
+
+      - name: Update backtest cache
+        run: |
+          echo "=== Updating backtest cache + history table ==="
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/backtest/update")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response:"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✓ Backtest cache and history table updated"
+            
+            date_added=$(echo "$body" | jq -r '.date_added // "N/A"')
+            mac_score=$(echo "$body" | jq -r '.mac_score // "N/A"')
+            total_points=$(echo "$body" | jq -r '.total_points // "N/A"')
+            elapsed=$(echo "$body" | jq -r '.elapsed_seconds // "N/A"')
+
+            echo "Date Added: $date_added"
+            echo "MAC Score: $mac_score"  
+            echo "Total Points: $total_points"
+            echo "Elapsed: ${elapsed}s"
+          else
+            echo "⚠ Backtest update returned status $http_code"
+            echo "This is non-fatal - backtest history still has cached data"
+          fi

@@ -383,6 +383,72 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
     return score, get_status(score)
 
 
+def score_private_credit(indicators: dict) -> tuple[float, str]:
+    """Score private credit pillar from lending conditions.
+    
+    Private credit stress is proxied by:
+    - C&I lending standards (SLOOS data - DRTSCILM, DRTSCIS)
+    - HY-IG spread differential (leveraged loan stress)
+    - Credit conditions tightening
+    
+    Higher tightening = more stress = lower score.
+    """
+    scores = []
+    
+    # C&I Lending Standards (net % tightening)
+    # DRTSCILM: Large/mid firms, DRTSCIS: Small firms
+    # Positive = tightening, Negative = easing
+    if "ci_lending_standards" in indicators:
+        tightening = indicators["ci_lending_standards"]
+        # Thresholds: <0 easing (good), 0-20 normal, 20-40 tight, >40 severe
+        if tightening <= 0:
+            scores.append(1.0)
+        elif tightening <= 20:
+            scores.append(0.8 - (tightening / 20) * 0.3)
+        elif tightening <= 40:
+            scores.append(0.5 - ((tightening - 20) / 20) * 0.3)
+        else:
+            scores.append(max(0.0, 0.2 - ((tightening - 40) / 40) * 0.2))
+    
+    # HY spread as leveraged loan proxy
+    if "hy_oas_bps" in indicators:
+        hy_oas = indicators["hy_oas_bps"]
+        # Private credit trades ~100-200bps over syndicated leveraged loans
+        # HY OAS thresholds: <350 normal, 350-500 elevated, >500 stressed
+        if hy_oas <= 300:
+            scores.append(1.0)
+        elif hy_oas <= 400:
+            scores.append(0.75)
+        elif hy_oas <= 500:
+            scores.append(0.5)
+        elif hy_oas <= 650:
+            scores.append(0.25)
+        else:
+            scores.append(0.0)
+    
+    # IG-HY ratio as credit stress indicator
+    if "ig_oas_bps" in indicators and "hy_oas_bps" in indicators:
+        ig_oas = indicators["ig_oas_bps"]
+        hy_oas = indicators["hy_oas_bps"]
+        if ig_oas > 0:
+            ratio = hy_oas / ig_oas
+            # Ratio thresholds: <3 normal, 3-4 elevated, >4 stressed
+            if ratio <= 2.5:
+                scores.append(1.0)
+            elif ratio <= 3.5:
+                scores.append(0.6)
+            elif ratio <= 4.5:
+                scores.append(0.3)
+            else:
+                scores.append(0.0)
+    
+    if not scores:
+        return 0.5, "NO_DATA"
+    
+    score = sum(scores) / len(scores)
+    return score, get_status(score)
+
+
 def get_status(score: float) -> str:
     """Get status label for a score."""
     if score >= 0.8:
@@ -403,6 +469,7 @@ def calculate_mac(indicators: dict) -> dict:
     vol_score, vol_status = score_volatility(indicators)
     pol_score, pol_status = score_policy(indicators)
     con_score, con_status = score_contagion(indicators)
+    pc_score, pc_status = score_private_credit(indicators)
 
     pillar_scores = {
         "liquidity": {"score": round(liq_score, 3), "status": liq_status},
@@ -411,10 +478,13 @@ def calculate_mac(indicators: dict) -> dict:
         "volatility": {"score": round(vol_score, 3), "status": vol_status},
         "policy": {"score": round(pol_score, 3), "status": pol_status},
         "contagion": {"score": round(con_score, 3), "status": con_status},
+        "private_credit": {"score": round(pc_score, 3), "status": pc_status},
     }
 
-    # Calculate composite (equal weighted across 6 pillars)
-    mac_score = (liq_score + val_score + pos_score + vol_score + pol_score + con_score) / 6
+    # Calculate composite (equal weighted across 7 pillars)
+    all_scores = [liq_score, val_score, pos_score, vol_score, 
+                  pol_score, con_score, pc_score]
+    mac_score = sum(all_scores) / 7
 
     # Identify breaches
     breach_flags = [

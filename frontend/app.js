@@ -237,10 +237,10 @@ function updateDataStatus(data) {
         refreshAgo.textContent = `(${getTimeAgo(timestamp)})`;
     }
 
-    // Update indicator count
-    if (data.indicators) {
-        const count = Object.keys(data.indicators).length;
-        indicatorCount.textContent = `${count} indicators`;
+    // Update indicator count - show pillar count
+    if (data.pillar_scores) {
+        const count = Object.keys(data.pillar_scores).length;
+        indicatorCount.textContent = `${count} pillars`;
     } else {
         indicatorCount.textContent = '7 pillars';
     }
