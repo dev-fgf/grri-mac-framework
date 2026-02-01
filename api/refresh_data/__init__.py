@@ -15,13 +15,13 @@ from shared.database import get_database
 FRED_SERIES_TO_CACHE = [
     "VIXCLS",      # VIX (volatility)
     "DGS10",       # 10Y Treasury
-    "DGS2",        # 2Y Treasury  
+    "DGS2",        # 2Y Treasury
     "DTB3",        # 3M Treasury Bill
     "DFF",         # Daily Fed Funds
     "SOFR",        # SOFR rate
     "IORB",        # Interest on Reserve Balances
     "BAMLC0A0CM",  # IG OAS
-    "BAMLH0A0HYM2",# HY OAS
+    "BAMLH0A0HYM2",  # HY OAS
     "AAA",         # Moody's Aaa yield
     "BAA",         # Moody's Baa yield
 ]
@@ -31,7 +31,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     """
     Fetch latest market data from FRED and store in Azure Table.
     
-    This endpoint should be called periodically (e.g., daily via GitHub Actions)
+    This endpoint should be called periodically (e.g., weekly via Actions)
     to keep the indicator cache fresh. The main MAC endpoint then reads from
     the cache instead of fetching live data.
     """
@@ -73,18 +73,23 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         
         if COT_REPORTS_AVAILABLE:
             cftc_client = get_cftc_client()
-            positioning_data = cftc_client.get_positioning_indicators(lookback_weeks=52)
-            
+            positioning_data = cftc_client.get_positioning_indicators(
+                lookback_weeks=52
+            )
+
             if positioning_data:
                 # Convert positioning data to flat indicators
                 cftc_indicators = {}
                 for contract_key, data in positioning_data.items():
-                    cftc_indicators[f"{contract_key}_percentile"] = data.get("percentile")
-                    cftc_indicators[f"{contract_key}_signal"] = data.get("signal")
-                    cftc_indicators[f"{contract_key}_net_position"] = data.get("net_position")
+                    key = contract_key
+                    cftc_indicators[f"{key}_percentile"] = data.get("percentile")
+                    cftc_indicators[f"{key}_signal"] = data.get("signal")
+                    cftc_indicators[f"{key}_net_position"] = data.get("net_position")
                 
                 # Get aggregate score
-                score, status = cftc_client.get_aggregate_positioning_score(lookback_weeks=52)
+                score, status = cftc_client.get_aggregate_positioning_score(
+                    lookback_weeks=52
+                )
                 cftc_indicators["positioning_score"] = score
                 cftc_indicators["positioning_status"] = status
                 
@@ -116,7 +121,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     results["db_connected"] = db.connected
     
     # === Update FRED Series Cache (incremental - last 30 days) ===
-    if db.connected and results["sources"].get("FRED", {}).get("status") == "success":
+    fred_status = results["sources"].get("FRED", {}).get("status")
+    if db.connected and fred_status == "success":
         try:
             series_updated = update_fred_series_cache(client, db)
             results["fred_series_update"] = {
@@ -159,7 +165,7 @@ def update_fred_series_cache(client: FREDClient, db) -> int:
             
             # Fetch recent data from FRED
             observations = client.get_series(
-                series_id, 
+                series_id,
                 start_date=start_date,
                 end_date=end_date,
                 limit=100
