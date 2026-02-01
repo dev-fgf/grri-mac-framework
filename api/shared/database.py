@@ -26,6 +26,7 @@ class MACDatabase:
     BACKTEST_TABLE_NAME = "backtesthistory"
     GRRI_TABLE_NAME = "grridata"
     INDICATORS_TABLE_NAME = "macindicators"  # Raw market data cache
+    FRED_SERIES_TABLE_NAME = "fredseries"  # Raw FRED time series data
 
     def __init__(self):
         self.connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
@@ -456,7 +457,8 @@ class MACDatabase:
 
         try:
             count = 0
-            entities = table.query_entities(select=["PartitionKey"])
+            # Pass empty string for required query_filter parameter
+            entities = table.query_entities(query_filter="", select=["PartitionKey"])
             for _ in entities:
                 count += 1
             return count
@@ -777,7 +779,7 @@ class MACDatabase:
                 "response_json": json.dumps(backtest_data),
                 "timestamp": datetime.utcnow().isoformat(),
                 "data_points": len(time_series),
-                "chunks": (len(time_series) + 99) // 100  # Ceiling division
+                "chunks": (len(time_series) + 49) // 50  # Ceiling division
             }
             table.upsert_entity(summary_entity)
             
@@ -786,8 +788,9 @@ class MACDatabase:
             for chunk in old_chunks:
                 table.delete_entity(chunk["PartitionKey"], chunk["RowKey"])
             
-            # 3. Save new chunks (100 points each)
-            chunk_size = 100
+            # 3. Save new chunks (50 points each to stay under 64KB limit)
+            # Each point has ~500 chars of JSON, 50 points = ~25KB (safe margin)
+            chunk_size = 50
             for i in range(0, len(time_series), chunk_size):
                 chunk_data = time_series[i:i + chunk_size]
                 chunk_index = i // chunk_size
@@ -805,7 +808,7 @@ class MACDatabase:
             # Restore time_series to original dict
             backtest_data["time_series"] = time_series
             
-            logger.info(f"Saved backtest cache: {len(time_series)} points in {(len(time_series) + 99) // 100} chunks")
+            logger.info(f"Saved backtest cache: {len(time_series)} points in {(len(time_series) + 49) // 50} chunks")
             return True
             
         except Exception as e:
@@ -855,6 +858,251 @@ class MACDatabase:
         except Exception as e:
             logger.warning(f"Failed to get chunked backtest cache: {e}")
             return None
+
+    # ==================== FRED SERIES STORAGE ====================
+
+    def _get_fred_series_table(self):
+        """Get or create the FRED series table client."""
+        if not self.connected or not self.connection_string:
+            return None
+
+        try:
+            service_client = TableServiceClient.from_connection_string(
+                self.connection_string
+            )
+            try:
+                service_client.create_table(self.FRED_SERIES_TABLE_NAME)
+                logger.info(f"Created table: {self.FRED_SERIES_TABLE_NAME}")
+            except ResourceExistsError:
+                pass
+            return service_client.get_table_client(self.FRED_SERIES_TABLE_NAME)
+        except Exception as e:
+            logger.error(f"Failed to get FRED series table: {e}")
+            return None
+
+    def save_fred_series(self, series_id: str, data: dict) -> bool:
+        """Save a FRED time series to Azure Table Storage.
+        
+        Uses chunked storage pattern:
+        - PartitionKey: series_id (e.g., "VIXCLS")
+        - RowKey: "metadata" for series info, "chunk_XXXX" for data chunks
+        
+        Data is stored in 1000-point chunks to stay under Azure Table 64KB limit.
+        
+        Args:
+            series_id: FRED series identifier
+            data: Dict with 'dates' list and 'values' list
+            
+        Returns:
+            True if save succeeded
+        """
+        table = self._get_fred_series_table()
+        if not table:
+            return False
+
+        try:
+            dates = data.get('dates', [])
+            values = data.get('values', [])
+            
+            if not dates or not values or len(dates) != len(values):
+                logger.error(f"Invalid data format for {series_id}")
+                return False
+            
+            now = datetime.utcnow()
+            
+            # 1. Delete old data for this series first
+            old_entities = list(table.query_entities(f"PartitionKey eq '{series_id}'"))
+            for entity in old_entities:
+                table.delete_entity(series_id, entity["RowKey"])
+            
+            # 2. Save metadata
+            metadata_entity = {
+                "PartitionKey": series_id,
+                "RowKey": "metadata",
+                "total_points": len(dates),
+                "start_date": dates[0] if dates else "",
+                "end_date": dates[-1] if dates else "",
+                "timestamp": now.isoformat(),
+                "chunks": (len(dates) + 999) // 1000,  # Ceiling division
+            }
+            table.upsert_entity(metadata_entity)
+            
+            # 3. Save data chunks (1000 points each for efficiency)
+            chunk_size = 1000
+            for i in range(0, len(dates), chunk_size):
+                chunk_dates = dates[i:i + chunk_size]
+                chunk_values = values[i:i + chunk_size]
+                chunk_index = i // chunk_size
+                
+                chunk_entity = {
+                    "PartitionKey": series_id,
+                    "RowKey": f"chunk_{chunk_index:04d}",
+                    "chunk_index": chunk_index,
+                    "dates_json": json.dumps(chunk_dates),
+                    "values_json": json.dumps(chunk_values),
+                    "points": len(chunk_dates),
+                    "timestamp": now.isoformat(),
+                }
+                table.upsert_entity(chunk_entity)
+            
+            logger.info(f"Saved FRED series {series_id}: {len(dates)} points in {(len(dates) + 999) // 1000} chunks")
+            return True
+            
+        except Exception as e:
+            logger.exception(f"Failed to save FRED series {series_id}: {e}")
+            return False
+
+    def get_fred_series(self, series_id: str) -> Optional[dict]:
+        """Retrieve a FRED time series from Azure Table Storage.
+        
+        Args:
+            series_id: FRED series identifier
+            
+        Returns:
+            Dict with 'dates', 'values', and 'metadata' or None if not found
+        """
+        table = self._get_fred_series_table()
+        if not table:
+            return None
+
+        try:
+            # 1. Get metadata
+            metadata = table.get_entity(series_id, "metadata")
+            
+            # 2. Get all chunks
+            chunk_entities = list(table.query_entities(
+                f"PartitionKey eq '{series_id}' and RowKey ne 'metadata'"
+            ))
+            
+            if not chunk_entities:
+                return None
+            
+            # Sort by chunk index
+            chunk_entities.sort(key=lambda x: x.get("chunk_index", 0))
+            
+            # Combine chunks
+            dates = []
+            values = []
+            for chunk in chunk_entities:
+                dates.extend(json.loads(chunk.get("dates_json", "[]")))
+                values.extend(json.loads(chunk.get("values_json", "[]")))
+            
+            return {
+                "series_id": series_id,
+                "dates": dates,
+                "values": values,
+                "total_points": metadata.get("total_points"),
+                "start_date": metadata.get("start_date"),
+                "end_date": metadata.get("end_date"),
+                "timestamp": metadata.get("timestamp"),
+            }
+            
+        except Exception as e:
+            logger.warning(f"Failed to get FRED series {series_id}: {e}")
+            return None
+
+    def list_fred_series(self) -> list:
+        """List all available FRED series in storage.
+        
+        Returns:
+            List of dicts with series_id, total_points, start_date, end_date
+        """
+        table = self._get_fred_series_table()
+        if not table:
+            return []
+
+        try:
+            # Query only metadata rows
+            entities = table.query_entities("RowKey eq 'metadata'")
+            
+            results = []
+            for entity in entities:
+                results.append({
+                    "series_id": entity["PartitionKey"],
+                    "total_points": entity.get("total_points", 0),
+                    "start_date": entity.get("start_date", ""),
+                    "end_date": entity.get("end_date", ""),
+                    "timestamp": entity.get("timestamp", ""),
+                })
+            
+            return sorted(results, key=lambda x: x["series_id"])
+            
+        except Exception as e:
+            logger.error(f"Failed to list FRED series: {e}")
+            return []
+
+    def get_fred_series_count(self) -> int:
+        """Get count of stored FRED series."""
+        table = self._get_fred_series_table()
+        if not table:
+            return 0
+
+        try:
+            count = 0
+            entities = table.query_entities("RowKey eq 'metadata'")
+            for _ in entities:
+                count += 1
+            return count
+        except Exception as e:
+            logger.error(f"Failed to count FRED series: {e}")
+            return 0
+
+    # ==================== BACKTEST RESULTS STORAGE ====================
+
+    def save_backtest_results_batch(self, results: list, batch_size: int = 100) -> int:
+        """Save multiple backtest results efficiently.
+        
+        Stores each week's MAC score and pillar breakdown for API retrieval.
+        
+        Args:
+            results: List of dicts with date, mac_score, pillar scores, etc.
+            batch_size: Number to save per batch (for progress reporting)
+            
+        Returns:
+            Count of successfully saved records
+        """
+        table = self._get_backtest_table()
+        if not table:
+            return 0
+
+        saved = 0
+        for result in results:
+            try:
+                date_str = result.get("date", "")
+                if not date_str:
+                    continue
+                
+                # PartitionKey: year for efficient range queries
+                year = date_str[:4]
+                
+                entity = {
+                    "PartitionKey": year,
+                    "RowKey": date_str,
+                    "mac_score": result.get("mac_score"),
+                    "status": result.get("mac_status", result.get("interpretation", "")),
+                    "liquidity": result.get("liquidity", 0),
+                    "valuation": result.get("valuation", 0),
+                    "positioning": result.get("positioning", 0),
+                    "volatility": result.get("volatility", 0),
+                    "policy": result.get("policy", 0),
+                    "contagion": result.get("contagion", 0),
+                    "private_credit": result.get("private_credit", 0),
+                    "crisis_event": result.get("crisis_event", ""),
+                    "data_quality": result.get("data_quality", ""),
+                    "momentum_1w": result.get("momentum_1w"),
+                    "momentum_4w": result.get("momentum_4w"),
+                    "trend_direction": result.get("trend_direction", ""),
+                    "is_deteriorating": result.get("is_deteriorating", False),
+                }
+                
+                table.upsert_entity(entity)
+                saved += 1
+                
+            except Exception as e:
+                logger.warning(f"Failed to save backtest point {result.get('date')}: {e}")
+                continue
+        
+        return saved
 
 
 # Singleton instance

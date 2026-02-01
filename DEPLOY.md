@@ -19,6 +19,16 @@ Deploy the GRRI-MAC Framework to Azure Static Web Apps (SWA) with Azure Function
 │  │  - Chart.js (CDN)    │     │  - /api/backtest/run       │   │
 │  └──────────────────────┘     │  - /api/simulate           │   │
 │                               │  - /api/thresholds         │   │
+│                               └─────────────┬──────────────┘   │
+│                                             │                   │
+│                               ┌─────────────▼──────────────┐   │
+│                               │   Azure Table Storage      │   │
+│                               │                            │   │
+│                               │  - fredseries (24 series)  │   │
+│                               │  - backtesthistory (2814)  │   │
+│                               │  - backtestcache           │   │
+│                               │  - machistory              │   │
+│                               │  - grridata                │   │
 │                               └────────────────────────────┘   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -29,6 +39,7 @@ Deploy the GRRI-MAC Framework to Azure Static Web Apps (SWA) with Azure Function
 1. **Azure Account** - [Create free account](https://azure.microsoft.com/free/)
 2. **GitHub Account** - Repository already set up
 3. **Azure CLI** (optional) - For command-line deployment
+4. **Azure Storage Account** - For historical data persistence
 
 ## Deployment Steps
 
@@ -62,6 +73,63 @@ Deploy the GRRI-MAC Framework to Azure Static Web Apps (SWA) with Azure Function
    - Add:
      - `FRED_API_KEY`: Your FRED API key
      - `SEC_USER_AGENT`: Your SEC user agent string
+     - `AZURE_STORAGE_CONNECTION_STRING`: Azure Storage connection string
+
+## Azure Table Storage Setup
+
+The framework uses Azure Table Storage for persistent historical data. This eliminates the need to re-fetch data from FRED APIs during API calls.
+
+### Tables Created
+
+| Table Name | Contents | Records |
+|------------|----------|---------|
+| `fredseries` | Raw FRED time series data | 24 series (1970-2025) |
+| `backtesthistory` | Weekly MAC scores with pillar breakdown | 2,814 records |
+| `backtestcache` | Pre-computed full backtest response | Chunked JSON |
+| `machistory` | Live MAC calculation history | Rolling |
+| `grridata` | GRRI country risk data | By country/quarter |
+| `macindicators` | Cached market indicators | Current values |
+
+### Seeding Historical Data
+
+After creating your Azure Storage Account, seed the historical data:
+
+```bash
+# Set connection string in .env or environment
+export AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=..."
+
+# Run the seeding script (takes ~2-3 minutes)
+python seed_azure_tables.py
+
+# Or do a dry run first
+python seed_azure_tables.py --dry-run
+
+# Verify the data
+python seed_azure_tables.py --verify
+```
+
+The seeding script uploads:
+- **24 FRED series** with 100,000+ total observations (1970-2025)
+- **2,814 weekly backtest results** (1971-2025)
+- **Pre-computed API response** for instant backtest retrieval
+
+### Creating Azure Storage Account
+
+```bash
+# Create storage account
+az storage account create \
+  --name grrimacdata \
+  --resource-group grri-mac-rg \
+  --location eastus2 \
+  --sku Standard_LRS
+
+# Get connection string
+az storage account show-connection-string \
+  --name grrimacdata \
+  --resource-group grri-mac-rg \
+  --query connectionString \
+  --output tsv
+```
 
 ### Option 2: Deploy via Azure CLI
 
@@ -136,11 +204,16 @@ Azure Static Web Apps Free tier includes:
 |----------|--------|-------------|
 | `/api/health` | GET | Health check |
 | `/api/mac/demo` | GET | Demo MAC calculation |
-| `/api/mac/calculate` | POST | Calculate MAC from pillars |
-| `/api/backtest/scenarios` | GET | List backtest scenarios |
+| `/api/mac/history` | GET | Get historical MAC data |
+| `/api/mac/seed` | POST | Seed MAC history data |
 | `/api/backtest/run` | GET/POST | Run full backtest |
+| `/api/backtest/update` | POST | Update backtest with new data |
+| `/api/backtest/seed` | POST | Seed backtest data |
 | `/api/thresholds` | GET | Get calibrated thresholds |
 | `/api/simulate` | POST | Simulate shock impact |
+| `/api/grri` | GET/POST | GRRI calculations |
+| `/api/grri/seed` | POST | Seed GRRI data |
+| `/api/refresh` | POST | Refresh data from sources |
 
 ## Local Development
 

@@ -1,8 +1,21 @@
 # Data Continuity Specification
 
-**Addressing Pre-2018 Indicator Gaps**
+**Addressing Pre-2018 Indicator Gaps - Extended to 1971**
 
-This document specifies fallback series for each indicator that lacks full historical coverage, ensuring the framework can be consistently applied across the 1998-2025 validation period.
+This document specifies fallback series for each indicator that lacks full historical coverage, ensuring the framework can be consistently applied across the **1971-2025 validation period (54 years, 2,814 weekly observations)**.
+
+---
+
+## Overview: Historical Proxy Architecture
+
+The MAC framework uses a tiered proxy system to extend backtesting to 1971:
+
+| Era | Years | Primary Indicators | Proxy Methodology |
+|-----|-------|-------------------|-------------------|
+| **Modern** | 2018-2025 | SOFR, IORB, VIX, BAML OAS | Native FRED series |
+| **Post-GFC** | 2008-2018 | IOER, TED, VIX, BAML OAS | TED spread for funding |
+| **Pre-GFC** | 1990-2008 | TED, VIX/VXO, Moody's spreads | VXO for volatility |
+| **Historical** | 1971-1990 | Fed Funds-T-Bill, Moody's, NASDAQ | Realized vol proxy |
 
 ---
 
@@ -16,6 +29,7 @@ This document specifies fallback series for each indicator that lacks full histo
 | 2018-04 to 2021-07 | SOFR - IOER | — | SOFR, IOER | IOER preceded IORB |
 | 2008-10 to 2018-04 | Fed Funds - IOER | — | DFF, IOER | Pre-SOFR era |
 | 1986 to 2008-10 | TED Spread | — | TEDRATE | LIBOR 3M - T-Bill 3M |
+| **1954 to 1986** | **Fed Funds - T-Bill** | — | **FEDFUNDS, TB3MS** | **Pre-TED era** |
 
 **Implementation:**
 ```python
@@ -26,17 +40,21 @@ def get_liquidity_spread(date):
         return get_sofr() - get_ioer()
     elif date >= datetime(2008, 10, 9):
         return get_fed_funds() - get_ioer()
-    else:
+    elif date >= datetime(1986, 1, 2):
         return get_ted_spread()  # FRED TEDRATE
+    else:
+        # Pre-1986: Fed Funds - T-Bill spread
+        return get_fed_funds() - get_tbill_3m()
 ```
 
 **Threshold Adjustment:**
-TED spread historically runs ~20-30bps higher than SOFR-IORB in normal conditions. Apply scaling:
+Different eras have different "normal" spread levels:
 
 | Indicator | Ample | Thin | Breach |
 |-----------|-------|------|--------|
 | SOFR-IORB (2018+) | < 3 bps | 3-15 bps | > 25 bps |
-| TED Spread (pre-2018) | < 25 bps | 25-50 bps | > 100 bps |
+| TED Spread (1986-2018) | < 25 bps | 25-50 bps | > 100 bps |
+| FF-TBill (1954-1986) | < 50 bps | 50-100 bps | > 200 bps |
 
 ### 1.2 Cross-Currency Basis
 
@@ -120,6 +138,37 @@ This is more defensible than point estimates of basis trade size.
 
 ## 3. Volatility Pillar Fallbacks
 
+### 3.0 VIX Proxy for Pre-1990 (Critical for 1971-1990 Backtesting)
+
+The VIX index (VIXCLS) only begins in 1990. For 1971-1990 coverage, we use **realized volatility from NASDAQ Composite (NASDAQCOM)** as a proxy:
+
+| Period | Primary | Proxy | FRED Code |
+|--------|---------|-------|-----------|
+| 1990+ | VIX (VIXCLS) | — | VIXCLS |
+| 1986-1990 | VXO (VXOCLS) | — | VXOCLS |
+| **1971-1986** | **Realized Vol × VRP** | **NASDAQCOM** | **NASDAQCOM** |
+
+**Implementation:**
+```python
+def get_implied_volatility(date):
+    if date >= datetime(1990, 1, 2):
+        return get_vix()  # FRED VIXCLS
+    elif date >= datetime(1986, 1, 2):
+        return get_vxo()  # FRED VXOCLS (older VIX methodology)
+    else:
+        # Pre-1986: Calculate realized volatility from NASDAQ returns
+        # Apply 1.2x Variance Risk Premium adjustment
+        realized_vol = calculate_realized_vol_from_nasdaq(date, window=20)
+        return realized_vol * 1.2  # VRP adjustment
+```
+
+**Variance Risk Premium (VRP) Adjustment:**
+Academic literature consistently shows implied volatility trades at a premium to realized volatility (the "variance risk premium"). We apply a 1.2x multiplier to realized volatility to approximate implied volatility:
+
+- Bakshi & Kapadia (2003): VRP averages ~15-20% of VIX level
+- Carr & Wu (2009): VRP ~3-5% annualized
+- Our calibration: 1.2x multiplier produces MAC scores consistent with known crisis severity
+
 ### 3.1 VIX Term Structure
 
 | Period | Primary | Fallback |
@@ -136,30 +185,82 @@ term_structure_proxy = 1.0 + (IV - RV) / IV × 0.1
 
 ### 3.2 RV-IV Gap
 
-Fully calculable back to 1990 using:
-- VIX: FRED VIXCLS (1990+)
-- SPY returns: Yahoo Finance (1993+), S&P 500 index returns pre-1993
+Fully calculable back to 1971 using:
+- VIX: FRED VIXCLS (1990+), VXO (1986+), or realized vol proxy (1971+)
+- NASDAQ/S&P returns: FRED NASDAQCOM (1971+)
 
 ---
 
-## 4. Policy Pillar Fallbacks
+## 4. Credit Spread Fallbacks (Pre-1997)
 
-### 4.1 Policy Room (Distance from ELB)
+### 4.1 High-Yield OAS Proxy
 
-**No fallback needed.** Fed funds rate (FRED: DFF) available from 1954.
+The BAML High-Yield OAS index (BAMLH0A0HYM2) only begins December 1996. For earlier periods, we use Moody's corporate bond spreads:
 
-### 4.2 Fed Balance Sheet / GDP
+| Period | Primary | Proxy | FRED Code |
+|--------|---------|-------|-----------|
+| 1997+ | BAMLH0A0HYM2 | — | BAMLH0A0HYM2 |
+| **1919-1996** | **(Baa - Aaa) × 4.5** | **Moody's spreads** | **BAA, AAA** |
+
+**Implementation:**
+```python
+def get_hy_oas(date):
+    if date >= datetime(1996, 12, 31):
+        return get_baml_hy_oas()  # FRED BAMLH0A0HYM2
+    else:
+        # Pre-1997: Use Moody's spread as proxy
+        baa_yield = get_baa_yield()  # FRED BAA
+        aaa_yield = get_aaa_yield()  # FRED AAA
+        moody_spread = baa_yield - aaa_yield  # ~1% historically
+        return moody_spread * 4.5  # Scale to HY OAS equivalent (~4.5%)
+```
+
+**Scaling Factor Rationale:**
+- Moody's Baa-Aaa spread: ~100 bps in normal conditions
+- HY OAS: ~400-500 bps in normal conditions
+- Ratio: ~4.5x (empirically calibrated)
+
+### 4.2 Investment-Grade OAS Proxy
+
+| Period | Primary | Proxy | FRED Code |
+|--------|---------|-------|-----------|
+| 1997+ | BAMLC0A0CM | — | BAMLC0A0CM |
+| **1919-1996** | **Baa - Treasury - 40bps** | **Moody's spread** | **BAA, DGS10** |
+
+**Implementation:**
+```python
+def get_ig_oas(date):
+    if date >= datetime(1996, 12, 31):
+        return get_baml_ig_oas()  # FRED BAMLC0A0CM
+    else:
+        # Pre-1997: Moody's Baa over Treasury, adjusted
+        baa_yield = get_baa_yield()  # FRED BAA
+        treasury_yield = get_treasury_10y()  # FRED DGS10
+        return (baa_yield - treasury_yield) - 0.40  # Adjust for IG vs Baa
+```
+
+---
+
+## 5. Policy Pillar Fallbacks
+
+### 5.1 Policy Room (Distance from ELB)
+
+**No fallback needed.** Fed funds rate (FRED: FEDFUNDS, DFF) available from 1954.
+
+### 5.2 Fed Balance Sheet / GDP
 
 | Period | Source |
 |--------|--------|
 | 2002+ | FRED: WALCL (weekly) / GDP |
 | Pre-2002 | Fed H.4.1 historical releases, less frequent |
 
-For pre-2002 scenarios (LTCM, dot-com), use annual snapshots:
+For pre-2002 scenarios, use annual snapshots:
+- 1971: ~$70B / $1.1T GDP ≈ 6.4%
+- 1974: ~$95B / $1.5T GDP ≈ 6.3%
 - 1998: ~$500B / $9T GDP ≈ 5.5%
 - 2000: ~$600B / $10T GDP ≈ 6%
 
-### 4.3 Core PCE vs Target
+### 5.3 Core PCE vs Target
 
 FRED: PCEPILFE available from 1959. No fallback needed.
 

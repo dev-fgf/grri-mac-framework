@@ -9,10 +9,12 @@ on:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Refresh indicator cache
+      - name: Refresh indicators and FRED series
         run: |
-          echo "=== Refreshing indicator cache ==="
+        run: |
+          echo "=== Refreshing indicator cache + FRED series ==="
           response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/refresh")
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
@@ -27,9 +29,11 @@ jobs:
             # Check individual sources
             fred_status=$(echo "$body" | jq -r '.sources.FRED.status // "unknown"')
             cftc_status=$(echo "$body" | jq -r '.sources.CFTC.status // "unknown"')
+            fred_series=$(echo "$body" | jq -r '.fred_series_update.series_updated // "N/A"')
             
             echo "FRED Status: $fred_status"
             echo "CFTC Status: $cftc_status"
+            echo "FRED Series Updated: $fred_series"
           else
             echo "✗ Refresh failed with status $http_code"
           fi
@@ -67,7 +71,7 @@ jobs:
 
       - name: Update backtest cache
         run: |
-          echo "=== Updating backtest cache ==="
+          echo "=== Updating backtest cache + history table ==="
           response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/backtest/update")
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
@@ -77,7 +81,7 @@ jobs:
           echo "$body" | jq '.' 2>/dev/null || echo "$body"
 
           if [ "$http_code" -eq 200 ]; then
-            echo "✓ Backtest cache updated"
+            echo "✓ Backtest cache and history table updated"
             
             date_added=$(echo "$body" | jq -r '.date_added // "N/A"')
             mac_score=$(echo "$body" | jq -r '.mac_score // "N/A"')

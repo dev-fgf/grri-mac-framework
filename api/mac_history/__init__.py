@@ -40,6 +40,8 @@ def generate_demo_history(days: int) -> list:
     positioning = 0.55
     volatility_score = 0.58
     policy = 0.60
+    contagion = 0.58
+    private_credit = 0.55
 
     for i in range(days, -1, -1):
         date = now - timedelta(days=i)
@@ -67,8 +69,10 @@ def generate_demo_history(days: int) -> list:
         positioning = evolve(positioning, 0.55, 1.2)
         volatility_score = evolve(volatility_score, 0.58, 1.3)
         policy = evolve(policy, 0.60, 0.5)
+        contagion = evolve(contagion, 0.58, 1.0)
+        private_credit = evolve(private_credit, 0.55, 0.8)
 
-        mac = (liquidity + valuation + positioning + volatility_score + policy) / 5
+        mac = (liquidity + valuation + positioning + volatility_score + policy + contagion + private_credit) / 7
 
         data.append({
             "date": date.strftime("%Y-%m-%d"),
@@ -79,6 +83,8 @@ def generate_demo_history(days: int) -> list:
             "positioning": round(positioning, 4),
             "volatility": round(volatility_score, 4),
             "policy": round(policy, 4),
+            "contagion": round(contagion, 4),
+            "private_credit": round(private_credit, 4),
             "is_live": False,
         })
 

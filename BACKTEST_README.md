@@ -1,6 +1,6 @@
 # Running the MAC Framework Backtest
 
-This guide explains how to run the 20-year historical backtest (2004-2024) to generate empirical results for the academic paper.
+This guide explains how to run the **54-year historical backtest (1971-2025)** to generate empirical results for the academic paper.
 
 ## Prerequisites
 
@@ -24,80 +24,152 @@ This guide explains how to run the 20-year historical backtest (2004-2024) to ge
    pip install -r requirements.txt
    ```
 
-## Quick Test (Recommended First Step)
+## Quick Start
 
-Test the backtest runner on a few key dates before running the full 20-year backtest:
+### Validate Cached Data First (Recommended)
+
+Before running a backtest, validate your cached data:
 
 ```bash
-python test_backtest.py
+python run_backtest.py --validate --start 1971-01-01 --end 2025-01-01
 ```
-
-This will test:
-- Pre-GFC period (2007)
-- Lehman Crisis (2008)
-- COVID-19 (2020)
-- SVB Crisis (2023)
-- Recent normal period (2024)
 
 **Expected output:**
 ```
-Testing: 2008-09-15 - Lehman Day (should show extreme stress)
-  MAC Score: 0.152
-  Status: REGIME BREAK - Buffers exhausted, non-linear dynamics likely
-  Pillars:
-    liquidity   : 0.023  (LIBOR-OIS spread at 364 bps!)
-    valuation   : 0.089
-    positioning : 0.150
-    volatility  : 0.034  (VIX at 89)
-    policy      : 0.320
-    contagion   : 0.500  (placeholder)
-  Crisis: Lehman Brothers / Global Financial Crisis Peak
-  Data Quality: fair
+🔍 VALIDATING CACHED DATA INTEGRITY
+
+Cache file: data/fred_cache/fred_series_cache.pkl
+Loaded 24 cached series from disk
+
+Cached series: 24
+---------------------------------------------------------------------------
+SERIES               | DATE RANGE                |    OBS | NULLS | STATUS
+---------------------------------------------------------------------------
+AAA                  | 1970-12-01 to 2025-01-01 |    650 |     0 | ✓ Full coverage
+BAA                  | 1970-12-01 to 2025-01-01 |    650 |     0 | ✓ Full coverage
+VIXCLS               | 1990-01-02 to 2025-01-31 |   9154 |   298 | ◐ Has proxy
+   └─ Proxy: NASDAQCOM realized vol (1971+) with 1.2x VRP
+...
+
+📋 DATA INTEGRITY SUMMARY:
+   Core series (1970+):    9
+   Series with proxies:    6
+   Limited coverage:       9
+
+✅ Cache validated successfully - safe to run backtest
 ```
 
-## Full 20-Year Backtest
-
-Run the complete backtest for the academic paper:
+### Run Full 54-Year Backtest
 
 ```bash
-python run_backtest.py --start 2004-01-01 --end 2024-12-31 --frequency weekly
+python run_backtest.py --start 1971-03-01 --end 2025-01-31 --frequency weekly
 ```
 
-**Options:**
-- `--start DATE`: Start date (default: 2004-01-01)
-- `--end DATE`: End date (default: 2024-12-31)
-- `--frequency FREQ`: daily, weekly, or monthly (default: weekly)
-- `--output FILE`: Output CSV file (default: backtest_results.csv)
-
-**Estimated runtime (with API rate limiting):**
-- Daily (7,300+ data points): ~6-8 hours
-- Weekly (1,040 data points): ~50-60 minutes
-- Monthly (252 data points): ~10-15 minutes
-
-Note: The FRED API has a limit of 120 requests per minute. The backtest includes automatic rate limiting to stay within this quota.
-
-**Example output:**
+**Expected output:**
 ```
-MAC FRAMEWORK 20-YEAR BACKTEST
+MAC FRAMEWORK 54-YEAR BACKTEST
 ======================================================================
-Period: 2004-01-01 to 2024-12-31
+Period: 1971-03-01 to 2025-01-31
 Frequency: weekly
 Output: backtest_results.csv
 ======================================================================
 
-Initializing backtest runner...
-Starting backtest... This may take several minutes.
+Loaded 24 cached series from disk
+No API calls needed - all 21 series already cached
 
-✓ 2004-01-05: MAC=0.72 COMFORTABLE - Markets can absorb moderate shocks
-✓ 2004-01-12: MAC=0.71 COMFORTABLE - Markets can absorb moderate shocks
+✓ 1971-03-01: MAC=0.64 COMFORTABLE - Markets can absorb moderate shocks
+✓ 1971-03-08: MAC=0.66 COMFORTABLE - Markets can absorb moderate shocks
 ...
-✓ 2008-09-15: MAC=0.15 REGIME BREAK - Buffers exhausted, non-linear dynamics likely
+✓ 1973-10-22: MAC=0.44 STRETCHED - 1973 Oil Crisis / OPEC Embargo
+...
+✓ 2020-03-16: MAC=0.24 STRETCHED - COVID-19 Market Crash
 ...
 
 ======================================================================
 BACKTEST COMPLETE
 ======================================================================
-Total data points: 1045
+Total data points: 2,814
+Date range: 1971-03-01 to 2025-01-31
+
+VALIDATION METRICS:
+----------------------------------------------------------------------
+Total points analyzed:     2,814
+Crisis points:             312
+Non-crisis points:         2,502
+
+Average MAC (overall):     0.556
+Average MAC (crisis):      0.412
+Average MAC (non-crisis):  0.574
+
+Crises evaluated:          27
+Crises with warning:       22
+True positive rate:        81.5%
+
+Min MAC score:             0.26
+Max MAC score:             0.79
+----------------------------------------------------------------------
+```
+
+## Command Line Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--start DATE` | Start date (YYYY-MM-DD) | 2004-01-01 |
+| `--end DATE` | End date (YYYY-MM-DD) | 2024-12-31 |
+| `--frequency` | daily, weekly, or monthly | weekly |
+| `--output FILE` | Output CSV filename | backtest_results.csv |
+| `--validate` | Validate cached data and exit | - |
+| `--fresh` | Clear cache and fetch fresh data | - |
+
+### Data Integrity Options
+
+**`--validate`**: Check cached data without running backtest
+```bash
+python run_backtest.py --validate --start 1971-01-01 --end 2025-01-01
+```
+
+**`--fresh`**: Clear cache and fetch all data fresh from FRED
+```bash
+python run_backtest.py --fresh --start 1971-03-01 --end 2025-01-31
+```
+
+### Specific Period Backtests
+
+```bash
+# 1970s Oil Crisis era
+python run_backtest.py --start 1971-03-01 --end 1975-12-31 --output backtest_1970s.csv
+
+# LTCM Crisis
+python run_backtest.py --start 1998-08-01 --end 1998-11-30 --output backtest_ltcm.csv
+
+# Global Financial Crisis
+python run_backtest.py --start 2007-01-01 --end 2009-12-31 --output backtest_gfc.csv
+
+# COVID-19 period
+python run_backtest.py --start 2020-01-01 --end 2020-06-30 --output backtest_covid.csv
+```
+
+## Historical Proxy Methodology
+
+The framework uses historical proxy series to extend coverage to 1971:
+
+| Modern Series | Historical Proxy | Coverage |
+|---------------|------------------|----------|
+| VIX (1990+) | Realized vol from NASDAQ × 1.2 VRP | 1971+ |
+| HY OAS (1997+) | Moody's (Baa-Aaa) × 4.5 | 1919+ |
+| IG OAS (1997+) | Moody's Baa - Treasury - 40bps | 1919+ |
+| TED Rate (1986+) | Fed Funds - T-Bill | 1954+ |
+| SOFR-IORB (2018+) | TED Spread (scaled) | 1986+ |
+
+## Estimated Runtime
+
+| Frequency | Data Points | Runtime |
+|-----------|-------------|---------|
+| Daily (54 years) | ~14,000 | ~6-8 hours |
+| **Weekly (54 years)** | **~2,800** | **~50-60 min** |
+| Monthly (54 years) | ~650 | ~10-15 min |
+
+*Note: First run fetches data from FRED API (rate limited to 120 requests/min). Subsequent runs use cached data and complete in seconds.*
 Date range: 2004-01-05 to 2024-12-30
 
 VALIDATION METRICS:

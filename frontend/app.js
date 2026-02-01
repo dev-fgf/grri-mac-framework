@@ -115,7 +115,8 @@ async function refreshMAC() {
                 positioning: { score: 0.45, status: "THIN" },
                 volatility: { score: 0.65, status: "THIN" },
                 policy: { score: 0.55, status: "THIN" },
-                contagion: { score: 0.60, status: "THIN" }
+                contagion: { score: 0.60, status: "THIN" },
+                private_credit: { score: 0.52, status: "THIN" }
             },
             breach_flags: [],
             is_demo: true,
@@ -241,7 +242,7 @@ function updateDataStatus(data) {
         const count = Object.keys(data.indicators).length;
         indicatorCount.textContent = `${count} indicators`;
     } else {
-        indicatorCount.textContent = '6 pillars';
+        indicatorCount.textContent = '7 pillars';
     }
 }
 
@@ -708,6 +709,8 @@ function generateDemoHistory(days) {
     let positioning = 0.55;
     let volatility = 0.58;
     let policy = 0.60;
+    let contagion = 0.58;
+    let privateCredit = 0.55;
 
     for (let i = days; i >= 0; i--) {
         const date = new Date(now);
@@ -748,9 +751,17 @@ function generateDemoHistory(days) {
             policy + (Math.random() - 0.5) * (baseVol * 0.6) + (0.60 - policy) * 0.003,
             0.30, 0.80
         );
+        contagion = clamp(
+            contagion + (Math.random() - 0.5) * (baseVol + stressVol) + (0.58 - contagion) * 0.006 - stressBoost * 0.28,
+            0.15, 0.90
+        );
+        privateCredit = clamp(
+            privateCredit + (Math.random() - 0.5) * (baseVol * 0.8 + stressVol) + (0.55 - privateCredit) * 0.004 - stressBoost * 0.22,
+            0.20, 0.85
+        );
 
-        // Calculate MAC as average
-        const mac = (liquidity + valuation + positioning + volatility + policy) / 5;
+        // Calculate MAC as average of 7 pillars
+        const mac = (liquidity + valuation + positioning + volatility + policy + contagion + privateCredit) / 7;
 
         data.push({
             date: date.toISOString().split('T')[0],
@@ -759,7 +770,9 @@ function generateDemoHistory(days) {
             valuation: valuation,
             positioning: positioning,
             volatility: volatility,
-            policy: policy
+            policy: policy,
+            contagion: contagion,
+            private_credit: privateCredit
         });
     }
 
@@ -836,6 +849,22 @@ async function initHistoryChart() {
                 borderWidth: 1.5,
                 tension: 0.3,
                 hidden: true,
+            },
+            {
+                label: 'Contagion Stress',
+                data: historicalData.map(d => 1 - (d.contagion || 0.5)),
+                borderColor: '#ec4899',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
+            },
+            {
+                label: 'Private Credit Stress',
+                data: historicalData.map(d => 1 - (d.private_credit || 0.5)),
+                borderColor: '#6366f1',
+                borderWidth: 1.5,
+                tension: 0.3,
+                hidden: true,
             }
         ]
     };
@@ -903,9 +932,12 @@ function togglePillarLines() {
     btn.textContent = showPillars ? 'Hide Pillars' : 'Show Pillars';
     btn.classList.toggle('active', showPillars);
 
-    // Toggle visibility of pillar datasets (indices 1-5)
-    for (let i = 1; i <= 5; i++) {
-        historyChart.data.datasets[i].hidden = !showPillars;
+    // Toggle visibility of pillar datasets (indices 1-7 for 7 pillars)
+    const numPillars = historyChart.data.datasets.length - 1; // All except MAC
+    for (let i = 1; i <= numPillars; i++) {
+        if (historyChart.data.datasets[i]) {
+            historyChart.data.datasets[i].hidden = !showPillars;
+        }
     }
 
     // Update legend visibility
@@ -944,6 +976,8 @@ async function updateHistoryRange() {
     historyChart.data.datasets[3].data = historicalData.map(d => 1 - d.positioning);
     historyChart.data.datasets[4].data = historicalData.map(d => 1 - d.volatility);
     historyChart.data.datasets[5].data = historicalData.map(d => 1 - d.policy);
+    historyChart.data.datasets[6].data = historicalData.map(d => 1 - (d.contagion || 0.5));
+    historyChart.data.datasets[7].data = historicalData.map(d => 1 - (d.private_credit || 0.5));
 
     historyChart.update();
 }
@@ -954,12 +988,13 @@ async function loadBacktestHistory() {
     const tbody = document.getElementById('backtestTableBody');
 
     loadingEl.style.display = 'block';
-    tbody.innerHTML = '<tr><td colspan="7" class="placeholder">Loading historical FRED data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="placeholder">Loading historical data...</td></tr>';
 
     const interval = document.getElementById('backtestInterval').value;
+    const startDate = document.getElementById('backtestStart')?.value || '2006-01-01';
 
     try {
-        const response = await fetch(`${API_BASE}/backtest/run?start=2006-01-01&interval=${interval}`);
+        const response = await fetch(`${API_BASE}/backtest/run?start=${startDate}&interval=${interval}`);
         if (!response.ok) throw new Error('Failed to load backtest data');
 
         backtestData = await response.json();
@@ -1202,13 +1237,46 @@ function updateBacktestHistoryChart(data) {
 
 function updateBacktestSummary(data) {
     const summary = data.summary || {};
+    const params = data.parameters || {};
     const crisisAnalysis = data.crisis_prediction_analysis || [];
+    const crisisDetection = data.crisis_detection || {};
 
-    document.getElementById('btTotal').textContent = summary.data_points || '--';
+    // Data points and date range
+    document.getElementById('btTotal').textContent = summary.data_points || params.data_points || '--';
+    
+    // Date range
+    const dateRangeEl = document.getElementById('btDateRange');
+    if (dateRangeEl && params.start_date && params.end_date) {
+        const startYear = params.start_date.substring(0, 4);
+        const endYear = params.end_date.substring(0, 4);
+        dateRangeEl.textContent = `${startYear}-${endYear}`;
+    }
+    
+    // Crises detected (from crisis_detection if available)
+    const crisesDetectedEl = document.getElementById('btCrisesDetected');
+    if (crisesDetectedEl) {
+        if (crisisDetection.total_detected !== undefined) {
+            crisesDetectedEl.textContent = `${crisisDetection.total_detected}/${crisisDetection.total_events || 27}`;
+        } else {
+            crisesDetectedEl.textContent = `${crisisAnalysis.length}`;
+        }
+    }
+
+    // Warning/True Positive Rate
+    const warningRateEl = document.getElementById('btWarningRate');
+    if (warningRateEl) {
+        if (crisisDetection.true_positive_rate) {
+            warningRateEl.textContent = crisisDetection.true_positive_rate;
+        } else {
+            warningRateEl.textContent = summary.warning_rate || '--%';
+        }
+    }
+
+    // Average lead time
     document.getElementById('btAvgLead').textContent = summary.average_lead_time_days || '--';
-    document.getElementById('btAvgStretched').textContent = summary.average_days_stretched_before_event || '--';
-    document.getElementById('btWarningRate').textContent = summary.warning_rate || '--%';
-    document.getElementById('btPredictionAcc').textContent = summary.prediction_accuracy || '--%';
+    
+    // Prediction accuracy
+    document.getElementById('btPredictionAcc').textContent = summary.prediction_accuracy || summary.warning_rate || '--%';
 }
 
 function updateCrisisAnalysisTable(data) {

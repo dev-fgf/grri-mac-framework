@@ -2,19 +2,20 @@
 
 **Market Absorption Capacity Analysis for Financial Stress Measurement**
 
-A six-pillar framework for measuring financial market absorption capacity - the system's ability to absorb exogenous shocks without disorderly price adjustments, liquidity disruptions, or contagion cascades.
+A seven-pillar framework for measuring financial market absorption capacity - the system's ability to absorb exogenous shocks without disorderly price adjustments, liquidity disruptions, or contagion cascades.
 
 ## Key Results
 
 | Metric | Value |
 |--------|-------|
-| **MAC Range Accuracy** | 100% (14/14 events) |
-| **Breach Detection** | 100% |
-| **Hedge Prediction** | 78.6% |
-| **Time Span** | 1998-2025 (27 years) |
+| **Time Span** | **1971-2025 (54 years)** |
+| **Weekly Observations** | **2,814** |
+| **Crisis Detection Rate** | **81.5% (22/27 events)** |
+| **Hedge Failure Sensitivity** | **100%** |
+| **MAC Score Range** | **0.26 - 0.79** |
 | **Calibration Factor** | 0.78 |
 
-**Key Insight:** Positioning pillar breach predicts Treasury hedge failure with **100% correlation** in historical sample.
+**Key Insight:** Positioning pillar breach predicts Treasury hedge failure with **100% correlation** in historical sample. Both confirmed hedge failures (COVID-19 March 2020, April 2025 Tariffs) correctly detected.
 
 ## Installation
 
@@ -26,27 +27,31 @@ cd VSC-FGF-MAC-Framework
 # Install dependencies
 pip install -r requirements.txt
 
-# Optional: Set FRED API key for live data
-export FRED_API_KEY=your_key_here
+# Set FRED API key for live data (required)
+export FRED_API_KEY=your_key_here  # Linux/Mac
+$env:FRED_API_KEY="your_key_here"  # Windows PowerShell
 ```
 
 ## Quick Start
 
 ```bash
+# Run 54-year backtest (1971-2025)
+python run_backtest.py --start 1971-03-01 --end 2025-01-31 --frequency weekly
+
+# Validate cached data integrity
+python run_backtest.py --validate
+
+# Clear cache and fetch fresh data
+python run_backtest.py --fresh --start 1971-03-01 --end 2025-01-31
+
+# Run specific crisis period (e.g., 1970s Oil Crisis)
+python run_backtest.py --start 1973-01-01 --end 1975-12-31 --frequency weekly
+
 # Run demo with sample data
 python main.py --demo
-
-# Run historical backtests (14 crisis events)
-python main.py --backtest
-
-# Generate visualization figures
-python main.py --visualize
-
-# Run calibration robustness analysis
-python main.py --robustness
 ```
 
-## The Six Pillars
+## The Seven Pillars
 
 | Pillar | Question | Key Indicators |
 |--------|----------|----------------|
@@ -55,48 +60,18 @@ python main.py --robustness
 | **Positioning** | Is leverage manageable? | Basis trade size, CFTC COT percentile |
 | **Volatility** | Are vol regimes stable? | VIX level, term structure, RV-IV gap |
 | **Policy** | Does Fed have room to cut? | Distance from ELB, balance sheet/GDP |
-| **Contagion** | Are cross-border channels stable? | EM flows, DXY change, EMBI spread, global equity correlation |
+| **Contagion** | Are cross-border channels stable? | EM flows, DXY change, EMBI spread |
+| **Private Credit** | Is stress building in opaque markets? | BDC discounts, SLOOS, leveraged loan ETF |
 
-## Command Line Options
+## Historical Proxy Methodology
 
-### Core Analysis
-```bash
-python main.py --backtest      # Run 14-event historical validation
-python main.py --robustness    # Calibration cross-validation & sensitivity
-python main.py --visualize     # Generate MAC vs VIX charts
-python main.py --demo          # Demo with sample data
-```
+The framework extends backtesting to 1971 using validated proxy series:
 
-### Predictive Analytics (Forward-Looking)
-```bash
-python main.py --monte-carlo        # Regime impact simulations
-python main.py --blind-test         # Real-time simulation (no lookahead)
-python main.py --shock-propagation  # Cascade dynamics analysis
-```
-
-### Data Management
-```bash
-python main.py --import-data   # Import from FRED, CFTC, etc.
-python main.py --db-demo       # Demo with database storage
-python main.py --history       # Show historical data
-```
-
-## Predictive Capabilities
-
-### Monte Carlo Regime Analysis
-
-Same shock has vastly different impact depending on MAC regime:
-
-| Starting Regime | MAC Change | Hedge Fail Prob | Amplification |
-|-----------------|------------|-----------------|---------------|
-| AMPLE (>0.65) | -0.04 | 5% | 1.0x |
-| THIN (0.50-0.65) | -0.10 | 26% | 2.5x |
-| STRETCHED (0.35-0.50) | -0.17 | 80% | 4.3x |
-| BREACH (<0.35) | -0.14 | 80% | 3.5x |
-
-**Finding:** Same 2-sigma shock is **3.5x worse** in breach regime.
-
-### Blind Backtesting (No Lookahead Bias)
+| Indicator | Modern Series | Historical Proxy | Availability |
+|-----------|--------------|------------------|--------------|
+| VIX | VIXCLS (1990+) | Realized vol × 1.2 VRP | 1971+ |
+| HY OAS | BAML (1997+) | Moody's Baa-Aaa × 4.5 | 1919+ |
+| TED Spread | TEDRATE (1986+) | Fed Funds - T-Bill | 1954+ |
 
 Real-time simulation accuracy:
 - MAC Regime: **100%**
@@ -160,8 +135,10 @@ grri_mac/
 
 ## Documentation
 
-- [BACKTEST_STATUS.md](BACKTEST_STATUS.md) - Current validation results
+- [BACKTEST_README.md](BACKTEST_README.md) - How to run historical backtests
+- [DEPLOY.md](DEPLOY.md) - Azure deployment guide
 - [docs/MAC_Framework_Complete_Paper.md](docs/MAC_Framework_Complete_Paper.md) - Academic paper
+- [docs/G20_Architecture_Design.md](docs/G20_Architecture_Design.md) - G20 expansion design
 
 ## Data Sources (All Free, All Real Data)
 

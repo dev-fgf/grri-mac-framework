@@ -461,6 +461,8 @@ body {
 .legend-item.positioning .legend-color { background: #f59e0b; }
 .legend-item.volatility .legend-color { background: #ef4444; }
 .legend-item.policy .legend-color { background: #10b981; }
+.legend-item.contagion .legend-color { background: #ec4899; }
+.legend-item.private-credit .legend-color { background: #6366f1; }
 
 /* Dashboard Grid */
 .dashboard-grid {

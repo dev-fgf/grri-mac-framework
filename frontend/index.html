@@ -99,7 +99,7 @@
                 <!-- Pillar Chart -->
                 <div class="card chart-card">
                     <div class="card-header">
-                        <h3>Stress Radar</h3>
+                        <h3>7-Pillar Stress Radar</h3>
                     </div>
                     <div class="chart-container">
                         <canvas id="pillarRadar"></canvas>
@@ -137,11 +137,13 @@
                     </div>
                     <div class="chart-legend" id="chartLegend">
                         <span class="legend-item mac"><span class="legend-color"></span>Stress Index</span>
-                        <span class="legend-item liquidity hidden"><span class="legend-color"></span>Liquidity Stress</span>
-                        <span class="legend-item valuation hidden"><span class="legend-color"></span>Valuation Stress</span>
-                        <span class="legend-item positioning hidden"><span class="legend-color"></span>Positioning Stress</span>
-                        <span class="legend-item volatility hidden"><span class="legend-color"></span>Volatility Stress</span>
-                        <span class="legend-item policy hidden"><span class="legend-color"></span>Policy Stress</span>
+                        <span class="legend-item liquidity hidden"><span class="legend-color"></span>Liquidity</span>
+                        <span class="legend-item valuation hidden"><span class="legend-color"></span>Valuation</span>
+                        <span class="legend-item positioning hidden"><span class="legend-color"></span>Positioning</span>
+                        <span class="legend-item volatility hidden"><span class="legend-color"></span>Volatility</span>
+                        <span class="legend-item policy hidden"><span class="legend-color"></span>Policy</span>
+                        <span class="legend-item contagion hidden"><span class="legend-color"></span>Contagion</span>
+                        <span class="legend-item private-credit hidden"><span class="legend-color"></span>Private Credit</span>
                     </div>
                 </div>
             </div>
@@ -157,9 +159,17 @@
             <!-- Historical MAC Chart with Crisis Events -->
             <div class="card card-full backtest-chart-card">
                 <div class="card-header">
-                    <h3>Market Stress Index with Crisis Events (Real FRED Data, 2006-Present)</h3>
-                    <span class="update-badge">Weekly data</span>
+                    <h3>54-Year Market Stress Index (1971-2025)</h3>
+                    <span class="update-badge">2,814 weekly observations</span>
                     <div class="chart-controls">
+                        <select id="backtestStart" onchange="loadBacktestHistory()">
+                            <option value="1971-01-01">Full History (1971)</option>
+                            <option value="1990-01-01">1990-Present</option>
+                            <option value="2000-01-01">2000-Present</option>
+                            <option value="2006-01-01" selected>2006-Present</option>
+                            <option value="2015-01-01">2015-Present</option>
+                            <option value="2020-01-01">2020-Present</option>
+                        </select>
                         <select id="backtestInterval" onchange="loadBacktestHistory()">
                             <option value="7">Weekly</option>
                             <option value="14">Bi-weekly</option>
@@ -187,19 +197,23 @@
             <div class="backtest-summary" id="backtestSummary">
                 <div class="summary-card">
                     <span class="summary-value" id="btTotal">--</span>
-                    <span class="summary-label">Data Points</span>
+                    <span class="summary-label">Weekly Observations</span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-value" id="btDateRange">--</span>
+                    <span class="summary-label">Date Range</span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-value" id="btCrisesDetected">--</span>
+                    <span class="summary-label">Crises Detected</span>
+                </div>
+                <div class="summary-card highlight">
+                    <span class="summary-value" id="btWarningRate">--%</span>
+                    <span class="summary-label">True Positive Rate</span>
                 </div>
                 <div class="summary-card">
                     <span class="summary-value" id="btAvgLead">--</span>
                     <span class="summary-label">Avg Lead Time (days)</span>
-                </div>
-                <div class="summary-card">
-                    <span class="summary-value" id="btAvgStretched">--</span>
-                    <span class="summary-label">Avg Days Stretched</span>
-                </div>
-                <div class="summary-card highlight">
-                    <span class="summary-value" id="btWarningRate">--%</span>
-                    <span class="summary-label">Warning Rate</span>
                 </div>
                 <div class="summary-card success">
                     <span class="summary-value" id="btPredictionAcc">--%</span>
@@ -305,7 +319,7 @@
 
     <footer class="footer">
         <div class="footer-content">
-            <span>GRRI-MAC Framework v1.0</span>
+            <span>MAC Framework v4.5 &mdash; 7 Pillars, 54-Year Backtest (1971-2025)</span>
             <span>Market Absorption Capacity Assessment Tool</span>
             <a href="https://github.com/dev-fgf/grri-mac-framework" target="_blank">GitHub</a>
         </div>

@@ -193,6 +193,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
         
+        # Also save to backtesthistory table for individual record access
+        backtest_record = {
+            "date": date_str,
+            "mac_score": new_point["mac_score"],
+            "mac_status": new_point["status"],
+            "liquidity": pillar_scores.get("liquidity", 0),
+            "valuation": pillar_scores.get("valuation", 0),
+            "positioning": pillar_scores.get("positioning", 0),
+            "volatility": pillar_scores.get("volatility", 0),
+            "policy": pillar_scores.get("policy", 0),
+            "contagion": pillar_scores.get("contagion", 0),
+            "private_credit": pillar_scores.get("private_credit", 0),
+        }
+        db.save_backtest_results_batch([backtest_record])
+        
         elapsed = (datetime.utcnow() - start_time).total_seconds()
         
         return func.HttpResponse(

@@ -1,7 +1,8 @@
 """Crisis event annotations for backtest validation.
 
-This module defines major financial crisis events from 2004-2024
-for validating the MAC framework's predictive power.
+This module defines major financial crisis events from 1962-2025
+for validating the MAC framework's predictive power across multiple
+monetary policy regimes.
 """
 
 from datetime import datetime
@@ -26,6 +27,261 @@ class CrisisEvent:
 
 # Comprehensive crisis event database
 CRISIS_EVENTS = [
+    # ==========================================================================
+    # PRE-BRETTON WOODS COLLAPSE (1962-1971) - Fixed Exchange Rates
+    # Fed constrained by gold convertibility, limited tools
+    # ==========================================================================
+    CrisisEvent(
+        name="Kennedy Slide / Flash Crash of 1962",
+        start_date=datetime(1962, 5, 28),
+        end_date=datetime(1962, 6, 26),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["volatility", "positioning"],
+        expected_mac_range=(0.40, 0.55),
+        severity="moderate",
+        description="Fastest market decline since 1929, -22.5% in 3 months. Steel price confrontation with JFK.",
+        key_indicators={
+            "baa_aaa_spread_bps": 74,
+            "sp500_decline_pct": -22.5,
+        }
+    ),
+
+    CrisisEvent(
+        name="Credit Crunch of 1966",
+        start_date=datetime(1966, 8, 1),
+        end_date=datetime(1966, 10, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity", "policy"],
+        expected_mac_range=(0.40, 0.55),
+        severity="moderate",
+        description="Fed's first inflation fight since WWII. Severe disintermediation, savings outflows from thrifts.",
+        key_indicators={
+            "baa_aaa_spread_bps": 52,
+            "fed_funds_pct": 5.75,
+            "savings_outflow": "severe",
+        }
+    ),
+
+    CrisisEvent(
+        name="Penn Central Bankruptcy",
+        start_date=datetime(1970, 6, 21),
+        end_date=datetime(1970, 8, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity", "contagion"],
+        expected_mac_range=(0.40, 0.55),
+        severity="high",
+        description="Largest US bankruptcy to date ($7B). Commercial paper market freezes. Fed opens discount window.",
+        key_indicators={
+            "baa_aaa_spread_bps": 77,
+            "cp_market": "frozen",
+            "fed_response": "discount window opened",
+        }
+    ),
+
+    # ==========================================================================
+    # POST-BRETTON WOODS / STAGFLATION (1971-1982)
+    # Fed gains flexibility but faces inflation crisis
+    # ==========================================================================
+    CrisisEvent(
+        name="Nixon Shock / Dollar Devaluation",
+        start_date=datetime(1971, 8, 15),
+        end_date=datetime(1971, 12, 31),
+        affected_countries=["USA", "GBR", "DEU", "JPN", "FRA"],
+        expected_pillars_in_breach=["policy", "contagion"],
+        expected_mac_range=(0.45, 0.60),
+        severity="moderate",
+        description="End of gold convertibility, wage-price controls, 10% import surcharge. Bretton Woods collapses.",
+        key_indicators={
+            "gold_price_move_pct": 8.5,
+            "dollar_devaluation_pct": 7.9,
+        }
+    ),
+
+    CrisisEvent(
+        name="1973 Oil Crisis / OPEC Embargo",
+        start_date=datetime(1973, 10, 17),
+        end_date=datetime(1974, 3, 18),
+        affected_countries=["USA", "GBR", "DEU", "JPN", "FRA", "ITA", "CAN"],
+        expected_pillars_in_breach=["volatility", "contagion", "policy"],
+        expected_mac_range=(0.35, 0.50),
+        severity="high",
+        description="OPEC oil embargo quadruples prices. Stagflation begins. Market believes Fed cannot solve both inflation and recession.",
+        key_indicators={
+            "baa_aaa_spread_bps": 81,
+            "oil_price_move_pct": 300,
+            "inflation_pct": 11.0,
+        }
+    ),
+
+    CrisisEvent(
+        name="1974 Bear Market Bottom",
+        start_date=datetime(1974, 9, 1),
+        end_date=datetime(1974, 12, 6),
+        affected_countries=["USA", "GBR", "DEU"],
+        expected_pillars_in_breach=["volatility", "liquidity", "policy"],
+        expected_mac_range=(0.30, 0.45),
+        severity="extreme",
+        description="S&P falls 48% from peak. Worst recession since Depression. Franklin National Bank fails. Faith in Fed at nadir.",
+        key_indicators={
+            "baa_aaa_spread_bps": 174,  # Extreme credit stress
+            "sp500_decline_pct": -48,
+            "franklin_national": "failed",
+            "inflation_pct": 12.2,
+        }
+    ),
+
+    CrisisEvent(
+        name="Volcker Shock / 1980 Recession",
+        start_date=datetime(1980, 1, 1),
+        end_date=datetime(1980, 7, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["policy", "liquidity"],
+        expected_mac_range=(0.40, 0.55),
+        severity="high",
+        description="Volcker raises Fed Funds to 20%. Intentional recession to break inflation. Markets question Fed resolve.",
+        key_indicators={
+            "fed_funds_pct": 20.0,
+            "prime_rate_pct": 21.5,
+            "inflation_pct": 14.6,
+        }
+    ),
+
+    CrisisEvent(
+        name="1981-82 Double-Dip Recession",
+        start_date=datetime(1981, 7, 1),
+        end_date=datetime(1982, 11, 30),
+        affected_countries=["USA", "CAN", "GBR", "DEU"],
+        expected_pillars_in_breach=["liquidity", "policy", "contagion"],
+        expected_mac_range=(0.35, 0.50),
+        severity="high",
+        description="Worst unemployment since Depression (10.8%). Penn Square Bank fails. Continental Illinois crisis begins.",
+        key_indicators={
+            "baa_aaa_spread_bps": 150,
+            "unemployment_pct": 10.8,
+            "fed_funds_pct": 14.0,
+        }
+    ),
+
+    # ==========================================================================
+    # GREAT MODERATION ERA (1982-2006) - Greenspan Put emerges
+    # ==========================================================================
+    CrisisEvent(
+        name="Continental Illinois / Too Big to Fail",
+        start_date=datetime(1984, 5, 9),
+        end_date=datetime(1984, 7, 26),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity", "contagion"],
+        expected_mac_range=(0.45, 0.55),
+        severity="moderate",
+        description="7th largest US bank fails. FDIC introduces TBTF doctrine. First modern systemic rescue.",
+        key_indicators={
+            "baa_aaa_spread_bps": 120,
+            "fdic_exposure_bn": 4.5,
+        }
+    ),
+
+    CrisisEvent(
+        name="Black Monday 1987",
+        start_date=datetime(1987, 10, 19),
+        end_date=datetime(1987, 12, 31),
+        affected_countries=["USA", "GBR", "DEU", "JPN", "HKG", "AUS"],
+        expected_pillars_in_breach=["volatility", "liquidity", "positioning"],
+        expected_mac_range=(0.30, 0.45),
+        severity="extreme",
+        description="Largest one-day percentage decline in history (-22.6%). Greenspan provides immediate liquidity.",
+        key_indicators={
+            "sp500_one_day_pct": -22.6,
+            "vxo": 150,  # Implied volatility spike
+            "fed_response": "immediate liquidity",
+        }
+    ),
+
+    # ==========================================================================
+    # PRE-2006 CRISES (require historical proxies)
+    # ==========================================================================
+    CrisisEvent(
+        name="Asian Financial Crisis",
+        start_date=datetime(1997, 7, 2),
+        end_date=datetime(1998, 1, 31),
+        affected_countries=["THA", "IDN", "KOR", "MYS", "PHL", "HKG", "SGP"],
+        expected_pillars_in_breach=["contagion", "volatility"],
+        expected_mac_range=(0.35, 0.55),
+        severity="high",
+        description="Thai baht devaluation triggers Asian currency crisis, contagion to global EM",
+        key_indicators={
+            "vix": 38,  # Oct 1997 peak
+            "ted_spread_bps": 50,
+            "em_spread_bps": 600,
+        }
+    ),
+
+    CrisisEvent(
+        name="Russian Default / LTCM Crisis",
+        start_date=datetime(1998, 8, 17),
+        end_date=datetime(1998, 10, 31),
+        affected_countries=["RUS", "USA", "GBR", "DEU"],
+        expected_pillars_in_breach=["liquidity", "volatility", "contagion", "positioning"],
+        expected_mac_range=(0.25, 0.45),
+        severity="extreme",
+        description="Russian debt default triggers LTCM near-collapse, Fed orchestrates bailout",
+        key_indicators={
+            "vix": 45,  # Oct 8, 1998 peak
+            "ted_spread_bps": 120,  # Severe funding stress
+            "baa_aaa_spread_bps": 120,  # Credit stress
+            "ltcm_leverage": "25:1",  # $125B assets on $4B equity
+        }
+    ),
+
+    CrisisEvent(
+        name="Dot-com Bubble Peak",
+        start_date=datetime(2000, 3, 10),
+        end_date=datetime(2000, 4, 14),
+        affected_countries=["USA", "GBR", "DEU"],
+        expected_pillars_in_breach=["valuation", "positioning"],
+        expected_mac_range=(0.40, 0.60),
+        severity="moderate",
+        description="NASDAQ peaks at 5,048, tech bubble begins deflating",
+        key_indicators={
+            "nasdaq_pe": 200,  # Extreme valuations
+            "vix": 25,
+        }
+    ),
+
+    CrisisEvent(
+        name="September 11 Attacks",
+        start_date=datetime(2001, 9, 11),
+        end_date=datetime(2001, 10, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["volatility", "policy"],
+        expected_mac_range=(0.35, 0.50),
+        severity="high",
+        description="Terrorist attacks close markets, Fed provides massive liquidity",
+        key_indicators={
+            "vix": 43,  # Sep 21 peak after reopening
+            "ted_spread_bps": 65,
+            "fed_cut_bps": 100,  # 100bp emergency cut
+        }
+    ),
+
+    CrisisEvent(
+        name="Corporate Scandals (Enron/WorldCom)",
+        start_date=datetime(2002, 6, 1),
+        end_date=datetime(2002, 10, 9),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["valuation", "volatility"],
+        expected_mac_range=(0.35, 0.50),
+        severity="high",
+        description="Enron and WorldCom bankruptcies, market reaches post-dot-com lows",
+        key_indicators={
+            "vix": 45,  # July/Oct 2002 peaks
+            "ig_oas": 280,
+            "hy_oas": 1100,
+        }
+    ),
+
+    # ==========================================================================
+    # GFC ERA (2006-2009)
+    # ==========================================================================
     CrisisEvent(
         name="Pre-GFC Build-up",
         start_date=datetime(2006, 1, 1),

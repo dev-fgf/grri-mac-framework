@@ -1,0 +1,13 @@
+{
+  "total_points": 2814,
+  "crisis_points": 486,
+  "non_crisis_points": 2328,
+  "avg_mac_during_crisis": 0.5281648031932449,
+  "avg_mac_non_crisis": 0.5733827729586963,
+  "crises_evaluated": 27,
+  "crises_with_warning": 25,
+  "true_positive_rate": 0.9259259259259259,
+  "avg_mac_overall": 0.565573272849951,
+  "min_mac": 0.25999999999999995,
+  "max_mac": 0.7919047619047619
+}

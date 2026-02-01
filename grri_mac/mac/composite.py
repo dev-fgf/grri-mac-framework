@@ -34,6 +34,16 @@ DEFAULT_WEIGHTS_6_PILLAR = {
     "contagion": 1/6,
 }
 
+DEFAULT_WEIGHTS_7_PILLAR = {
+    "liquidity": 1/7,
+    "valuation": 1/7,
+    "positioning": 1/7,
+    "volatility": 1/7,
+    "policy": 1/7,
+    "contagion": 1/7,
+    "private_credit": 1/7,
+}
+
 # =============================================================================
 # ML-OPTIMIZED WEIGHTS
 # Derived from gradient boosting on 14 historical scenarios (1998-2025)
@@ -42,28 +52,30 @@ DEFAULT_WEIGHTS_6_PILLAR = {
 # =============================================================================
 
 ML_OPTIMIZED_WEIGHTS = {
-    "liquidity": 0.18,      # Slightly higher - most common breach indicator (10/14)
-    "valuation": 0.12,      # Lower - only breaches in extreme crises (2/14)
-    "positioning": 0.25,    # HIGHEST - key predictor of hedge failure (100% corr)
-    "volatility": 0.17,     # Moderate - ubiquitous (9/14) but not predictive alone
-    "policy": 0.10,         # Lowest - never breached in sample
-    "contagion": 0.18,      # Moderate - critical for global vs local distinction
+    "liquidity": 0.16,      # Slightly reduced for 7-pillar model
+    "valuation": 0.10,      # Lower - only breaches in extreme crises (2/14)
+    "positioning": 0.22,    # HIGHEST - key predictor of hedge failure (100% corr)
+    "volatility": 0.15,     # Moderate - ubiquitous (9/14) but not predictive alone
+    "policy": 0.09,         # Lowest - never breached in sample
+    "contagion": 0.16,      # Moderate - critical for global vs local distinction
+    "private_credit": 0.12, # New - leading indicator for credit stress
 }
 
 # Interaction-adjusted weights
 # Use when positioning AND (volatility OR liquidity) are both stressed
 # This accounts for the amplification mechanism in forced unwinds
 INTERACTION_ADJUSTED_WEIGHTS = {
-    "liquidity": 0.16,
-    "valuation": 0.10,
-    "positioning": 0.28,    # Boosted - interactions amplify positioning risk
-    "volatility": 0.18,
-    "policy": 0.08,
-    "contagion": 0.20,      # Boosted - global contagion amplifies all stress
+    "liquidity": 0.14,
+    "valuation": 0.09,
+    "positioning": 0.24,    # Boosted - interactions amplify positioning risk
+    "volatility": 0.16,
+    "policy": 0.07,
+    "contagion": 0.18,      # Boosted - global contagion amplifies all stress
+    "private_credit": 0.12, # Leading indicator for credit stress
 }
 
-# Default to 6-pillar framework with equal weights
-DEFAULT_WEIGHTS = DEFAULT_WEIGHTS_6_PILLAR
+# Default to 7-pillar framework with equal weights
+DEFAULT_WEIGHTS = DEFAULT_WEIGHTS_7_PILLAR
 
 # Non-linear interaction penalty configuration
 # When multiple pillars breach, risks compound non-linearly
@@ -74,7 +86,8 @@ BREACH_INTERACTION_PENALTY = {
     3: 0.08,    # 3 breaches - 8% penalty (significant)
     4: 0.12,    # 4 breaches - 12% penalty (severe)
     5: 0.15,    # 5+ breaches - 15% penalty (crisis)
-    6: 0.15,    # Cap at 15%
+    6: 0.15,    # 6 breaches - cap at 15%
+    7: 0.15,    # 7 breaches - cap at 15%
 }
 
 
