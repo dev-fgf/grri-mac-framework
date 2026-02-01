@@ -964,10 +964,13 @@ async function updateHistoryRange() {
         ? { month: 'short', year: '2-digit' }  // "Jan '25" for longer periods
         : { month: 'short', day: 'numeric' };   // "Jan 15" for shorter periods
 
-    historyChart.data.labels = historicalData.map(d => {
+    const newLabels = historicalData.map(d => {
         const date = new Date(d.date);
         return date.toLocaleDateString('en-US', labelFormat);
     });
+
+    // Update labels
+    historyChart.data.labels = newLabels;
 
     // Convert to stress/depletion (1 - value)
     historyChart.data.datasets[0].data = historicalData.map(d => 1 - d.mac);
@@ -979,7 +982,8 @@ async function updateHistoryRange() {
     historyChart.data.datasets[6].data = historicalData.map(d => 1 - (d.contagion || 0.5));
     historyChart.data.datasets[7].data = historicalData.map(d => 1 - (d.private_credit || 0.5));
 
-    historyChart.update();
+    // Force chart update with no animation for immediate response
+    historyChart.update('none');
 }
 
 // Backtest Historical Chart with Crisis Events
