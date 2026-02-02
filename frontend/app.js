@@ -188,7 +188,17 @@ function toggleGPR() {
 }
 
 function toggleCrisisEvents() {
-    showCrisisEvents = document.getElementById('crisisToggle')?.checked ?? true;
+    // Check which toggle was clicked and sync both
+    const backtestToggle = document.getElementById('crisisToggle');
+    const historyToggle = document.getElementById('historyCrisisToggle');
+    
+    // Get value from whichever toggle was changed (prioritize history since it's the "main" one)
+    showCrisisEvents = historyToggle?.checked ?? backtestToggle?.checked ?? true;
+    
+    // Sync both checkboxes
+    if (backtestToggle) backtestToggle.checked = showCrisisEvents;
+    if (historyToggle) historyToggle.checked = showCrisisEvents;
+    
     // Update both charts
     if (historyChart) updateHistoryChart();
     if (backtestChart) updateBacktestChart();
@@ -446,6 +456,9 @@ function renderHistoryChart(data) {
         smoothingLabel = ' (4-week MA)';
     }
     
+    // Store for crisis events plugin
+    ctx._processedData = processedData;
+    
     const labels = processedData.map(d => formatDateLabel(d.date, historyDays));
     
     // Zone background bands plugin
@@ -467,6 +480,52 @@ function renderHistoryChart(data) {
                 const yBottom = y.getPixelForValue(zone.min);
                 ctx.fillStyle = zone.color;
                 ctx.fillRect(left, yTop, right - left, yBottom - yTop);
+            });
+        }
+    };
+    
+    // Crisis events vertical lines plugin for history chart
+    const historyCrisisPlugin = {
+        id: 'historyCrisisLines',
+        afterDraw: (chart) => {
+            if (!showCrisisEvents || !crisisEventsData?.events) return;
+            
+            const { ctx, chartArea: { left, right, top, bottom }, scales: { x, y } } = chart;
+            const dates = processedData.map(d => d.date);
+            
+            // Only show events within the current time range
+            const startDate = dates[0];
+            const endDate = dates[dates.length - 1];
+            
+            crisisEventsData.events.forEach(event => {
+                // Skip if event is outside our date range
+                if (event.start_date > endDate || event.end_date < startDate) return;
+                
+                // Find the index for this crisis date
+                const eventDate = event.start_date;
+                const idx = dates.findIndex(d => d >= eventDate);
+                if (idx === -1 || idx >= labels.length) return;
+                
+                const xPos = x.getPixelForValue(idx);
+                if (xPos < left || xPos > right) return;
+                
+                // Severity-based color
+                const colors = {
+                    extreme: 'rgba(239, 68, 68, 0.7)',   // Red
+                    high: 'rgba(249, 115, 22, 0.6)',     // Orange
+                    moderate: 'rgba(251, 191, 36, 0.5)'  // Yellow
+                };
+                
+                // Draw vertical line
+                ctx.save();
+                ctx.strokeStyle = colors[event.severity] || colors.moderate;
+                ctx.lineWidth = event.severity === 'extreme' ? 2 : 1;
+                ctx.setLineDash(event.severity === 'extreme' ? [] : [4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.restore();
             });
         }
     };
@@ -524,13 +583,36 @@ function renderHistoryChart(data) {
     historyChart = new Chart(ctx, {
         type: 'line',
         data: { labels, datasets },
-        plugins: [zoneBandsPlugin],
+        plugins: [zoneBandsPlugin, historyCrisisPlugin],
         options: {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { intersect: false, mode: 'index' },
             scales: scales,
-            plugins: { legend: { display: false } }
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        afterBody: function(context) {
+                            if (!showCrisisEvents || !crisisEventsData?.events) return '';
+                            
+                            const idx = context[0].dataIndex;
+                            const pointDate = processedData[idx]?.date;
+                            if (!pointDate) return '';
+                            
+                            // Find crisis event at this date
+                            const event = crisisEventsData.events.find(e => 
+                                pointDate >= e.start_date && pointDate <= e.end_date
+                            );
+                            
+                            if (event) {
+                                return `\n📍 ${event.name} (${event.severity})`;
+                            }
+                            return '';
+                        }
+                    }
+                }
+            }
         }
     });
 }
