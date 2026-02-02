@@ -1,0 +1,3962 @@
+[
+  {
+    "date": "1971-01-01",
+    "gpr": 83.07,
+    "gpr_threats": 87.21,
+    "gpr_acts": 80.48
+  },
+  {
+    "date": "1971-02-01",
+    "gpr": 99.54,
+    "gpr_threats": 114.31,
+    "gpr_acts": 95.92
+  },
+  {
+    "date": "1971-03-01",
+    "gpr": 88.13,
+    "gpr_threats": 89.89,
+    "gpr_acts": 84.39
+  },
+  {
+    "date": "1971-04-01",
+    "gpr": 93.1,
+    "gpr_threats": 89.47,
+    "gpr_acts": 93.68
+  },
+  {
+    "date": "1971-05-01",
+    "gpr": 73.14,
+    "gpr_threats": 66.74,
+    "gpr_acts": 78.93
+  },
+  {
+    "date": "1971-06-01",
+    "gpr": 73.63,
+    "gpr_threats": 77.83,
+    "gpr_acts": 73.46
+  },
+  {
+    "date": "1971-07-01",
+    "gpr": 94.82,
+    "gpr_threats": 103.72,
+    "gpr_acts": 87.61
+  },
+  {
+    "date": "1971-08-01",
+    "gpr": 79.91,
+    "gpr_threats": 88.31,
+    "gpr_acts": 69.3
+  },
+  {
+    "date": "1971-09-01",
+    "gpr": 78.35,
+    "gpr_threats": 86.35,
+    "gpr_acts": 64.06
+  },
+  {
+    "date": "1971-10-01",
+    "gpr": 83.2,
+    "gpr_threats": 97.89,
+    "gpr_acts": 67.36
+  },
+  {
+    "date": "1971-11-01",
+    "gpr": 91.97,
+    "gpr_threats": 113.67,
+    "gpr_acts": 73.2
+  },
+  {
+    "date": "1971-12-01",
+    "gpr": 110.2,
+    "gpr_threats": 108.67,
+    "gpr_acts": 116.48
+  },
+  {
+    "date": "1972-01-01",
+    "gpr": 87.95,
+    "gpr_threats": 87.11,
+    "gpr_acts": 90.09
+  },
+  {
+    "date": "1972-02-01",
+    "gpr": 78.86,
+    "gpr_threats": 78.97,
+    "gpr_acts": 80.68
+  },
+  {
+    "date": "1972-03-01",
+    "gpr": 69.49,
+    "gpr_threats": 64.46,
+    "gpr_acts": 76.11
+  },
+  {
+    "date": "1972-04-01",
+    "gpr": 106.54,
+    "gpr_threats": 92.23,
+    "gpr_acts": 122.33
+  },
+  {
+    "date": "1972-05-01",
+    "gpr": 128.28,
+    "gpr_threats": 146.67,
+    "gpr_acts": 115.34
+  },
+  {
+    "date": "1972-06-01",
+    "gpr": 103.58,
+    "gpr_threats": 107.15,
+    "gpr_acts": 97.8
+  },
+  {
+    "date": "1972-07-01",
+    "gpr": 79.59,
+    "gpr_threats": 79.4,
+    "gpr_acts": 74.9
+  },
+  {
+    "date": "1972-08-01",
+    "gpr": 75.64,
+    "gpr_threats": 62.6,
+    "gpr_acts": 81.51
+  },
+  {
+    "date": "1972-09-01",
+    "gpr": 106.86,
+    "gpr_threats": 85.97,
+    "gpr_acts": 132.46
+  },
+  {
+    "date": "1972-10-01",
+    "gpr": 73.4,
+    "gpr_threats": 68.64,
+    "gpr_acts": 74.55
+  },
+  {
+    "date": "1972-11-01",
+    "gpr": 72.0,
+    "gpr_threats": 71.38,
+    "gpr_acts": 70.79
+  },
+  {
+    "date": "1972-12-01",
+    "gpr": 67.64,
+    "gpr_threats": 66.87,
+    "gpr_acts": 66.58
+  },
+  {
+    "date": "1973-01-01",
+    "gpr": 64.13,
+    "gpr_threats": 62.66,
+    "gpr_acts": 66.92
+  },
+  {
+    "date": "1973-02-01",
+    "gpr": 48.9,
+    "gpr_threats": 45.51,
+    "gpr_acts": 50.21
+  },
+  {
+    "date": "1973-03-01",
+    "gpr": 64.14,
+    "gpr_threats": 74.62,
+    "gpr_acts": 51.46
+  },
+  {
+    "date": "1973-04-01",
+    "gpr": 70.71,
+    "gpr_threats": 73.09,
+    "gpr_acts": 68.81
+  },
+  {
+    "date": "1973-05-01",
+    "gpr": 58.98,
+    "gpr_threats": 57.9,
+    "gpr_acts": 58.39
+  },
+  {
+    "date": "1973-06-01",
+    "gpr": 54.01,
+    "gpr_threats": 58.56,
+    "gpr_acts": 48.72
+  },
+  {
+    "date": "1973-07-01",
+    "gpr": 69.19,
+    "gpr_threats": 71.15,
+    "gpr_acts": 63.41
+  },
+  {
+    "date": "1973-08-01",
+    "gpr": 70.11,
+    "gpr_threats": 68.99,
+    "gpr_acts": 73.61
+  },
+  {
+    "date": "1973-09-01",
+    "gpr": 64.28,
+    "gpr_threats": 68.96,
+    "gpr_acts": 57.65
+  },
+  {
+    "date": "1973-10-01",
+    "gpr": 161.14,
+    "gpr_threats": 156.23,
+    "gpr_acts": 187.14
+  },
+  {
+    "date": "1973-11-01",
+    "gpr": 109.24,
+    "gpr_threats": 146.04,
+    "gpr_acts": 83.62
+  },
+  {
+    "date": "1973-12-01",
+    "gpr": 85.2,
+    "gpr_threats": 114.17,
+    "gpr_acts": 60.34
+  },
+  {
+    "date": "1974-01-01",
+    "gpr": 80.49,
+    "gpr_threats": 103.87,
+    "gpr_acts": 59.5
+  },
+  {
+    "date": "1974-02-01",
+    "gpr": 71.61,
+    "gpr_threats": 92.75,
+    "gpr_acts": 51.97
+  },
+  {
+    "date": "1974-03-01",
+    "gpr": 76.06,
+    "gpr_threats": 103.34,
+    "gpr_acts": 50.3
+  },
+  {
+    "date": "1974-04-01",
+    "gpr": 68.72,
+    "gpr_threats": 74.09,
+    "gpr_acts": 59.17
+  },
+  {
+    "date": "1974-05-01",
+    "gpr": 65.32,
+    "gpr_threats": 62.35,
+    "gpr_acts": 64.36
+  },
+  {
+    "date": "1974-06-01",
+    "gpr": 69.46,
+    "gpr_threats": 84.3,
+    "gpr_acts": 56.9
+  },
+  {
+    "date": "1974-07-01",
+    "gpr": 84.62,
+    "gpr_threats": 114.6,
+    "gpr_acts": 55.91
+  },
+  {
+    "date": "1974-08-01",
+    "gpr": 75.69,
+    "gpr_threats": 93.86,
+    "gpr_acts": 57.09
+  },
+  {
+    "date": "1974-09-01",
+    "gpr": 53.96,
+    "gpr_threats": 65.09,
+    "gpr_acts": 44.68
+  },
+  {
+    "date": "1974-10-01",
+    "gpr": 57.72,
+    "gpr_threats": 82.07,
+    "gpr_acts": 31.66
+  },
+  {
+    "date": "1974-11-01",
+    "gpr": 68.77,
+    "gpr_threats": 87.45,
+    "gpr_acts": 48.76
+  },
+  {
+    "date": "1974-12-01",
+    "gpr": 74.39,
+    "gpr_threats": 81.72,
+    "gpr_acts": 67.75
+  },
+  {
+    "date": "1975-01-01",
+    "gpr": 73.17,
+    "gpr_threats": 83.86,
+    "gpr_acts": 63.52
+  },
+  {
+    "date": "1975-02-01",
+    "gpr": 86.05,
+    "gpr_threats": 112.83,
+    "gpr_acts": 68.53
+  },
+  {
+    "date": "1975-03-01",
+    "gpr": 87.0,
+    "gpr_threats": 81.5,
+    "gpr_acts": 91.3
+  },
+  {
+    "date": "1975-04-01",
+    "gpr": 82.64,
+    "gpr_threats": 89.52,
+    "gpr_acts": 72.15
+  },
+  {
+    "date": "1975-05-01",
+    "gpr": 69.51,
+    "gpr_threats": 91.75,
+    "gpr_acts": 46.43
+  },
+  {
+    "date": "1975-06-01",
+    "gpr": 73.45,
+    "gpr_threats": 104.65,
+    "gpr_acts": 44.03
+  },
+  {
+    "date": "1975-07-01",
+    "gpr": 87.47,
+    "gpr_threats": 130.42,
+    "gpr_acts": 44.46
+  },
+  {
+    "date": "1975-08-01",
+    "gpr": 92.54,
+    "gpr_threats": 119.29,
+    "gpr_acts": 63.46
+  },
+  {
+    "date": "1975-09-01",
+    "gpr": 69.65,
+    "gpr_threats": 91.55,
+    "gpr_acts": 50.58
+  },
+  {
+    "date": "1975-10-01",
+    "gpr": 77.19,
+    "gpr_threats": 95.56,
+    "gpr_acts": 57.04
+  },
+  {
+    "date": "1975-11-01",
+    "gpr": 71.16,
+    "gpr_threats": 98.56,
+    "gpr_acts": 44.97
+  },
+  {
+    "date": "1975-12-01",
+    "gpr": 79.86,
+    "gpr_threats": 83.33,
+    "gpr_acts": 75.94
+  },
+  {
+    "date": "1976-01-01",
+    "gpr": 82.46,
+    "gpr_threats": 99.61,
+    "gpr_acts": 65.41
+  },
+  {
+    "date": "1976-02-01",
+    "gpr": 53.82,
+    "gpr_threats": 61.64,
+    "gpr_acts": 43.65
+  },
+  {
+    "date": "1976-03-01",
+    "gpr": 69.6,
+    "gpr_threats": 94.42,
+    "gpr_acts": 47.17
+  },
+  {
+    "date": "1976-04-01",
+    "gpr": 62.14,
+    "gpr_threats": 76.18,
+    "gpr_acts": 47.51
+  },
+  {
+    "date": "1976-05-01",
+    "gpr": 67.54,
+    "gpr_threats": 90.45,
+    "gpr_acts": 45.81
+  },
+  {
+    "date": "1976-06-01",
+    "gpr": 68.0,
+    "gpr_threats": 79.72,
+    "gpr_acts": 57.96
+  },
+  {
+    "date": "1976-07-01",
+    "gpr": 78.57,
+    "gpr_threats": 62.28,
+    "gpr_acts": 94.92
+  },
+  {
+    "date": "1976-08-01",
+    "gpr": 91.08,
+    "gpr_threats": 108.76,
+    "gpr_acts": 73.18
+  },
+  {
+    "date": "1976-09-01",
+    "gpr": 69.4,
+    "gpr_threats": 76.6,
+    "gpr_acts": 60.78
+  },
+  {
+    "date": "1976-10-01",
+    "gpr": 67.36,
+    "gpr_threats": 85.47,
+    "gpr_acts": 50.66
+  },
+  {
+    "date": "1976-11-01",
+    "gpr": 58.61,
+    "gpr_threats": 66.94,
+    "gpr_acts": 52.85
+  },
+  {
+    "date": "1976-12-01",
+    "gpr": 62.2,
+    "gpr_threats": 80.23,
+    "gpr_acts": 44.44
+  },
+  {
+    "date": "1977-01-01",
+    "gpr": 55.86,
+    "gpr_threats": 78.59,
+    "gpr_acts": 33.28
+  },
+  {
+    "date": "1977-02-01",
+    "gpr": 64.9,
+    "gpr_threats": 84.99,
+    "gpr_acts": 40.51
+  },
+  {
+    "date": "1977-03-01",
+    "gpr": 61.69,
+    "gpr_threats": 83.11,
+    "gpr_acts": 39.67
+  },
+  {
+    "date": "1977-04-01",
+    "gpr": 78.98,
+    "gpr_threats": 94.55,
+    "gpr_acts": 62.8
+  },
+  {
+    "date": "1977-05-01",
+    "gpr": 74.19,
+    "gpr_threats": 94.38,
+    "gpr_acts": 55.06
+  },
+  {
+    "date": "1977-06-01",
+    "gpr": 67.77,
+    "gpr_threats": 84.29,
+    "gpr_acts": 50.04
+  },
+  {
+    "date": "1977-07-01",
+    "gpr": 77.62,
+    "gpr_threats": 98.0,
+    "gpr_acts": 57.34
+  },
+  {
+    "date": "1977-08-01",
+    "gpr": 72.08,
+    "gpr_threats": 86.04,
+    "gpr_acts": 57.04
+  },
+  {
+    "date": "1977-09-01",
+    "gpr": 63.83,
+    "gpr_threats": 82.02,
+    "gpr_acts": 47.2
+  },
+  {
+    "date": "1977-10-01",
+    "gpr": 78.11,
+    "gpr_threats": 102.51,
+    "gpr_acts": 60.58
+  },
+  {
+    "date": "1977-11-01",
+    "gpr": 70.12,
+    "gpr_threats": 89.68,
+    "gpr_acts": 52.2
+  },
+  {
+    "date": "1977-12-01",
+    "gpr": 56.56,
+    "gpr_threats": 68.24,
+    "gpr_acts": 42.93
+  },
+  {
+    "date": "1978-01-01",
+    "gpr": 65.37,
+    "gpr_threats": 88.53,
+    "gpr_acts": 43.38
+  },
+  {
+    "date": "1978-02-01",
+    "gpr": 80.87,
+    "gpr_threats": 103.81,
+    "gpr_acts": 58.04
+  },
+  {
+    "date": "1978-03-01",
+    "gpr": 101.27,
+    "gpr_threats": 105.59,
+    "gpr_acts": 94.25
+  },
+  {
+    "date": "1978-04-01",
+    "gpr": 76.18,
+    "gpr_threats": 109.61,
+    "gpr_acts": 43.16
+  },
+  {
+    "date": "1978-05-01",
+    "gpr": 111.73,
+    "gpr_threats": 120.58,
+    "gpr_acts": 104.78
+  },
+  {
+    "date": "1978-06-01",
+    "gpr": 97.31,
+    "gpr_threats": 103.55,
+    "gpr_acts": 93.18
+  },
+  {
+    "date": "1978-07-01",
+    "gpr": 86.64,
+    "gpr_threats": 102.81,
+    "gpr_acts": 75.92
+  },
+  {
+    "date": "1978-08-01",
+    "gpr": 66.6,
+    "gpr_threats": 69.92,
+    "gpr_acts": 62.84
+  },
+  {
+    "date": "1978-09-01",
+    "gpr": 71.8,
+    "gpr_threats": 67.48,
+    "gpr_acts": 75.23
+  },
+  {
+    "date": "1978-10-01",
+    "gpr": 65.73,
+    "gpr_threats": 67.81,
+    "gpr_acts": 60.72
+  },
+  {
+    "date": "1978-11-01",
+    "gpr": 75.76,
+    "gpr_threats": 95.56,
+    "gpr_acts": 57.12
+  },
+  {
+    "date": "1978-12-01",
+    "gpr": 77.19,
+    "gpr_threats": 102.59,
+    "gpr_acts": 55.02
+  },
+  {
+    "date": "1979-01-01",
+    "gpr": 84.89,
+    "gpr_threats": 99.49,
+    "gpr_acts": 73.12
+  },
+  {
+    "date": "1979-02-01",
+    "gpr": 95.47,
+    "gpr_threats": 116.6,
+    "gpr_acts": 83.15
+  },
+  {
+    "date": "1979-03-01",
+    "gpr": 91.04,
+    "gpr_threats": 111.36,
+    "gpr_acts": 73.62
+  },
+  {
+    "date": "1979-04-01",
+    "gpr": 94.3,
+    "gpr_threats": 110.29,
+    "gpr_acts": 76.91
+  },
+  {
+    "date": "1979-05-01",
+    "gpr": 77.93,
+    "gpr_threats": 100.09,
+    "gpr_acts": 53.94
+  },
+  {
+    "date": "1979-06-01",
+    "gpr": 99.52,
+    "gpr_threats": 126.83,
+    "gpr_acts": 73.92
+  },
+  {
+    "date": "1979-07-01",
+    "gpr": 81.15,
+    "gpr_threats": 96.52,
+    "gpr_acts": 62.73
+  },
+  {
+    "date": "1979-08-01",
+    "gpr": 70.08,
+    "gpr_threats": 77.28,
+    "gpr_acts": 63.29
+  },
+  {
+    "date": "1979-09-01",
+    "gpr": 74.71,
+    "gpr_threats": 103.75,
+    "gpr_acts": 52.2
+  },
+  {
+    "date": "1979-10-01",
+    "gpr": 82.62,
+    "gpr_threats": 121.22,
+    "gpr_acts": 45.79
+  },
+  {
+    "date": "1979-11-01",
+    "gpr": 88.67,
+    "gpr_threats": 116.08,
+    "gpr_acts": 65.06
+  },
+  {
+    "date": "1979-12-01",
+    "gpr": 95.83,
+    "gpr_threats": 138.4,
+    "gpr_acts": 61.51
+  },
+  {
+    "date": "1980-01-01",
+    "gpr": 153.02,
+    "gpr_threats": 239.99,
+    "gpr_acts": 72.0
+  },
+  {
+    "date": "1980-02-01",
+    "gpr": 108.0,
+    "gpr_threats": 155.41,
+    "gpr_acts": 58.44
+  },
+  {
+    "date": "1980-03-01",
+    "gpr": 86.54,
+    "gpr_threats": 124.67,
+    "gpr_acts": 51.6
+  },
+  {
+    "date": "1980-04-01",
+    "gpr": 122.74,
+    "gpr_threats": 181.85,
+    "gpr_acts": 66.56
+  },
+  {
+    "date": "1980-05-01",
+    "gpr": 86.84,
+    "gpr_threats": 121.64,
+    "gpr_acts": 52.08
+  },
+  {
+    "date": "1980-06-01",
+    "gpr": 86.27,
+    "gpr_threats": 114.37,
+    "gpr_acts": 59.63
+  },
+  {
+    "date": "1980-07-01",
+    "gpr": 69.79,
+    "gpr_threats": 83.98,
+    "gpr_acts": 51.53
+  },
+  {
+    "date": "1980-08-01",
+    "gpr": 73.17,
+    "gpr_threats": 95.42,
+    "gpr_acts": 54.66
+  },
+  {
+    "date": "1980-09-01",
+    "gpr": 109.18,
+    "gpr_threats": 147.71,
+    "gpr_acts": 73.38
+  },
+  {
+    "date": "1980-10-01",
+    "gpr": 128.0,
+    "gpr_threats": 157.22,
+    "gpr_acts": 114.76
+  },
+  {
+    "date": "1980-11-01",
+    "gpr": 97.94,
+    "gpr_threats": 124.79,
+    "gpr_acts": 68.79
+  },
+  {
+    "date": "1980-12-01",
+    "gpr": 103.21,
+    "gpr_threats": 135.88,
+    "gpr_acts": 73.93
+  },
+  {
+    "date": "1981-01-01",
+    "gpr": 111.14,
+    "gpr_threats": 141.42,
+    "gpr_acts": 83.65
+  },
+  {
+    "date": "1981-02-01",
+    "gpr": 98.36,
+    "gpr_threats": 134.69,
+    "gpr_acts": 68.02
+  },
+  {
+    "date": "1981-03-01",
+    "gpr": 85.74,
+    "gpr_threats": 110.0,
+    "gpr_acts": 63.02
+  },
+  {
+    "date": "1981-04-01",
+    "gpr": 106.4,
+    "gpr_threats": 138.07,
+    "gpr_acts": 77.65
+  },
+  {
+    "date": "1981-05-01",
+    "gpr": 105.45,
+    "gpr_threats": 139.18,
+    "gpr_acts": 80.33
+  },
+  {
+    "date": "1981-06-01",
+    "gpr": 118.56,
+    "gpr_threats": 181.11,
+    "gpr_acts": 63.32
+  },
+  {
+    "date": "1981-07-01",
+    "gpr": 86.87,
+    "gpr_threats": 104.53,
+    "gpr_acts": 68.58
+  },
+  {
+    "date": "1981-08-01",
+    "gpr": 93.57,
+    "gpr_threats": 116.93,
+    "gpr_acts": 75.83
+  },
+  {
+    "date": "1981-09-01",
+    "gpr": 89.85,
+    "gpr_threats": 118.04,
+    "gpr_acts": 58.17
+  },
+  {
+    "date": "1981-10-01",
+    "gpr": 89.6,
+    "gpr_threats": 123.01,
+    "gpr_acts": 56.84
+  },
+  {
+    "date": "1981-11-01",
+    "gpr": 109.21,
+    "gpr_threats": 176.86,
+    "gpr_acts": 44.84
+  },
+  {
+    "date": "1981-12-01",
+    "gpr": 125.29,
+    "gpr_threats": 199.62,
+    "gpr_acts": 53.56
+  },
+  {
+    "date": "1982-01-01",
+    "gpr": 112.33,
+    "gpr_threats": 176.23,
+    "gpr_acts": 49.05
+  },
+  {
+    "date": "1982-02-01",
+    "gpr": 107.06,
+    "gpr_threats": 147.5,
+    "gpr_acts": 68.67
+  },
+  {
+    "date": "1982-03-01",
+    "gpr": 123.9,
+    "gpr_threats": 167.21,
+    "gpr_acts": 86.41
+  },
+  {
+    "date": "1982-04-01",
+    "gpr": 172.81,
+    "gpr_threats": 274.44,
+    "gpr_acts": 83.0
+  },
+  {
+    "date": "1982-05-01",
+    "gpr": 161.01,
+    "gpr_threats": 242.19,
+    "gpr_acts": 95.91
+  },
+  {
+    "date": "1982-06-01",
+    "gpr": 168.86,
+    "gpr_threats": 213.54,
+    "gpr_acts": 134.34
+  },
+  {
+    "date": "1982-07-01",
+    "gpr": 131.47,
+    "gpr_threats": 169.6,
+    "gpr_acts": 101.66
+  },
+  {
+    "date": "1982-08-01",
+    "gpr": 105.82,
+    "gpr_threats": 138.04,
+    "gpr_acts": 77.37
+  },
+  {
+    "date": "1982-09-01",
+    "gpr": 92.69,
+    "gpr_threats": 123.84,
+    "gpr_acts": 60.97
+  },
+  {
+    "date": "1982-10-01",
+    "gpr": 106.76,
+    "gpr_threats": 135.75,
+    "gpr_acts": 72.95
+  },
+  {
+    "date": "1982-11-01",
+    "gpr": 104.81,
+    "gpr_threats": 155.34,
+    "gpr_acts": 52.89
+  },
+  {
+    "date": "1982-12-01",
+    "gpr": 101.89,
+    "gpr_threats": 143.95,
+    "gpr_acts": 62.93
+  },
+  {
+    "date": "1983-01-01",
+    "gpr": 91.14,
+    "gpr_threats": 123.33,
+    "gpr_acts": 58.69
+  },
+  {
+    "date": "1983-02-01",
+    "gpr": 86.44,
+    "gpr_threats": 110.11,
+    "gpr_acts": 62.13
+  },
+  {
+    "date": "1983-03-01",
+    "gpr": 84.65,
+    "gpr_threats": 116.99,
+    "gpr_acts": 52.87
+  },
+  {
+    "date": "1983-04-01",
+    "gpr": 113.76,
+    "gpr_threats": 161.45,
+    "gpr_acts": 65.1
+  },
+  {
+    "date": "1983-05-01",
+    "gpr": 98.69,
+    "gpr_threats": 142.98,
+    "gpr_acts": 60.48
+  },
+  {
+    "date": "1983-06-01",
+    "gpr": 99.62,
+    "gpr_threats": 131.83,
+    "gpr_acts": 70.0
+  },
+  {
+    "date": "1983-07-01",
+    "gpr": 89.69,
+    "gpr_threats": 116.72,
+    "gpr_acts": 64.42
+  },
+  {
+    "date": "1983-08-01",
+    "gpr": 84.08,
+    "gpr_threats": 103.26,
+    "gpr_acts": 66.12
+  },
+  {
+    "date": "1983-09-01",
+    "gpr": 126.13,
+    "gpr_threats": 160.89,
+    "gpr_acts": 91.42
+  },
+  {
+    "date": "1983-10-01",
+    "gpr": 125.78,
+    "gpr_threats": 142.19,
+    "gpr_acts": 114.97
+  },
+  {
+    "date": "1983-11-01",
+    "gpr": 131.71,
+    "gpr_threats": 166.62,
+    "gpr_acts": 103.27
+  },
+  {
+    "date": "1983-12-01",
+    "gpr": 114.89,
+    "gpr_threats": 122.34,
+    "gpr_acts": 111.86
+  },
+  {
+    "date": "1984-01-01",
+    "gpr": 99.82,
+    "gpr_threats": 120.3,
+    "gpr_acts": 84.02
+  },
+  {
+    "date": "1984-02-01",
+    "gpr": 87.47,
+    "gpr_threats": 89.51,
+    "gpr_acts": 86.84
+  },
+  {
+    "date": "1984-03-01",
+    "gpr": 84.17,
+    "gpr_threats": 96.83,
+    "gpr_acts": 77.38
+  },
+  {
+    "date": "1984-04-01",
+    "gpr": 90.05,
+    "gpr_threats": 97.09,
+    "gpr_acts": 89.08
+  },
+  {
+    "date": "1984-05-01",
+    "gpr": 94.13,
+    "gpr_threats": 123.85,
+    "gpr_acts": 70.77
+  },
+  {
+    "date": "1984-06-01",
+    "gpr": 94.06,
+    "gpr_threats": 119.1,
+    "gpr_acts": 72.5
+  },
+  {
+    "date": "1984-07-01",
+    "gpr": 65.33,
+    "gpr_threats": 79.27,
+    "gpr_acts": 50.98
+  },
+  {
+    "date": "1984-08-01",
+    "gpr": 71.37,
+    "gpr_threats": 82.4,
+    "gpr_acts": 60.14
+  },
+  {
+    "date": "1984-09-01",
+    "gpr": 93.14,
+    "gpr_threats": 101.11,
+    "gpr_acts": 84.46
+  },
+  {
+    "date": "1984-10-01",
+    "gpr": 93.22,
+    "gpr_threats": 109.51,
+    "gpr_acts": 87.75
+  },
+  {
+    "date": "1984-11-01",
+    "gpr": 92.72,
+    "gpr_threats": 111.74,
+    "gpr_acts": 74.27
+  },
+  {
+    "date": "1984-12-01",
+    "gpr": 95.19,
+    "gpr_threats": 108.51,
+    "gpr_acts": 81.88
+  },
+  {
+    "date": "1985-01-01",
+    "gpr": 87.15,
+    "gpr_threats": 101.08,
+    "gpr_acts": 75.14
+  },
+  {
+    "date": "1985-02-01",
+    "gpr": 99.55,
+    "gpr_threats": 127.21,
+    "gpr_acts": 75.1
+  },
+  {
+    "date": "1985-03-01",
+    "gpr": 103.82,
+    "gpr_threats": 131.81,
+    "gpr_acts": 78.72
+  },
+  {
+    "date": "1985-04-01",
+    "gpr": 74.3,
+    "gpr_threats": 91.3,
+    "gpr_acts": 56.71
+  },
+  {
+    "date": "1985-05-01",
+    "gpr": 84.36,
+    "gpr_threats": 101.91,
+    "gpr_acts": 73.03
+  },
+  {
+    "date": "1985-06-01",
+    "gpr": 133.5,
+    "gpr_threats": 156.59,
+    "gpr_acts": 130.38
+  },
+  {
+    "date": "1985-07-01",
+    "gpr": 114.46,
+    "gpr_threats": 128.54,
+    "gpr_acts": 115.17
+  },
+  {
+    "date": "1985-08-01",
+    "gpr": 65.62,
+    "gpr_threats": 69.09,
+    "gpr_acts": 61.56
+  },
+  {
+    "date": "1985-09-01",
+    "gpr": 84.29,
+    "gpr_threats": 103.2,
+    "gpr_acts": 65.12
+  },
+  {
+    "date": "1985-10-01",
+    "gpr": 93.57,
+    "gpr_threats": 101.97,
+    "gpr_acts": 90.32
+  },
+  {
+    "date": "1985-11-01",
+    "gpr": 85.88,
+    "gpr_threats": 105.18,
+    "gpr_acts": 63.06
+  },
+  {
+    "date": "1985-12-01",
+    "gpr": 80.88,
+    "gpr_threats": 76.83,
+    "gpr_acts": 83.41
+  },
+  {
+    "date": "1986-01-01",
+    "gpr": 106.45,
+    "gpr_threats": 126.04,
+    "gpr_acts": 116.9
+  },
+  {
+    "date": "1986-02-01",
+    "gpr": 81.33,
+    "gpr_threats": 83.87,
+    "gpr_acts": 81.09
+  },
+  {
+    "date": "1986-03-01",
+    "gpr": 84.73,
+    "gpr_threats": 89.61,
+    "gpr_acts": 86.79
+  },
+  {
+    "date": "1986-04-01",
+    "gpr": 136.76,
+    "gpr_threats": 158.08,
+    "gpr_acts": 147.18
+  },
+  {
+    "date": "1986-05-01",
+    "gpr": 91.71,
+    "gpr_threats": 120.52,
+    "gpr_acts": 77.19
+  },
+  {
+    "date": "1986-06-01",
+    "gpr": 76.17,
+    "gpr_threats": 97.85,
+    "gpr_acts": 56.86
+  },
+  {
+    "date": "1986-07-01",
+    "gpr": 78.53,
+    "gpr_threats": 99.91,
+    "gpr_acts": 59.94
+  },
+  {
+    "date": "1986-08-01",
+    "gpr": 83.76,
+    "gpr_threats": 102.97,
+    "gpr_acts": 67.42
+  },
+  {
+    "date": "1986-09-01",
+    "gpr": 96.59,
+    "gpr_threats": 105.96,
+    "gpr_acts": 93.8
+  },
+  {
+    "date": "1986-10-01",
+    "gpr": 90.36,
+    "gpr_threats": 122.56,
+    "gpr_acts": 62.16
+  },
+  {
+    "date": "1986-11-01",
+    "gpr": 95.01,
+    "gpr_threats": 125.02,
+    "gpr_acts": 66.47
+  },
+  {
+    "date": "1986-12-01",
+    "gpr": 79.1,
+    "gpr_threats": 92.58,
+    "gpr_acts": 64.65
+  },
+  {
+    "date": "1987-01-01",
+    "gpr": 83.18,
+    "gpr_threats": 90.54,
+    "gpr_acts": 79.44
+  },
+  {
+    "date": "1987-02-01",
+    "gpr": 83.1,
+    "gpr_threats": 107.6,
+    "gpr_acts": 66.14
+  },
+  {
+    "date": "1987-03-01",
+    "gpr": 72.19,
+    "gpr_threats": 101.97,
+    "gpr_acts": 46.78
+  },
+  {
+    "date": "1987-04-01",
+    "gpr": 96.95,
+    "gpr_threats": 110.66,
+    "gpr_acts": 79.36
+  },
+  {
+    "date": "1987-05-01",
+    "gpr": 82.95,
+    "gpr_threats": 97.07,
+    "gpr_acts": 69.27
+  },
+  {
+    "date": "1987-06-01",
+    "gpr": 76.25,
+    "gpr_threats": 96.55,
+    "gpr_acts": 56.75
+  },
+  {
+    "date": "1987-07-01",
+    "gpr": 82.41,
+    "gpr_threats": 106.53,
+    "gpr_acts": 66.68
+  },
+  {
+    "date": "1987-08-01",
+    "gpr": 85.96,
+    "gpr_threats": 115.62,
+    "gpr_acts": 67.5
+  },
+  {
+    "date": "1987-09-01",
+    "gpr": 102.23,
+    "gpr_threats": 143.19,
+    "gpr_acts": 73.28
+  },
+  {
+    "date": "1987-10-01",
+    "gpr": 81.73,
+    "gpr_threats": 100.02,
+    "gpr_acts": 68.3
+  },
+  {
+    "date": "1987-11-01",
+    "gpr": 81.3,
+    "gpr_threats": 109.66,
+    "gpr_acts": 57.43
+  },
+  {
+    "date": "1987-12-01",
+    "gpr": 95.86,
+    "gpr_threats": 130.91,
+    "gpr_acts": 66.68
+  },
+  {
+    "date": "1988-01-01",
+    "gpr": 72.0,
+    "gpr_threats": 90.42,
+    "gpr_acts": 53.73
+  },
+  {
+    "date": "1988-02-01",
+    "gpr": 72.54,
+    "gpr_threats": 89.69,
+    "gpr_acts": 54.86
+  },
+  {
+    "date": "1988-03-01",
+    "gpr": 94.23,
+    "gpr_threats": 107.8,
+    "gpr_acts": 80.05
+  },
+  {
+    "date": "1988-04-01",
+    "gpr": 98.63,
+    "gpr_threats": 110.72,
+    "gpr_acts": 90.15
+  },
+  {
+    "date": "1988-05-01",
+    "gpr": 88.94,
+    "gpr_threats": 105.08,
+    "gpr_acts": 72.93
+  },
+  {
+    "date": "1988-06-01",
+    "gpr": 64.08,
+    "gpr_threats": 77.19,
+    "gpr_acts": 53.11
+  },
+  {
+    "date": "1988-07-01",
+    "gpr": 66.7,
+    "gpr_threats": 68.12,
+    "gpr_acts": 67.93
+  },
+  {
+    "date": "1988-08-01",
+    "gpr": 67.89,
+    "gpr_threats": 69.28,
+    "gpr_acts": 68.11
+  },
+  {
+    "date": "1988-09-01",
+    "gpr": 63.65,
+    "gpr_threats": 75.45,
+    "gpr_acts": 54.27
+  },
+  {
+    "date": "1988-10-01",
+    "gpr": 60.81,
+    "gpr_threats": 70.2,
+    "gpr_acts": 47.48
+  },
+  {
+    "date": "1988-11-01",
+    "gpr": 55.07,
+    "gpr_threats": 57.72,
+    "gpr_acts": 51.19
+  },
+  {
+    "date": "1988-12-01",
+    "gpr": 69.45,
+    "gpr_threats": 71.82,
+    "gpr_acts": 65.9
+  },
+  {
+    "date": "1989-01-01",
+    "gpr": 78.83,
+    "gpr_threats": 91.14,
+    "gpr_acts": 64.46
+  },
+  {
+    "date": "1989-02-01",
+    "gpr": 85.93,
+    "gpr_threats": 99.14,
+    "gpr_acts": 77.15
+  },
+  {
+    "date": "1989-03-01",
+    "gpr": 75.95,
+    "gpr_threats": 81.04,
+    "gpr_acts": 69.25
+  },
+  {
+    "date": "1989-04-01",
+    "gpr": 74.17,
+    "gpr_threats": 81.78,
+    "gpr_acts": 65.98
+  },
+  {
+    "date": "1989-05-01",
+    "gpr": 90.98,
+    "gpr_threats": 121.55,
+    "gpr_acts": 59.88
+  },
+  {
+    "date": "1989-06-01",
+    "gpr": 78.68,
+    "gpr_threats": 106.4,
+    "gpr_acts": 48.14
+  },
+  {
+    "date": "1989-07-01",
+    "gpr": 74.37,
+    "gpr_threats": 94.6,
+    "gpr_acts": 56.77
+  },
+  {
+    "date": "1989-08-01",
+    "gpr": 96.04,
+    "gpr_threats": 118.79,
+    "gpr_acts": 90.97
+  },
+  {
+    "date": "1989-09-01",
+    "gpr": 74.33,
+    "gpr_threats": 85.5,
+    "gpr_acts": 66.79
+  },
+  {
+    "date": "1989-10-01",
+    "gpr": 59.35,
+    "gpr_threats": 67.98,
+    "gpr_acts": 50.95
+  },
+  {
+    "date": "1989-11-01",
+    "gpr": 86.78,
+    "gpr_threats": 85.3,
+    "gpr_acts": 88.09
+  },
+  {
+    "date": "1989-12-01",
+    "gpr": 99.58,
+    "gpr_threats": 108.84,
+    "gpr_acts": 101.16
+  },
+  {
+    "date": "1990-01-01",
+    "gpr": 70.66,
+    "gpr_threats": 79.02,
+    "gpr_acts": 60.49
+  },
+  {
+    "date": "1990-02-01",
+    "gpr": 70.49,
+    "gpr_threats": 88.42,
+    "gpr_acts": 51.75
+  },
+  {
+    "date": "1990-03-01",
+    "gpr": 61.83,
+    "gpr_threats": 75.67,
+    "gpr_acts": 47.26
+  },
+  {
+    "date": "1990-04-01",
+    "gpr": 70.29,
+    "gpr_threats": 95.01,
+    "gpr_acts": 43.15
+  },
+  {
+    "date": "1990-05-01",
+    "gpr": 79.51,
+    "gpr_threats": 109.38,
+    "gpr_acts": 52.34
+  },
+  {
+    "date": "1990-06-01",
+    "gpr": 69.35,
+    "gpr_threats": 75.58,
+    "gpr_acts": 62.14
+  },
+  {
+    "date": "1990-07-01",
+    "gpr": 73.71,
+    "gpr_threats": 80.59,
+    "gpr_acts": 65.57
+  },
+  {
+    "date": "1990-08-01",
+    "gpr": 191.89,
+    "gpr_threats": 314.06,
+    "gpr_acts": 89.01
+  },
+  {
+    "date": "1990-09-01",
+    "gpr": 143.62,
+    "gpr_threats": 239.73,
+    "gpr_acts": 64.97
+  },
+  {
+    "date": "1990-10-01",
+    "gpr": 115.0,
+    "gpr_threats": 160.05,
+    "gpr_acts": 75.89
+  },
+  {
+    "date": "1990-11-01",
+    "gpr": 131.3,
+    "gpr_threats": 185.28,
+    "gpr_acts": 94.73
+  },
+  {
+    "date": "1990-12-01",
+    "gpr": 128.08,
+    "gpr_threats": 190.06,
+    "gpr_acts": 76.85
+  },
+  {
+    "date": "1991-01-01",
+    "gpr": 250.4,
+    "gpr_threats": 285.02,
+    "gpr_acts": 273.13
+  },
+  {
+    "date": "1991-02-01",
+    "gpr": 238.83,
+    "gpr_threats": 223.39,
+    "gpr_acts": 299.47
+  },
+  {
+    "date": "1991-03-01",
+    "gpr": 122.96,
+    "gpr_threats": 129.19,
+    "gpr_acts": 124.76
+  },
+  {
+    "date": "1991-04-01",
+    "gpr": 84.39,
+    "gpr_threats": 103.3,
+    "gpr_acts": 66.43
+  },
+  {
+    "date": "1991-05-01",
+    "gpr": 77.86,
+    "gpr_threats": 98.8,
+    "gpr_acts": 58.03
+  },
+  {
+    "date": "1991-06-01",
+    "gpr": 72.05,
+    "gpr_threats": 100.41,
+    "gpr_acts": 47.17
+  },
+  {
+    "date": "1991-07-01",
+    "gpr": 95.58,
+    "gpr_threats": 142.52,
+    "gpr_acts": 61.91
+  },
+  {
+    "date": "1991-08-01",
+    "gpr": 88.1,
+    "gpr_threats": 126.35,
+    "gpr_acts": 57.5
+  },
+  {
+    "date": "1991-09-01",
+    "gpr": 96.69,
+    "gpr_threats": 154.95,
+    "gpr_acts": 50.8
+  },
+  {
+    "date": "1991-10-01",
+    "gpr": 88.13,
+    "gpr_threats": 130.15,
+    "gpr_acts": 56.27
+  },
+  {
+    "date": "1991-11-01",
+    "gpr": 75.96,
+    "gpr_threats": 106.54,
+    "gpr_acts": 51.35
+  },
+  {
+    "date": "1991-12-01",
+    "gpr": 91.37,
+    "gpr_threats": 141.05,
+    "gpr_acts": 46.57
+  },
+  {
+    "date": "1992-01-01",
+    "gpr": 85.81,
+    "gpr_threats": 126.37,
+    "gpr_acts": 47.45
+  },
+  {
+    "date": "1992-02-01",
+    "gpr": 77.41,
+    "gpr_threats": 105.27,
+    "gpr_acts": 48.99
+  },
+  {
+    "date": "1992-03-01",
+    "gpr": 70.11,
+    "gpr_threats": 102.41,
+    "gpr_acts": 38.76
+  },
+  {
+    "date": "1992-04-01",
+    "gpr": 80.7,
+    "gpr_threats": 101.56,
+    "gpr_acts": 61.53
+  },
+  {
+    "date": "1992-05-01",
+    "gpr": 74.29,
+    "gpr_threats": 105.58,
+    "gpr_acts": 43.91
+  },
+  {
+    "date": "1992-06-01",
+    "gpr": 85.24,
+    "gpr_threats": 134.04,
+    "gpr_acts": 40.68
+  },
+  {
+    "date": "1992-07-01",
+    "gpr": 70.4,
+    "gpr_threats": 102.13,
+    "gpr_acts": 44.15
+  },
+  {
+    "date": "1992-08-01",
+    "gpr": 71.21,
+    "gpr_threats": 90.13,
+    "gpr_acts": 53.22
+  },
+  {
+    "date": "1992-09-01",
+    "gpr": 72.06,
+    "gpr_threats": 104.79,
+    "gpr_acts": 38.37
+  },
+  {
+    "date": "1992-10-01",
+    "gpr": 60.01,
+    "gpr_threats": 75.21,
+    "gpr_acts": 43.83
+  },
+  {
+    "date": "1992-11-01",
+    "gpr": 89.05,
+    "gpr_threats": 126.37,
+    "gpr_acts": 57.53
+  },
+  {
+    "date": "1992-12-01",
+    "gpr": 75.01,
+    "gpr_threats": 103.59,
+    "gpr_acts": 51.5
+  },
+  {
+    "date": "1993-01-01",
+    "gpr": 108.97,
+    "gpr_threats": 142.94,
+    "gpr_acts": 85.22
+  },
+  {
+    "date": "1993-02-01",
+    "gpr": 78.25,
+    "gpr_threats": 103.89,
+    "gpr_acts": 55.21
+  },
+  {
+    "date": "1993-03-01",
+    "gpr": 80.52,
+    "gpr_threats": 103.13,
+    "gpr_acts": 58.7
+  },
+  {
+    "date": "1993-04-01",
+    "gpr": 96.79,
+    "gpr_threats": 145.8,
+    "gpr_acts": 58.28
+  },
+  {
+    "date": "1993-05-01",
+    "gpr": 92.5,
+    "gpr_threats": 137.93,
+    "gpr_acts": 52.69
+  },
+  {
+    "date": "1993-06-01",
+    "gpr": 86.13,
+    "gpr_threats": 124.55,
+    "gpr_acts": 52.1
+  },
+  {
+    "date": "1993-07-01",
+    "gpr": 109.43,
+    "gpr_threats": 136.26,
+    "gpr_acts": 84.42
+  },
+  {
+    "date": "1993-08-01",
+    "gpr": 73.85,
+    "gpr_threats": 91.26,
+    "gpr_acts": 58.75
+  },
+  {
+    "date": "1993-09-01",
+    "gpr": 81.25,
+    "gpr_threats": 103.06,
+    "gpr_acts": 59.44
+  },
+  {
+    "date": "1993-10-01",
+    "gpr": 92.53,
+    "gpr_threats": 135.79,
+    "gpr_acts": 48.2
+  },
+  {
+    "date": "1993-11-01",
+    "gpr": 71.49,
+    "gpr_threats": 110.71,
+    "gpr_acts": 32.01
+  },
+  {
+    "date": "1993-12-01",
+    "gpr": 67.79,
+    "gpr_threats": 99.52,
+    "gpr_acts": 34.89
+  },
+  {
+    "date": "1994-01-01",
+    "gpr": 70.51,
+    "gpr_threats": 94.47,
+    "gpr_acts": 45.73
+  },
+  {
+    "date": "1994-02-01",
+    "gpr": 114.3,
+    "gpr_threats": 171.97,
+    "gpr_acts": 64.74
+  },
+  {
+    "date": "1994-03-01",
+    "gpr": 85.84,
+    "gpr_threats": 111.44,
+    "gpr_acts": 60.56
+  },
+  {
+    "date": "1994-04-01",
+    "gpr": 84.95,
+    "gpr_threats": 128.17,
+    "gpr_acts": 48.69
+  },
+  {
+    "date": "1994-05-01",
+    "gpr": 99.96,
+    "gpr_threats": 140.66,
+    "gpr_acts": 62.15
+  },
+  {
+    "date": "1994-06-01",
+    "gpr": 107.44,
+    "gpr_threats": 155.88,
+    "gpr_acts": 62.2
+  },
+  {
+    "date": "1994-07-01",
+    "gpr": 95.89,
+    "gpr_threats": 129.75,
+    "gpr_acts": 64.31
+  },
+  {
+    "date": "1994-08-01",
+    "gpr": 77.08,
+    "gpr_threats": 119.47,
+    "gpr_acts": 40.81
+  },
+  {
+    "date": "1994-09-01",
+    "gpr": 81.29,
+    "gpr_threats": 130.21,
+    "gpr_acts": 31.44
+  },
+  {
+    "date": "1994-10-01",
+    "gpr": 82.31,
+    "gpr_threats": 127.87,
+    "gpr_acts": 46.42
+  },
+  {
+    "date": "1994-11-01",
+    "gpr": 75.45,
+    "gpr_threats": 105.96,
+    "gpr_acts": 56.63
+  },
+  {
+    "date": "1994-12-01",
+    "gpr": 88.57,
+    "gpr_threats": 119.21,
+    "gpr_acts": 63.49
+  },
+  {
+    "date": "1995-01-01",
+    "gpr": 67.55,
+    "gpr_threats": 85.0,
+    "gpr_acts": 48.07
+  },
+  {
+    "date": "1995-02-01",
+    "gpr": 73.66,
+    "gpr_threats": 79.88,
+    "gpr_acts": 63.85
+  },
+  {
+    "date": "1995-03-01",
+    "gpr": 71.85,
+    "gpr_threats": 85.81,
+    "gpr_acts": 57.83
+  },
+  {
+    "date": "1995-04-01",
+    "gpr": 95.97,
+    "gpr_threats": 99.07,
+    "gpr_acts": 88.49
+  },
+  {
+    "date": "1995-05-01",
+    "gpr": 77.52,
+    "gpr_threats": 95.6,
+    "gpr_acts": 63.84
+  },
+  {
+    "date": "1995-06-01",
+    "gpr": 91.8,
+    "gpr_threats": 127.75,
+    "gpr_acts": 64.24
+  },
+  {
+    "date": "1995-07-01",
+    "gpr": 93.18,
+    "gpr_threats": 115.28,
+    "gpr_acts": 77.29
+  },
+  {
+    "date": "1995-08-01",
+    "gpr": 97.22,
+    "gpr_threats": 123.76,
+    "gpr_acts": 87.79
+  },
+  {
+    "date": "1995-09-01",
+    "gpr": 55.6,
+    "gpr_threats": 66.97,
+    "gpr_acts": 50.95
+  },
+  {
+    "date": "1995-10-01",
+    "gpr": 52.84,
+    "gpr_threats": 60.29,
+    "gpr_acts": 47.0
+  },
+  {
+    "date": "1995-11-01",
+    "gpr": 60.75,
+    "gpr_threats": 74.05,
+    "gpr_acts": 50.44
+  },
+  {
+    "date": "1995-12-01",
+    "gpr": 63.14,
+    "gpr_threats": 73.56,
+    "gpr_acts": 50.37
+  },
+  {
+    "date": "1996-01-01",
+    "gpr": 65.88,
+    "gpr_threats": 68.99,
+    "gpr_acts": 68.25
+  },
+  {
+    "date": "1996-02-01",
+    "gpr": 69.67,
+    "gpr_threats": 94.51,
+    "gpr_acts": 47.44
+  },
+  {
+    "date": "1996-03-01",
+    "gpr": 67.64,
+    "gpr_threats": 78.08,
+    "gpr_acts": 57.59
+  },
+  {
+    "date": "1996-04-01",
+    "gpr": 64.88,
+    "gpr_threats": 69.41,
+    "gpr_acts": 65.18
+  },
+  {
+    "date": "1996-05-01",
+    "gpr": 54.01,
+    "gpr_threats": 56.79,
+    "gpr_acts": 51.15
+  },
+  {
+    "date": "1996-06-01",
+    "gpr": 53.93,
+    "gpr_threats": 62.09,
+    "gpr_acts": 44.97
+  },
+  {
+    "date": "1996-07-01",
+    "gpr": 64.37,
+    "gpr_threats": 72.94,
+    "gpr_acts": 62.46
+  },
+  {
+    "date": "1996-08-01",
+    "gpr": 66.06,
+    "gpr_threats": 79.29,
+    "gpr_acts": 62.06
+  },
+  {
+    "date": "1996-09-01",
+    "gpr": 77.14,
+    "gpr_threats": 86.02,
+    "gpr_acts": 75.91
+  },
+  {
+    "date": "1996-10-01",
+    "gpr": 42.84,
+    "gpr_threats": 50.47,
+    "gpr_acts": 34.73
+  },
+  {
+    "date": "1996-11-01",
+    "gpr": 49.13,
+    "gpr_threats": 52.56,
+    "gpr_acts": 43.2
+  },
+  {
+    "date": "1996-12-01",
+    "gpr": 61.4,
+    "gpr_threats": 72.47,
+    "gpr_acts": 51.72
+  },
+  {
+    "date": "1997-01-01",
+    "gpr": 43.28,
+    "gpr_threats": 51.03,
+    "gpr_acts": 40.58
+  },
+  {
+    "date": "1997-02-01",
+    "gpr": 38.71,
+    "gpr_threats": 47.55,
+    "gpr_acts": 33.11
+  },
+  {
+    "date": "1997-03-01",
+    "gpr": 46.36,
+    "gpr_threats": 53.83,
+    "gpr_acts": 39.8
+  },
+  {
+    "date": "1997-04-01",
+    "gpr": 48.41,
+    "gpr_threats": 56.43,
+    "gpr_acts": 40.82
+  },
+  {
+    "date": "1997-05-01",
+    "gpr": 44.15,
+    "gpr_threats": 51.16,
+    "gpr_acts": 37.84
+  },
+  {
+    "date": "1997-06-01",
+    "gpr": 28.03,
+    "gpr_threats": 30.31,
+    "gpr_acts": 25.89
+  },
+  {
+    "date": "1997-07-01",
+    "gpr": 30.98,
+    "gpr_threats": 34.33,
+    "gpr_acts": 27.07
+  },
+  {
+    "date": "1997-08-01",
+    "gpr": 37.34,
+    "gpr_threats": 37.48,
+    "gpr_acts": 37.69
+  },
+  {
+    "date": "1997-09-01",
+    "gpr": 33.79,
+    "gpr_threats": 39.1,
+    "gpr_acts": 27.49
+  },
+  {
+    "date": "1997-10-01",
+    "gpr": 37.51,
+    "gpr_threats": 55.12,
+    "gpr_acts": 20.4
+  },
+  {
+    "date": "1997-11-01",
+    "gpr": 51.56,
+    "gpr_threats": 83.47,
+    "gpr_acts": 23.6
+  },
+  {
+    "date": "1997-12-01",
+    "gpr": 35.97,
+    "gpr_threats": 46.34,
+    "gpr_acts": 25.96
+  },
+  {
+    "date": "1998-01-01",
+    "gpr": 37.52,
+    "gpr_threats": 54.79,
+    "gpr_acts": 23.9
+  },
+  {
+    "date": "1998-02-01",
+    "gpr": 57.51,
+    "gpr_threats": 87.78,
+    "gpr_acts": 33.09
+  },
+  {
+    "date": "1998-03-01",
+    "gpr": 45.87,
+    "gpr_threats": 60.72,
+    "gpr_acts": 34.13
+  },
+  {
+    "date": "1998-04-01",
+    "gpr": 35.72,
+    "gpr_threats": 50.37,
+    "gpr_acts": 22.28
+  },
+  {
+    "date": "1998-05-01",
+    "gpr": 66.73,
+    "gpr_threats": 107.05,
+    "gpr_acts": 24.36
+  },
+  {
+    "date": "1998-06-01",
+    "gpr": 59.47,
+    "gpr_threats": 87.83,
+    "gpr_acts": 34.3
+  },
+  {
+    "date": "1998-07-01",
+    "gpr": 46.37,
+    "gpr_threats": 65.73,
+    "gpr_acts": 31.41
+  },
+  {
+    "date": "1998-08-01",
+    "gpr": 74.23,
+    "gpr_threats": 76.07,
+    "gpr_acts": 84.84
+  },
+  {
+    "date": "1998-09-01",
+    "gpr": 51.47,
+    "gpr_threats": 65.4,
+    "gpr_acts": 42.08
+  },
+  {
+    "date": "1998-10-01",
+    "gpr": 39.15,
+    "gpr_threats": 48.27,
+    "gpr_acts": 32.93
+  },
+  {
+    "date": "1998-11-01",
+    "gpr": 53.12,
+    "gpr_threats": 78.45,
+    "gpr_acts": 28.95
+  },
+  {
+    "date": "1998-12-01",
+    "gpr": 54.35,
+    "gpr_threats": 72.61,
+    "gpr_acts": 43.06
+  },
+  {
+    "date": "1999-01-01",
+    "gpr": 48.83,
+    "gpr_threats": 67.27,
+    "gpr_acts": 33.02
+  },
+  {
+    "date": "1999-02-01",
+    "gpr": 39.02,
+    "gpr_threats": 52.02,
+    "gpr_acts": 31.24
+  },
+  {
+    "date": "1999-03-01",
+    "gpr": 73.29,
+    "gpr_threats": 92.05,
+    "gpr_acts": 61.88
+  },
+  {
+    "date": "1999-04-01",
+    "gpr": 87.2,
+    "gpr_threats": 103.99,
+    "gpr_acts": 80.17
+  },
+  {
+    "date": "1999-05-01",
+    "gpr": 71.05,
+    "gpr_threats": 86.58,
+    "gpr_acts": 64.96
+  },
+  {
+    "date": "1999-06-01",
+    "gpr": 62.74,
+    "gpr_threats": 67.68,
+    "gpr_acts": 62.09
+  },
+  {
+    "date": "1999-07-01",
+    "gpr": 45.1,
+    "gpr_threats": 56.45,
+    "gpr_acts": 38.21
+  },
+  {
+    "date": "1999-08-01",
+    "gpr": 42.68,
+    "gpr_threats": 52.62,
+    "gpr_acts": 33.42
+  },
+  {
+    "date": "1999-09-01",
+    "gpr": 55.73,
+    "gpr_threats": 72.34,
+    "gpr_acts": 40.97
+  },
+  {
+    "date": "1999-10-01",
+    "gpr": 57.77,
+    "gpr_threats": 79.07,
+    "gpr_acts": 38.54
+  },
+  {
+    "date": "1999-11-01",
+    "gpr": 44.12,
+    "gpr_threats": 55.25,
+    "gpr_acts": 34.75
+  },
+  {
+    "date": "1999-12-01",
+    "gpr": 70.18,
+    "gpr_threats": 93.52,
+    "gpr_acts": 62.22
+  },
+  {
+    "date": "2000-01-01",
+    "gpr": 52.97,
+    "gpr_threats": 60.84,
+    "gpr_acts": 49.49
+  },
+  {
+    "date": "2000-02-01",
+    "gpr": 54.46,
+    "gpr_threats": 58.06,
+    "gpr_acts": 52.43
+  },
+  {
+    "date": "2000-03-01",
+    "gpr": 39.38,
+    "gpr_threats": 52.42,
+    "gpr_acts": 27.27
+  },
+  {
+    "date": "2000-04-01",
+    "gpr": 39.66,
+    "gpr_threats": 53.65,
+    "gpr_acts": 27.07
+  },
+  {
+    "date": "2000-05-01",
+    "gpr": 60.2,
+    "gpr_threats": 68.13,
+    "gpr_acts": 56.94
+  },
+  {
+    "date": "2000-06-01",
+    "gpr": 50.01,
+    "gpr_threats": 68.18,
+    "gpr_acts": 36.15
+  },
+  {
+    "date": "2000-07-01",
+    "gpr": 39.58,
+    "gpr_threats": 51.16,
+    "gpr_acts": 28.24
+  },
+  {
+    "date": "2000-08-01",
+    "gpr": 32.6,
+    "gpr_threats": 41.73,
+    "gpr_acts": 26.29
+  },
+  {
+    "date": "2000-09-01",
+    "gpr": 44.67,
+    "gpr_threats": 65.46,
+    "gpr_acts": 25.74
+  },
+  {
+    "date": "2000-10-01",
+    "gpr": 58.18,
+    "gpr_threats": 73.04,
+    "gpr_acts": 56.49
+  },
+  {
+    "date": "2000-11-01",
+    "gpr": 36.52,
+    "gpr_threats": 45.46,
+    "gpr_acts": 34.33
+  },
+  {
+    "date": "2000-12-01",
+    "gpr": 39.06,
+    "gpr_threats": 43.94,
+    "gpr_acts": 36.48
+  },
+  {
+    "date": "2001-01-01",
+    "gpr": 38.04,
+    "gpr_threats": 52.46,
+    "gpr_acts": 27.86
+  },
+  {
+    "date": "2001-02-01",
+    "gpr": 33.47,
+    "gpr_threats": 45.43,
+    "gpr_acts": 23.82
+  },
+  {
+    "date": "2001-03-01",
+    "gpr": 41.96,
+    "gpr_threats": 49.59,
+    "gpr_acts": 36.61
+  },
+  {
+    "date": "2001-04-01",
+    "gpr": 38.07,
+    "gpr_threats": 48.39,
+    "gpr_acts": 30.1
+  },
+  {
+    "date": "2001-05-01",
+    "gpr": 46.7,
+    "gpr_threats": 57.58,
+    "gpr_acts": 39.35
+  },
+  {
+    "date": "2001-06-01",
+    "gpr": 52.24,
+    "gpr_threats": 66.26,
+    "gpr_acts": 43.75
+  },
+  {
+    "date": "2001-07-01",
+    "gpr": 50.58,
+    "gpr_threats": 60.45,
+    "gpr_acts": 43.05
+  },
+  {
+    "date": "2001-08-01",
+    "gpr": 48.4,
+    "gpr_threats": 47.34,
+    "gpr_acts": 52.95
+  },
+  {
+    "date": "2001-09-01",
+    "gpr": 289.94,
+    "gpr_threats": 148.79,
+    "gpr_acts": 457.51
+  },
+  {
+    "date": "2001-10-01",
+    "gpr": 303.59,
+    "gpr_threats": 169.75,
+    "gpr_acts": 469.63
+  },
+  {
+    "date": "2001-11-01",
+    "gpr": 215.27,
+    "gpr_threats": 128.5,
+    "gpr_acts": 317.59
+  },
+  {
+    "date": "2001-12-01",
+    "gpr": 179.28,
+    "gpr_threats": 104.61,
+    "gpr_acts": 266.27
+  },
+  {
+    "date": "2002-01-01",
+    "gpr": 131.62,
+    "gpr_threats": 98.31,
+    "gpr_acts": 179.29
+  },
+  {
+    "date": "2002-02-01",
+    "gpr": 106.1,
+    "gpr_threats": 81.29,
+    "gpr_acts": 137.24
+  },
+  {
+    "date": "2002-03-01",
+    "gpr": 112.15,
+    "gpr_threats": 84.01,
+    "gpr_acts": 149.98
+  },
+  {
+    "date": "2002-04-01",
+    "gpr": 114.57,
+    "gpr_threats": 81.38,
+    "gpr_acts": 149.72
+  },
+  {
+    "date": "2002-05-01",
+    "gpr": 118.06,
+    "gpr_threats": 116.05,
+    "gpr_acts": 137.36
+  },
+  {
+    "date": "2002-06-01",
+    "gpr": 107.95,
+    "gpr_threats": 105.68,
+    "gpr_acts": 126.77
+  },
+  {
+    "date": "2002-07-01",
+    "gpr": 90.22,
+    "gpr_threats": 77.22,
+    "gpr_acts": 110.07
+  },
+  {
+    "date": "2002-08-01",
+    "gpr": 88.44,
+    "gpr_threats": 70.15,
+    "gpr_acts": 106.08
+  },
+  {
+    "date": "2002-09-01",
+    "gpr": 111.66,
+    "gpr_threats": 120.15,
+    "gpr_acts": 119.49
+  },
+  {
+    "date": "2002-10-01",
+    "gpr": 119.17,
+    "gpr_threats": 130.82,
+    "gpr_acts": 129.6
+  },
+  {
+    "date": "2002-11-01",
+    "gpr": 117.24,
+    "gpr_threats": 119.98,
+    "gpr_acts": 126.37
+  },
+  {
+    "date": "2002-12-01",
+    "gpr": 116.27,
+    "gpr_threats": 128.88,
+    "gpr_acts": 115.68
+  },
+  {
+    "date": "2003-01-01",
+    "gpr": 136.64,
+    "gpr_threats": 175.48,
+    "gpr_acts": 118.89
+  },
+  {
+    "date": "2003-02-01",
+    "gpr": 140.88,
+    "gpr_threats": 189.81,
+    "gpr_acts": 133.26
+  },
+  {
+    "date": "2003-03-01",
+    "gpr": 244.57,
+    "gpr_threats": 261.78,
+    "gpr_acts": 293.83
+  },
+  {
+    "date": "2003-04-01",
+    "gpr": 209.31,
+    "gpr_threats": 192.01,
+    "gpr_acts": 259.41
+  },
+  {
+    "date": "2003-05-01",
+    "gpr": 131.4,
+    "gpr_threats": 135.02,
+    "gpr_acts": 142.08
+  },
+  {
+    "date": "2003-06-01",
+    "gpr": 126.88,
+    "gpr_threats": 120.66,
+    "gpr_acts": 151.67
+  },
+  {
+    "date": "2003-07-01",
+    "gpr": 119.36,
+    "gpr_threats": 107.32,
+    "gpr_acts": 135.67
+  },
+  {
+    "date": "2003-08-01",
+    "gpr": 112.95,
+    "gpr_threats": 97.64,
+    "gpr_acts": 135.65
+  },
+  {
+    "date": "2003-09-01",
+    "gpr": 102.62,
+    "gpr_threats": 92.09,
+    "gpr_acts": 119.75
+  },
+  {
+    "date": "2003-10-01",
+    "gpr": 94.6,
+    "gpr_threats": 87.04,
+    "gpr_acts": 109.88
+  },
+  {
+    "date": "2003-11-01",
+    "gpr": 95.35,
+    "gpr_threats": 73.88,
+    "gpr_acts": 124.08
+  },
+  {
+    "date": "2003-12-01",
+    "gpr": 109.33,
+    "gpr_threats": 92.47,
+    "gpr_acts": 133.37
+  },
+  {
+    "date": "2004-01-01",
+    "gpr": 97.68,
+    "gpr_threats": 100.04,
+    "gpr_acts": 107.74
+  },
+  {
+    "date": "2004-02-01",
+    "gpr": 98.96,
+    "gpr_threats": 95.15,
+    "gpr_acts": 110.94
+  },
+  {
+    "date": "2004-03-01",
+    "gpr": 105.25,
+    "gpr_threats": 79.99,
+    "gpr_acts": 138.19
+  },
+  {
+    "date": "2004-04-01",
+    "gpr": 121.13,
+    "gpr_threats": 113.28,
+    "gpr_acts": 155.89
+  },
+  {
+    "date": "2004-05-01",
+    "gpr": 105.24,
+    "gpr_threats": 80.07,
+    "gpr_acts": 133.37
+  },
+  {
+    "date": "2004-06-01",
+    "gpr": 125.61,
+    "gpr_threats": 102.4,
+    "gpr_acts": 150.84
+  },
+  {
+    "date": "2004-07-01",
+    "gpr": 121.09,
+    "gpr_threats": 116.58,
+    "gpr_acts": 144.47
+  },
+  {
+    "date": "2004-08-01",
+    "gpr": 120.91,
+    "gpr_threats": 120.7,
+    "gpr_acts": 147.65
+  },
+  {
+    "date": "2004-09-01",
+    "gpr": 133.37,
+    "gpr_threats": 118.15,
+    "gpr_acts": 159.01
+  },
+  {
+    "date": "2004-10-01",
+    "gpr": 105.1,
+    "gpr_threats": 97.13,
+    "gpr_acts": 124.76
+  },
+  {
+    "date": "2004-11-01",
+    "gpr": 107.29,
+    "gpr_threats": 90.15,
+    "gpr_acts": 127.24
+  },
+  {
+    "date": "2004-12-01",
+    "gpr": 86.83,
+    "gpr_threats": 68.16,
+    "gpr_acts": 110.18
+  },
+  {
+    "date": "2005-01-01",
+    "gpr": 80.84,
+    "gpr_threats": 67.51,
+    "gpr_acts": 98.17
+  },
+  {
+    "date": "2005-02-01",
+    "gpr": 90.26,
+    "gpr_threats": 92.56,
+    "gpr_acts": 87.23
+  },
+  {
+    "date": "2005-03-01",
+    "gpr": 72.86,
+    "gpr_threats": 73.84,
+    "gpr_acts": 70.51
+  },
+  {
+    "date": "2005-04-01",
+    "gpr": 76.22,
+    "gpr_threats": 65.16,
+    "gpr_acts": 89.31
+  },
+  {
+    "date": "2005-05-01",
+    "gpr": 82.19,
+    "gpr_threats": 80.65,
+    "gpr_acts": 86.8
+  },
+  {
+    "date": "2005-06-01",
+    "gpr": 71.13,
+    "gpr_threats": 63.99,
+    "gpr_acts": 80.96
+  },
+  {
+    "date": "2005-07-01",
+    "gpr": 122.32,
+    "gpr_threats": 97.03,
+    "gpr_acts": 160.1
+  },
+  {
+    "date": "2005-08-01",
+    "gpr": 92.73,
+    "gpr_threats": 85.92,
+    "gpr_acts": 98.82
+  },
+  {
+    "date": "2005-09-01",
+    "gpr": 82.55,
+    "gpr_threats": 63.57,
+    "gpr_acts": 99.43
+  },
+  {
+    "date": "2005-10-01",
+    "gpr": 76.85,
+    "gpr_threats": 72.24,
+    "gpr_acts": 87.0
+  },
+  {
+    "date": "2005-11-01",
+    "gpr": 67.84,
+    "gpr_threats": 63.12,
+    "gpr_acts": 74.35
+  },
+  {
+    "date": "2005-12-01",
+    "gpr": 86.67,
+    "gpr_threats": 70.16,
+    "gpr_acts": 111.4
+  },
+  {
+    "date": "2006-01-01",
+    "gpr": 80.46,
+    "gpr_threats": 80.45,
+    "gpr_acts": 85.37
+  },
+  {
+    "date": "2006-02-01",
+    "gpr": 77.15,
+    "gpr_threats": 79.75,
+    "gpr_acts": 77.13
+  },
+  {
+    "date": "2006-03-01",
+    "gpr": 81.51,
+    "gpr_threats": 86.6,
+    "gpr_acts": 79.81
+  },
+  {
+    "date": "2006-04-01",
+    "gpr": 71.69,
+    "gpr_threats": 73.78,
+    "gpr_acts": 72.18
+  },
+  {
+    "date": "2006-05-01",
+    "gpr": 77.8,
+    "gpr_threats": 85.85,
+    "gpr_acts": 71.64
+  },
+  {
+    "date": "2006-06-01",
+    "gpr": 83.39,
+    "gpr_threats": 80.43,
+    "gpr_acts": 90.83
+  },
+  {
+    "date": "2006-07-01",
+    "gpr": 106.8,
+    "gpr_threats": 103.54,
+    "gpr_acts": 116.19
+  },
+  {
+    "date": "2006-08-01",
+    "gpr": 106.37,
+    "gpr_threats": 104.83,
+    "gpr_acts": 114.56
+  },
+  {
+    "date": "2006-09-01",
+    "gpr": 99.57,
+    "gpr_threats": 107.9,
+    "gpr_acts": 96.72
+  },
+  {
+    "date": "2006-10-01",
+    "gpr": 91.67,
+    "gpr_threats": 113.25,
+    "gpr_acts": 75.04
+  },
+  {
+    "date": "2006-11-01",
+    "gpr": 75.49,
+    "gpr_threats": 80.44,
+    "gpr_acts": 71.14
+  },
+  {
+    "date": "2006-12-01",
+    "gpr": 80.43,
+    "gpr_threats": 91.49,
+    "gpr_acts": 69.06
+  },
+  {
+    "date": "2007-01-01",
+    "gpr": 94.14,
+    "gpr_threats": 103.05,
+    "gpr_acts": 86.44
+  },
+  {
+    "date": "2007-02-01",
+    "gpr": 88.55,
+    "gpr_threats": 103.37,
+    "gpr_acts": 78.76
+  },
+  {
+    "date": "2007-03-01",
+    "gpr": 74.79,
+    "gpr_threats": 81.02,
+    "gpr_acts": 70.24
+  },
+  {
+    "date": "2007-04-01",
+    "gpr": 73.93,
+    "gpr_threats": 73.95,
+    "gpr_acts": 74.5
+  },
+  {
+    "date": "2007-05-01",
+    "gpr": 88.08,
+    "gpr_threats": 92.73,
+    "gpr_acts": 88.44
+  },
+  {
+    "date": "2007-06-01",
+    "gpr": 92.16,
+    "gpr_threats": 85.79,
+    "gpr_acts": 100.02
+  },
+  {
+    "date": "2007-07-01",
+    "gpr": 96.17,
+    "gpr_threats": 102.59,
+    "gpr_acts": 102.07
+  },
+  {
+    "date": "2007-08-01",
+    "gpr": 70.6,
+    "gpr_threats": 69.3,
+    "gpr_acts": 78.1
+  },
+  {
+    "date": "2007-09-01",
+    "gpr": 88.09,
+    "gpr_threats": 98.93,
+    "gpr_acts": 83.44
+  },
+  {
+    "date": "2007-10-01",
+    "gpr": 94.44,
+    "gpr_threats": 107.95,
+    "gpr_acts": 86.61
+  },
+  {
+    "date": "2007-11-01",
+    "gpr": 76.52,
+    "gpr_threats": 83.67,
+    "gpr_acts": 72.1
+  },
+  {
+    "date": "2007-12-01",
+    "gpr": 80.96,
+    "gpr_threats": 93.91,
+    "gpr_acts": 67.72
+  },
+  {
+    "date": "2008-01-01",
+    "gpr": 80.72,
+    "gpr_threats": 84.24,
+    "gpr_acts": 76.41
+  },
+  {
+    "date": "2008-02-01",
+    "gpr": 79.34,
+    "gpr_threats": 79.12,
+    "gpr_acts": 83.79
+  },
+  {
+    "date": "2008-03-01",
+    "gpr": 67.83,
+    "gpr_threats": 64.61,
+    "gpr_acts": 72.4
+  },
+  {
+    "date": "2008-04-01",
+    "gpr": 68.3,
+    "gpr_threats": 74.92,
+    "gpr_acts": 63.85
+  },
+  {
+    "date": "2008-05-01",
+    "gpr": 65.24,
+    "gpr_threats": 68.04,
+    "gpr_acts": 62.86
+  },
+  {
+    "date": "2008-06-01",
+    "gpr": 70.53,
+    "gpr_threats": 73.71,
+    "gpr_acts": 64.37
+  },
+  {
+    "date": "2008-07-01",
+    "gpr": 79.43,
+    "gpr_threats": 81.17,
+    "gpr_acts": 78.77
+  },
+  {
+    "date": "2008-08-01",
+    "gpr": 74.77,
+    "gpr_threats": 68.14,
+    "gpr_acts": 86.45
+  },
+  {
+    "date": "2008-09-01",
+    "gpr": 77.95,
+    "gpr_threats": 83.25,
+    "gpr_acts": 74.56
+  },
+  {
+    "date": "2008-10-01",
+    "gpr": 52.13,
+    "gpr_threats": 47.14,
+    "gpr_acts": 58.86
+  },
+  {
+    "date": "2008-11-01",
+    "gpr": 63.41,
+    "gpr_threats": 59.15,
+    "gpr_acts": 73.31
+  },
+  {
+    "date": "2008-12-01",
+    "gpr": 74.67,
+    "gpr_threats": 77.11,
+    "gpr_acts": 80.42
+  },
+  {
+    "date": "2009-01-01",
+    "gpr": 61.33,
+    "gpr_threats": 61.63,
+    "gpr_acts": 66.96
+  },
+  {
+    "date": "2009-02-01",
+    "gpr": 63.05,
+    "gpr_threats": 66.63,
+    "gpr_acts": 60.07
+  },
+  {
+    "date": "2009-03-01",
+    "gpr": 56.75,
+    "gpr_threats": 57.69,
+    "gpr_acts": 55.87
+  },
+  {
+    "date": "2009-04-01",
+    "gpr": 69.48,
+    "gpr_threats": 72.77,
+    "gpr_acts": 70.93
+  },
+  {
+    "date": "2009-05-01",
+    "gpr": 77.43,
+    "gpr_threats": 80.33,
+    "gpr_acts": 77.77
+  },
+  {
+    "date": "2009-06-01",
+    "gpr": 71.36,
+    "gpr_threats": 88.43,
+    "gpr_acts": 52.98
+  },
+  {
+    "date": "2009-07-01",
+    "gpr": 69.43,
+    "gpr_threats": 80.07,
+    "gpr_acts": 59.85
+  },
+  {
+    "date": "2009-08-01",
+    "gpr": 59.95,
+    "gpr_threats": 58.12,
+    "gpr_acts": 60.47
+  },
+  {
+    "date": "2009-09-01",
+    "gpr": 74.6,
+    "gpr_threats": 83.81,
+    "gpr_acts": 62.67
+  },
+  {
+    "date": "2009-10-01",
+    "gpr": 81.04,
+    "gpr_threats": 90.11,
+    "gpr_acts": 74.1
+  },
+  {
+    "date": "2009-11-01",
+    "gpr": 66.16,
+    "gpr_threats": 68.18,
+    "gpr_acts": 64.15
+  },
+  {
+    "date": "2009-12-01",
+    "gpr": 84.4,
+    "gpr_threats": 89.74,
+    "gpr_acts": 81.26
+  },
+  {
+    "date": "2010-01-01",
+    "gpr": 78.12,
+    "gpr_threats": 82.47,
+    "gpr_acts": 77.81
+  },
+  {
+    "date": "2010-02-01",
+    "gpr": 71.46,
+    "gpr_threats": 82.13,
+    "gpr_acts": 63.28
+  },
+  {
+    "date": "2010-03-01",
+    "gpr": 58.71,
+    "gpr_threats": 70.42,
+    "gpr_acts": 46.3
+  },
+  {
+    "date": "2010-04-01",
+    "gpr": 72.48,
+    "gpr_threats": 92.5,
+    "gpr_acts": 49.6
+  },
+  {
+    "date": "2010-05-01",
+    "gpr": 85.67,
+    "gpr_threats": 95.84,
+    "gpr_acts": 78.34
+  },
+  {
+    "date": "2010-06-01",
+    "gpr": 95.87,
+    "gpr_threats": 126.58,
+    "gpr_acts": 63.4
+  },
+  {
+    "date": "2010-07-01",
+    "gpr": 66.18,
+    "gpr_threats": 77.62,
+    "gpr_acts": 60.88
+  },
+  {
+    "date": "2010-08-01",
+    "gpr": 74.39,
+    "gpr_threats": 79.5,
+    "gpr_acts": 68.23
+  },
+  {
+    "date": "2010-09-01",
+    "gpr": 63.37,
+    "gpr_threats": 70.91,
+    "gpr_acts": 56.64
+  },
+  {
+    "date": "2010-10-01",
+    "gpr": 57.81,
+    "gpr_threats": 68.85,
+    "gpr_acts": 57.95
+  },
+  {
+    "date": "2010-11-01",
+    "gpr": 82.32,
+    "gpr_threats": 101.51,
+    "gpr_acts": 68.53
+  },
+  {
+    "date": "2010-12-01",
+    "gpr": 79.68,
+    "gpr_threats": 100.46,
+    "gpr_acts": 66.5
+  },
+  {
+    "date": "2011-01-01",
+    "gpr": 67.25,
+    "gpr_threats": 77.49,
+    "gpr_acts": 60.11
+  },
+  {
+    "date": "2011-02-01",
+    "gpr": 70.9,
+    "gpr_threats": 82.07,
+    "gpr_acts": 60.24
+  },
+  {
+    "date": "2011-03-01",
+    "gpr": 101.1,
+    "gpr_threats": 103.05,
+    "gpr_acts": 113.56
+  },
+  {
+    "date": "2011-04-01",
+    "gpr": 76.12,
+    "gpr_threats": 73.79,
+    "gpr_acts": 79.86
+  },
+  {
+    "date": "2011-05-01",
+    "gpr": 90.7,
+    "gpr_threats": 90.99,
+    "gpr_acts": 105.33
+  },
+  {
+    "date": "2011-06-01",
+    "gpr": 77.34,
+    "gpr_threats": 77.81,
+    "gpr_acts": 80.02
+  },
+  {
+    "date": "2011-07-01",
+    "gpr": 68.41,
+    "gpr_threats": 67.59,
+    "gpr_acts": 74.18
+  },
+  {
+    "date": "2011-08-01",
+    "gpr": 71.49,
+    "gpr_threats": 64.13,
+    "gpr_acts": 80.82
+  },
+  {
+    "date": "2011-09-01",
+    "gpr": 72.5,
+    "gpr_threats": 77.54,
+    "gpr_acts": 68.25
+  },
+  {
+    "date": "2011-10-01",
+    "gpr": 66.21,
+    "gpr_threats": 62.93,
+    "gpr_acts": 75.06
+  },
+  {
+    "date": "2011-11-01",
+    "gpr": 70.88,
+    "gpr_threats": 91.21,
+    "gpr_acts": 59.61
+  },
+  {
+    "date": "2011-12-01",
+    "gpr": 75.75,
+    "gpr_threats": 92.12,
+    "gpr_acts": 58.51
+  },
+  {
+    "date": "2012-01-01",
+    "gpr": 68.27,
+    "gpr_threats": 88.87,
+    "gpr_acts": 55.31
+  },
+  {
+    "date": "2012-02-01",
+    "gpr": 76.55,
+    "gpr_threats": 95.23,
+    "gpr_acts": 61.46
+  },
+  {
+    "date": "2012-03-01",
+    "gpr": 75.0,
+    "gpr_threats": 91.72,
+    "gpr_acts": 63.66
+  },
+  {
+    "date": "2012-04-01",
+    "gpr": 78.81,
+    "gpr_threats": 97.25,
+    "gpr_acts": 64.31
+  },
+  {
+    "date": "2012-05-01",
+    "gpr": 70.23,
+    "gpr_threats": 86.78,
+    "gpr_acts": 56.95
+  },
+  {
+    "date": "2012-06-01",
+    "gpr": 61.87,
+    "gpr_threats": 70.26,
+    "gpr_acts": 53.52
+  },
+  {
+    "date": "2012-07-01",
+    "gpr": 67.46,
+    "gpr_threats": 80.7,
+    "gpr_acts": 64.49
+  },
+  {
+    "date": "2012-08-01",
+    "gpr": 68.64,
+    "gpr_threats": 76.49,
+    "gpr_acts": 65.05
+  },
+  {
+    "date": "2012-09-01",
+    "gpr": 61.44,
+    "gpr_threats": 71.36,
+    "gpr_acts": 52.71
+  },
+  {
+    "date": "2012-10-01",
+    "gpr": 69.42,
+    "gpr_threats": 67.01,
+    "gpr_acts": 71.36
+  },
+  {
+    "date": "2012-11-01",
+    "gpr": 67.28,
+    "gpr_threats": 70.2,
+    "gpr_acts": 70.31
+  },
+  {
+    "date": "2012-12-01",
+    "gpr": 65.62,
+    "gpr_threats": 64.24,
+    "gpr_acts": 69.14
+  },
+  {
+    "date": "2013-01-01",
+    "gpr": 70.87,
+    "gpr_threats": 75.18,
+    "gpr_acts": 78.58
+  },
+  {
+    "date": "2013-02-01",
+    "gpr": 72.41,
+    "gpr_threats": 78.07,
+    "gpr_acts": 71.63
+  },
+  {
+    "date": "2013-03-01",
+    "gpr": 55.7,
+    "gpr_threats": 70.44,
+    "gpr_acts": 46.31
+  },
+  {
+    "date": "2013-04-01",
+    "gpr": 76.69,
+    "gpr_threats": 93.33,
+    "gpr_acts": 65.08
+  },
+  {
+    "date": "2013-05-01",
+    "gpr": 73.35,
+    "gpr_threats": 77.84,
+    "gpr_acts": 79.47
+  },
+  {
+    "date": "2013-06-01",
+    "gpr": 71.18,
+    "gpr_threats": 79.75,
+    "gpr_acts": 71.48
+  },
+  {
+    "date": "2013-07-01",
+    "gpr": 58.96,
+    "gpr_threats": 63.3,
+    "gpr_acts": 56.3
+  },
+  {
+    "date": "2013-08-01",
+    "gpr": 71.75,
+    "gpr_threats": 73.06,
+    "gpr_acts": 76.94
+  },
+  {
+    "date": "2013-09-01",
+    "gpr": 85.78,
+    "gpr_threats": 96.77,
+    "gpr_acts": 78.24
+  },
+  {
+    "date": "2013-10-01",
+    "gpr": 64.7,
+    "gpr_threats": 76.11,
+    "gpr_acts": 57.82
+  },
+  {
+    "date": "2013-11-01",
+    "gpr": 68.73,
+    "gpr_threats": 99.33,
+    "gpr_acts": 39.8
+  },
+  {
+    "date": "2013-12-01",
+    "gpr": 70.19,
+    "gpr_threats": 82.17,
+    "gpr_acts": 57.13
+  },
+  {
+    "date": "2014-01-01",
+    "gpr": 71.98,
+    "gpr_threats": 77.75,
+    "gpr_acts": 69.0
+  },
+  {
+    "date": "2014-02-01",
+    "gpr": 63.78,
+    "gpr_threats": 75.13,
+    "gpr_acts": 54.9
+  },
+  {
+    "date": "2014-03-01",
+    "gpr": 92.22,
+    "gpr_threats": 130.48,
+    "gpr_acts": 60.41
+  },
+  {
+    "date": "2014-04-01",
+    "gpr": 75.93,
+    "gpr_threats": 105.72,
+    "gpr_acts": 50.58
+  },
+  {
+    "date": "2014-05-01",
+    "gpr": 73.12,
+    "gpr_threats": 93.51,
+    "gpr_acts": 62.8
+  },
+  {
+    "date": "2014-06-01",
+    "gpr": 82.33,
+    "gpr_threats": 92.05,
+    "gpr_acts": 79.14
+  },
+  {
+    "date": "2014-07-01",
+    "gpr": 104.57,
+    "gpr_threats": 144.64,
+    "gpr_acts": 85.31
+  },
+  {
+    "date": "2014-08-01",
+    "gpr": 96.06,
+    "gpr_threats": 123.09,
+    "gpr_acts": 81.26
+  },
+  {
+    "date": "2014-09-01",
+    "gpr": 104.13,
+    "gpr_threats": 129.89,
+    "gpr_acts": 90.85
+  },
+  {
+    "date": "2014-10-01",
+    "gpr": 68.81,
+    "gpr_threats": 80.54,
+    "gpr_acts": 59.0
+  },
+  {
+    "date": "2014-11-01",
+    "gpr": 67.82,
+    "gpr_threats": 89.17,
+    "gpr_acts": 47.08
+  },
+  {
+    "date": "2014-12-01",
+    "gpr": 69.49,
+    "gpr_threats": 78.25,
+    "gpr_acts": 63.68
+  },
+  {
+    "date": "2015-01-01",
+    "gpr": 94.44,
+    "gpr_threats": 91.56,
+    "gpr_acts": 110.73
+  },
+  {
+    "date": "2015-02-01",
+    "gpr": 98.14,
+    "gpr_threats": 125.61,
+    "gpr_acts": 82.12
+  },
+  {
+    "date": "2015-03-01",
+    "gpr": 95.05,
+    "gpr_threats": 135.94,
+    "gpr_acts": 61.76
+  },
+  {
+    "date": "2015-04-01",
+    "gpr": 90.1,
+    "gpr_threats": 117.82,
+    "gpr_acts": 77.03
+  },
+  {
+    "date": "2015-05-01",
+    "gpr": 67.89,
+    "gpr_threats": 74.84,
+    "gpr_acts": 61.92
+  },
+  {
+    "date": "2015-06-01",
+    "gpr": 78.03,
+    "gpr_threats": 92.73,
+    "gpr_acts": 69.09
+  },
+  {
+    "date": "2015-07-01",
+    "gpr": 94.76,
+    "gpr_threats": 124.38,
+    "gpr_acts": 66.13
+  },
+  {
+    "date": "2015-08-01",
+    "gpr": 83.12,
+    "gpr_threats": 107.2,
+    "gpr_acts": 63.76
+  },
+  {
+    "date": "2015-09-01",
+    "gpr": 95.89,
+    "gpr_threats": 132.51,
+    "gpr_acts": 70.59
+  },
+  {
+    "date": "2015-10-01",
+    "gpr": 90.87,
+    "gpr_threats": 87.12,
+    "gpr_acts": 106.37
+  },
+  {
+    "date": "2015-11-01",
+    "gpr": 119.51,
+    "gpr_threats": 102.44,
+    "gpr_acts": 162.05
+  },
+  {
+    "date": "2015-12-01",
+    "gpr": 131.21,
+    "gpr_threats": 119.51,
+    "gpr_acts": 167.5
+  },
+  {
+    "date": "2016-01-01",
+    "gpr": 97.5,
+    "gpr_threats": 116.34,
+    "gpr_acts": 90.73
+  },
+  {
+    "date": "2016-02-01",
+    "gpr": 84.32,
+    "gpr_threats": 83.29,
+    "gpr_acts": 89.15
+  },
+  {
+    "date": "2016-03-01",
+    "gpr": 93.45,
+    "gpr_threats": 108.58,
+    "gpr_acts": 87.08
+  },
+  {
+    "date": "2016-04-01",
+    "gpr": 85.37,
+    "gpr_threats": 93.73,
+    "gpr_acts": 85.3
+  },
+  {
+    "date": "2016-05-01",
+    "gpr": 77.35,
+    "gpr_threats": 84.61,
+    "gpr_acts": 73.39
+  },
+  {
+    "date": "2016-06-01",
+    "gpr": 74.22,
+    "gpr_threats": 70.72,
+    "gpr_acts": 80.73
+  },
+  {
+    "date": "2016-07-01",
+    "gpr": 90.43,
+    "gpr_threats": 82.43,
+    "gpr_acts": 109.31
+  },
+  {
+    "date": "2016-08-01",
+    "gpr": 79.65,
+    "gpr_threats": 77.62,
+    "gpr_acts": 85.16
+  },
+  {
+    "date": "2016-09-01",
+    "gpr": 94.03,
+    "gpr_threats": 110.16,
+    "gpr_acts": 92.7
+  },
+  {
+    "date": "2016-10-01",
+    "gpr": 77.69,
+    "gpr_threats": 72.05,
+    "gpr_acts": 92.14
+  },
+  {
+    "date": "2016-11-01",
+    "gpr": 71.86,
+    "gpr_threats": 86.99,
+    "gpr_acts": 61.45
+  },
+  {
+    "date": "2016-12-01",
+    "gpr": 86.42,
+    "gpr_threats": 88.75,
+    "gpr_acts": 91.26
+  },
+  {
+    "date": "2017-01-01",
+    "gpr": 86.76,
+    "gpr_threats": 105.41,
+    "gpr_acts": 78.78
+  },
+  {
+    "date": "2017-02-01",
+    "gpr": 98.75,
+    "gpr_threats": 129.25,
+    "gpr_acts": 79.06
+  },
+  {
+    "date": "2017-03-01",
+    "gpr": 80.13,
+    "gpr_threats": 93.51,
+    "gpr_acts": 76.76
+  },
+  {
+    "date": "2017-04-01",
+    "gpr": 93.11,
+    "gpr_threats": 114.96,
+    "gpr_acts": 73.02
+  },
+  {
+    "date": "2017-05-01",
+    "gpr": 78.91,
+    "gpr_threats": 92.24,
+    "gpr_acts": 67.17
+  },
+  {
+    "date": "2017-06-01",
+    "gpr": 105.33,
+    "gpr_threats": 120.52,
+    "gpr_acts": 101.97
+  },
+  {
+    "date": "2017-07-01",
+    "gpr": 86.89,
+    "gpr_threats": 125.24,
+    "gpr_acts": 47.88
+  },
+  {
+    "date": "2017-08-01",
+    "gpr": 107.87,
+    "gpr_threats": 144.28,
+    "gpr_acts": 81.95
+  },
+  {
+    "date": "2017-09-01",
+    "gpr": 95.02,
+    "gpr_threats": 141.51,
+    "gpr_acts": 62.89
+  },
+  {
+    "date": "2017-10-01",
+    "gpr": 76.1,
+    "gpr_threats": 111.74,
+    "gpr_acts": 55.2
+  },
+  {
+    "date": "2017-11-01",
+    "gpr": 61.76,
+    "gpr_threats": 76.0,
+    "gpr_acts": 59.16
+  },
+  {
+    "date": "2017-12-01",
+    "gpr": 64.84,
+    "gpr_threats": 89.81,
+    "gpr_acts": 48.0
+  },
+  {
+    "date": "2018-01-01",
+    "gpr": 69.34,
+    "gpr_threats": 85.86,
+    "gpr_acts": 59.45
+  },
+  {
+    "date": "2018-02-01",
+    "gpr": 58.21,
+    "gpr_threats": 77.45,
+    "gpr_acts": 44.6
+  },
+  {
+    "date": "2018-03-01",
+    "gpr": 76.14,
+    "gpr_threats": 105.13,
+    "gpr_acts": 54.73
+  },
+  {
+    "date": "2018-04-01",
+    "gpr": 76.4,
+    "gpr_threats": 99.28,
+    "gpr_acts": 64.76
+  },
+  {
+    "date": "2018-05-01",
+    "gpr": 83.75,
+    "gpr_threats": 132.52,
+    "gpr_acts": 44.98
+  },
+  {
+    "date": "2018-06-01",
+    "gpr": 77.22,
+    "gpr_threats": 113.83,
+    "gpr_acts": 49.06
+  },
+  {
+    "date": "2018-07-01",
+    "gpr": 68.62,
+    "gpr_threats": 88.44,
+    "gpr_acts": 54.57
+  },
+  {
+    "date": "2018-08-01",
+    "gpr": 74.01,
+    "gpr_threats": 98.91,
+    "gpr_acts": 55.04
+  },
+  {
+    "date": "2018-09-01",
+    "gpr": 51.75,
+    "gpr_threats": 64.29,
+    "gpr_acts": 42.44
+  },
+  {
+    "date": "2018-10-01",
+    "gpr": 60.49,
+    "gpr_threats": 85.87,
+    "gpr_acts": 40.09
+  },
+  {
+    "date": "2018-11-01",
+    "gpr": 52.75,
+    "gpr_threats": 76.52,
+    "gpr_acts": 33.67
+  },
+  {
+    "date": "2018-12-01",
+    "gpr": 63.82,
+    "gpr_threats": 87.2,
+    "gpr_acts": 40.38
+  },
+  {
+    "date": "2019-01-01",
+    "gpr": 66.39,
+    "gpr_threats": 96.95,
+    "gpr_acts": 42.29
+  },
+  {
+    "date": "2019-02-01",
+    "gpr": 75.31,
+    "gpr_threats": 110.84,
+    "gpr_acts": 43.58
+  },
+  {
+    "date": "2019-03-01",
+    "gpr": 63.71,
+    "gpr_threats": 79.25,
+    "gpr_acts": 50.61
+  },
+  {
+    "date": "2019-04-01",
+    "gpr": 60.06,
+    "gpr_threats": 78.46,
+    "gpr_acts": 43.95
+  },
+  {
+    "date": "2019-05-01",
+    "gpr": 76.12,
+    "gpr_threats": 113.9,
+    "gpr_acts": 44.16
+  },
+  {
+    "date": "2019-06-01",
+    "gpr": 73.26,
+    "gpr_threats": 119.32,
+    "gpr_acts": 34.26
+  },
+  {
+    "date": "2019-07-01",
+    "gpr": 70.44,
+    "gpr_threats": 118.77,
+    "gpr_acts": 29.58
+  },
+  {
+    "date": "2019-08-01",
+    "gpr": 94.96,
+    "gpr_threats": 127.15,
+    "gpr_acts": 65.9
+  },
+  {
+    "date": "2019-09-01",
+    "gpr": 70.83,
+    "gpr_threats": 94.96,
+    "gpr_acts": 56.16
+  },
+  {
+    "date": "2019-10-01",
+    "gpr": 72.87,
+    "gpr_threats": 106.54,
+    "gpr_acts": 55.96
+  },
+  {
+    "date": "2019-11-01",
+    "gpr": 64.53,
+    "gpr_threats": 86.43,
+    "gpr_acts": 43.05
+  },
+  {
+    "date": "2019-12-01",
+    "gpr": 50.65,
+    "gpr_threats": 64.9,
+    "gpr_acts": 41.53
+  },
+  {
+    "date": "2020-01-01",
+    "gpr": 104.52,
+    "gpr_threats": 163.83,
+    "gpr_acts": 70.5
+  },
+  {
+    "date": "2020-02-01",
+    "gpr": 62.86,
+    "gpr_threats": 91.85,
+    "gpr_acts": 36.46
+  },
+  {
+    "date": "2020-03-01",
+    "gpr": 80.56,
+    "gpr_threats": 111.69,
+    "gpr_acts": 49.75
+  },
+  {
+    "date": "2020-04-01",
+    "gpr": 67.54,
+    "gpr_threats": 102.49,
+    "gpr_acts": 35.82
+  },
+  {
+    "date": "2020-05-01",
+    "gpr": 75.35,
+    "gpr_threats": 112.69,
+    "gpr_acts": 38.5
+  },
+  {
+    "date": "2020-06-01",
+    "gpr": 64.86,
+    "gpr_threats": 101.93,
+    "gpr_acts": 33.94
+  },
+  {
+    "date": "2020-07-01",
+    "gpr": 61.82,
+    "gpr_threats": 95.26,
+    "gpr_acts": 30.59
+  },
+  {
+    "date": "2020-08-01",
+    "gpr": 55.43,
+    "gpr_threats": 89.05,
+    "gpr_acts": 21.13
+  },
+  {
+    "date": "2020-09-01",
+    "gpr": 59.53,
+    "gpr_threats": 87.38,
+    "gpr_acts": 30.16
+  },
+  {
+    "date": "2020-10-01",
+    "gpr": 54.34,
+    "gpr_threats": 81.86,
+    "gpr_acts": 27.82
+  },
+  {
+    "date": "2020-11-01",
+    "gpr": 50.45,
+    "gpr_threats": 69.75,
+    "gpr_acts": 38.99
+  },
+  {
+    "date": "2020-12-01",
+    "gpr": 56.6,
+    "gpr_threats": 88.96,
+    "gpr_acts": 25.17
+  },
+  {
+    "date": "2021-01-01",
+    "gpr": 61.64,
+    "gpr_threats": 85.59,
+    "gpr_acts": 41.74
+  },
+  {
+    "date": "2021-02-01",
+    "gpr": 52.29,
+    "gpr_threats": 81.29,
+    "gpr_acts": 29.67
+  },
+  {
+    "date": "2021-03-01",
+    "gpr": 53.89,
+    "gpr_threats": 86.94,
+    "gpr_acts": 27.81
+  },
+  {
+    "date": "2021-04-01",
+    "gpr": 59.98,
+    "gpr_threats": 86.6,
+    "gpr_acts": 40.86
+  },
+  {
+    "date": "2021-05-01",
+    "gpr": 70.34,
+    "gpr_threats": 99.7,
+    "gpr_acts": 45.37
+  },
+  {
+    "date": "2021-06-01",
+    "gpr": 59.44,
+    "gpr_threats": 83.06,
+    "gpr_acts": 37.32
+  },
+  {
+    "date": "2021-07-01",
+    "gpr": 46.88,
+    "gpr_threats": 55.36,
+    "gpr_acts": 42.45
+  },
+  {
+    "date": "2021-08-01",
+    "gpr": 59.06,
+    "gpr_threats": 79.16,
+    "gpr_acts": 51.76
+  },
+  {
+    "date": "2021-09-01",
+    "gpr": 64.57,
+    "gpr_threats": 89.31,
+    "gpr_acts": 49.01
+  },
+  {
+    "date": "2021-10-01",
+    "gpr": 53.48,
+    "gpr_threats": 72.59,
+    "gpr_acts": 38.06
+  },
+  {
+    "date": "2021-11-01",
+    "gpr": 52.68,
+    "gpr_threats": 84.68,
+    "gpr_acts": 22.43
+  },
+  {
+    "date": "2021-12-01",
+    "gpr": 69.36,
+    "gpr_threats": 116.38,
+    "gpr_acts": 39.55
+  },
+  {
+    "date": "2022-01-01",
+    "gpr": 85.1,
+    "gpr_threats": 137.36,
+    "gpr_acts": 52.31
+  },
+  {
+    "date": "2022-02-01",
+    "gpr": 120.52,
+    "gpr_threats": 201.07,
+    "gpr_acts": 67.16
+  },
+  {
+    "date": "2022-03-01",
+    "gpr": 167.34,
+    "gpr_threats": 264.45,
+    "gpr_acts": 123.55
+  },
+  {
+    "date": "2022-04-01",
+    "gpr": 127.24,
+    "gpr_threats": 172.53,
+    "gpr_acts": 115.55
+  },
+  {
+    "date": "2022-05-01",
+    "gpr": 99.6,
+    "gpr_threats": 137.27,
+    "gpr_acts": 92.26
+  },
+  {
+    "date": "2022-06-01",
+    "gpr": 100.1,
+    "gpr_threats": 151.79,
+    "gpr_acts": 84.47
+  },
+  {
+    "date": "2022-07-01",
+    "gpr": 97.27,
+    "gpr_threats": 131.34,
+    "gpr_acts": 80.34
+  },
+  {
+    "date": "2022-08-01",
+    "gpr": 119.83,
+    "gpr_threats": 168.91,
+    "gpr_acts": 97.54
+  },
+  {
+    "date": "2022-09-01",
+    "gpr": 112.99,
+    "gpr_threats": 179.78,
+    "gpr_acts": 79.79
+  },
+  {
+    "date": "2022-10-01",
+    "gpr": 129.14,
+    "gpr_threats": 193.31,
+    "gpr_acts": 102.52
+  },
+  {
+    "date": "2022-11-01",
+    "gpr": 100.44,
+    "gpr_threats": 149.17,
+    "gpr_acts": 84.4
+  },
+  {
+    "date": "2022-12-01",
+    "gpr": 95.67,
+    "gpr_threats": 131.1,
+    "gpr_acts": 83.46
+  },
+  {
+    "date": "2023-01-01",
+    "gpr": 81.18,
+    "gpr_threats": 100.74,
+    "gpr_acts": 74.27
+  },
+  {
+    "date": "2023-02-01",
+    "gpr": 100.31,
+    "gpr_threats": 143.72,
+    "gpr_acts": 85.27
+  },
+  {
+    "date": "2023-03-01",
+    "gpr": 95.41,
+    "gpr_threats": 129.59,
+    "gpr_acts": 77.9
+  },
+  {
+    "date": "2023-04-01",
+    "gpr": 89.5,
+    "gpr_threats": 123.82,
+    "gpr_acts": 73.35
+  },
+  {
+    "date": "2023-05-01",
+    "gpr": 86.64,
+    "gpr_threats": 109.1,
+    "gpr_acts": 71.75
+  },
+  {
+    "date": "2023-06-01",
+    "gpr": 100.8,
+    "gpr_threats": 138.61,
+    "gpr_acts": 90.58
+  },
+  {
+    "date": "2023-07-01",
+    "gpr": 94.54,
+    "gpr_threats": 129.22,
+    "gpr_acts": 79.04
+  },
+  {
+    "date": "2023-08-01",
+    "gpr": 74.22,
+    "gpr_threats": 102.51,
+    "gpr_acts": 56.07
+  },
+  {
+    "date": "2023-09-01",
+    "gpr": 69.46,
+    "gpr_threats": 94.77,
+    "gpr_acts": 57.66
+  },
+  {
+    "date": "2023-10-01",
+    "gpr": 138.63,
+    "gpr_threats": 167.76,
+    "gpr_acts": 144.3
+  },
+  {
+    "date": "2023-11-01",
+    "gpr": 138.68,
+    "gpr_threats": 145.27,
+    "gpr_acts": 166.37
+  },
+  {
+    "date": "2023-12-01",
+    "gpr": 125.21,
+    "gpr_threats": 136.25,
+    "gpr_acts": 148.5
+  },
+  {
+    "date": "2024-01-01",
+    "gpr": 119.98,
+    "gpr_threats": 127.47,
+    "gpr_acts": 137.39
+  },
+  {
+    "date": "2024-02-01",
+    "gpr": 109.95,
+    "gpr_threats": 127.36,
+    "gpr_acts": 122.78
+  },
+  {
+    "date": "2024-03-01",
+    "gpr": 96.97,
+    "gpr_threats": 103.33,
+    "gpr_acts": 104.91
+  },
+  {
+    "date": "2024-04-01",
+    "gpr": 112.01,
+    "gpr_threats": 120.66,
+    "gpr_acts": 119.72
+  },
+  {
+    "date": "2024-05-01",
+    "gpr": 107.46,
+    "gpr_threats": 128.57,
+    "gpr_acts": 102.5
+  },
+  {
+    "date": "2024-06-01",
+    "gpr": 86.77,
+    "gpr_threats": 100.23,
+    "gpr_acts": 89.5
+  },
+  {
+    "date": "2024-07-01",
+    "gpr": 71.84,
+    "gpr_threats": 79.6,
+    "gpr_acts": 68.05
+  },
+  {
+    "date": "2024-08-01",
+    "gpr": 105.3,
+    "gpr_threats": 100.77,
+    "gpr_acts": 122.46
+  },
+  {
+    "date": "2024-09-01",
+    "gpr": 95.7,
+    "gpr_threats": 102.59,
+    "gpr_acts": 100.68
+  },
+  {
+    "date": "2024-10-01",
+    "gpr": 90.89,
+    "gpr_threats": 103.32,
+    "gpr_acts": 94.79
+  },
+  {
+    "date": "2024-11-01",
+    "gpr": 94.96,
+    "gpr_threats": 123.34,
+    "gpr_acts": 88.91
+  },
+  {
+    "date": "2024-12-01",
+    "gpr": 116.52,
+    "gpr_threats": 113.43,
+    "gpr_acts": 124.54
+  },
+  {
+    "date": "2025-01-01",
+    "gpr": 98.42,
+    "gpr_threats": 110.52,
+    "gpr_acts": 98.7
+  },
+  {
+    "date": "2025-02-01",
+    "gpr": 94.02,
+    "gpr_threats": 108.91,
+    "gpr_acts": 97.75
+  },
+  {
+    "date": "2025-03-01",
+    "gpr": 118.7,
+    "gpr_threats": 143.76,
+    "gpr_acts": 120.2
+  },
+  {
+    "date": "2025-04-01",
+    "gpr": 110.63,
+    "gpr_threats": 143.0,
+    "gpr_acts": 107.77
+  },
+  {
+    "date": "2025-05-01",
+    "gpr": 130.11,
+    "gpr_threats": 192.88,
+    "gpr_acts": 110.35
+  },
+  {
+    "date": "2025-06-01",
+    "gpr": 150.03,
+    "gpr_threats": 223.19,
+    "gpr_acts": 120.04
+  },
+  {
+    "date": "2025-07-01",
+    "gpr": 106.28,
+    "gpr_threats": 136.72,
+    "gpr_acts": 101.2
+  },
+  {
+    "date": "2025-08-01",
+    "gpr": 119.79,
+    "gpr_threats": 179.67,
+    "gpr_acts": 92.14
+  },
+  {
+    "date": "2025-09-01",
+    "gpr": 114.0,
+    "gpr_threats": 161.97,
+    "gpr_acts": 91.97
+  },
+  {
+    "date": "2025-10-01",
+    "gpr": 132.66,
+    "gpr_threats": 166.25,
+    "gpr_acts": 122.51
+  },
+  {
+    "date": "2025-11-01",
+    "gpr": 90.51,
+    "gpr_threats": 119.09,
+    "gpr_acts": 77.95
+  },
+  {
+    "date": "2025-12-01",
+    "gpr": 113.39,
+    "gpr_threats": 142.98,
+    "gpr_acts": 100.86
+  }
+]

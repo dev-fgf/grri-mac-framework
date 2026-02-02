@@ -1,0 +1,97 @@
+name: Quarterly GRRI Refresh
+
+on:
+  schedule:
+    # Run on 1st of January, April, July, October at 8:00 AM UTC
+    # This aligns with IMF WEO releases (April/October) and WGI updates (September)
+    - cron: '0 8 1 1,4,7,10 *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  refresh-grri:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Refresh GRRI data from external sources
+        run: |
+          echo "=== Refreshing GRRI Data (GRS Tracker) ==="
+          echo "Sources: IMF WEO, World Bank WGI"
+          echo ""
+          
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/grri/refresh" \
+            -H "Content-Type: application/json" \
+            --max-time 120)
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo ""
+          echo "Response:"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
+          echo ""
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✓ GRRI refresh completed successfully"
+            
+            # Extract key metrics
+            scores_calc=$(echo "$body" | jq -r '.scores_calculated // 0')
+            scores_saved=$(echo "$body" | jq -r '.scores_saved // 0')
+            elapsed=$(echo "$body" | jq -r '.elapsed_seconds // "N/A"')
+            
+            echo ""
+            echo "Summary:"
+            echo "  Scores Calculated: $scores_calc"
+            echo "  Scores Saved: $scores_saved"
+            echo "  Elapsed Time: ${elapsed}s"
+            
+            # Show source status
+            echo ""
+            echo "Source Status:"
+            echo "$body" | jq -r '.sources | to_entries[] | "  \(.key): \(.value.status) (\(.value.indicators // 0) indicators)"'
+            
+          elif [ "$http_code" -eq 207 ]; then
+            echo "⚠ GRRI refresh completed with partial success"
+            echo "$body" | jq -r '.sources | to_entries[] | "  \(.key): \(.value.status)"'
+          else
+            echo "✗ GRRI refresh failed with status $http_code"
+            echo "$body"
+            exit 1
+          fi
+
+      - name: Verify GRRI data availability
+        run: |
+          echo "=== Verifying GRRI Data Availability ==="
+          
+          # Test fetching USA data
+          response=$(curl -s -w "\n%{http_code}" \
+            "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/grri?country=USA")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✓ GRRI data available for USA"
+            echo "$body" | jq -r '.data[0] // empty' 2>/dev/null || echo "No data found"
+          else
+            echo "⚠ Could not verify GRRI data (status $http_code)"
+          fi
+
+      - name: Generate GRRI summary
+        run: |
+          echo "=== GRRI Data Summary ==="
+          
+          # Fetch all current scores
+          response=$(curl -s "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/grri/summary")
+          
+          if [ -n "$response" ]; then
+            echo "$response" | jq -r '
+              .rankings // [] | 
+              sort_by(.composite_score) | 
+              reverse | 
+              .[:10] | 
+              to_entries[] | 
+              "\(.key + 1). \(.value.country_code): \(.value.composite_score // "N/A")"
+            ' 2>/dev/null || echo "Rankings not available"
+          fi

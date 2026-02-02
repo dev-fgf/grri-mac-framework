@@ -3,148 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRRI-MAC Framework | Market Absorption Capacity</title>
+    <title>MAC Framework | Market Stress Monitor</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <h1>GRRI-MAC</h1>
-                <span class="subtitle">Market Absorption Capacity Framework</span>
-            </div>
-            <nav class="nav">
-                <a href="#dashboard" class="nav-link active">Dashboard</a>
-                <a href="#backtest" class="nav-link">Backtest</a>
-                <a href="#simulator" class="nav-link">Simulator</a>
-                <a href="#thresholds" class="nav-link">Thresholds</a>
-            </nav>
-            <div class="status-indicator" id="apiStatus">
-                <span class="status-dot"></span>
-                <span class="status-text">Connecting...</span>
-            </div>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">◈</span>
+            <span class="brand-text">MAC Framework</span>
+            <span class="brand-version">v4.5</span>
         </div>
-    </header>
+        <div class="nav-links">
+            <a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a>
+            <a href="#backtest" class="nav-link" data-section="backtest">Backtest</a>
+            <a href="#methodology" class="nav-link" data-section="methodology">Methodology</a>
+        </div>
+        <div class="nav-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="status-text" id="statusText">Connecting...</span>
+        </div>
+    </nav>
 
-    <main class="main">
+    <main class="main-content">
         <!-- Dashboard Section -->
         <section id="dashboard" class="section active">
-            <div class="section-header">
-                <h2>Current MAC Assessment</h2>
-                <button class="btn btn-primary" onclick="refreshMAC()">Refresh</button>
+            <!-- Hero: Current Stress Level -->
+            <div class="hero-card">
+                <div class="hero-left">
+                    <div class="stress-gauge">
+                        <canvas id="stressGauge"></canvas>
+                        <div class="gauge-center">
+                            <div class="gauge-value" id="stressValue">--</div>
+                            <div class="gauge-label">Stress Index</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <div class="status-badge" id="statusBadge">Loading...</div>
+                    <p class="status-description" id="statusDescription">
+                        Analyzing market conditions...
+                    </p>
+                    <div class="meta-info">
+                        <div class="meta-item">
+                            <span class="meta-label">Data Source</span>
+                            <span class="meta-value" id="dataSource">--</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Last Updated</span>
+                            <span class="meta-value" id="lastUpdated">--</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Transmission Multiplier</span>
+                            <span class="meta-value" id="multiplier">--</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="dashboard-grid">
-                <!-- Data Status Banner -->
-                <div class="card card-full data-status-card" id="dataStatusCard">
-                    <div class="data-status">
-                        <div class="data-source">
-                            <span class="source-icon" id="sourceIcon">&#9679;</span>
-                            <span class="source-label">Data Source:</span>
-                            <span class="source-value" id="dataSource">Checking...</span>
-                        </div>
-                        <div class="data-refresh">
-                            <span class="refresh-label">Last Updated:</span>
-                            <span class="refresh-value" id="lastRefresh">--</span>
-                            <span class="refresh-ago" id="refreshAgo"></span>
-                        </div>
-                        <div class="data-indicators" id="dataIndicators">
-                            <span class="indicator-count">-- indicators</span>
-                        </div>
-                        <div class="data-frequency">
-                            <span class="frequency-icon">&#128197;</span>
-                            <span class="frequency-text">Updated weekly (Saturdays) &mdash; CFTC positioning data releases Fridays</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- 7 Pillars Grid -->
+            <div class="section-header">
+                <h2>7-Pillar Stress Assessment</h2>
+                <span class="section-badge">Real-time</span>
+            </div>
+            <div class="pillars-grid" id="pillarsGrid">
+                <!-- Generated by JS -->
+            </div>
 
-                <!-- MAC Stress Index Card -->
-                <div class="card card-large mac-score-card">
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <!-- Radar Chart -->
+                <div class="chart-card">
                     <div class="card-header">
-                        <h3>Market Stress Index</h3>
-                        <span class="timestamp" id="macTimestamp">--</span>
+                        <h3>Stress Radar</h3>
                     </div>
-                    <div class="mac-score-display">
-                        <div class="score-gauge">
-                            <canvas id="macGauge"></canvas>
-                            <div class="score-value" id="macScoreValue">--</div>
-                        </div>
-                        <div class="score-details">
-                            <div class="interpretation" id="macInterpretation">Loading...</div>
-                            <div class="multiplier">
-                                <span class="label">Transmission Multiplier</span>
-                                <span class="value" id="macMultiplier">--</span>
-                                <span class="tier" id="macTier">--</span>
-                            </div>
-                            <div class="momentum-indicator" id="momentumIndicator">
-                                <span class="label">4-Week Trend</span>
-                                <span class="trend-arrow" id="trendArrow">→</span>
-                                <span class="trend-value" id="trendValue">--</span>
-                            </div>
-                        </div>
+                    <div class="chart-container radar-container">
+                        <canvas id="radarChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Pillar Stress Scores -->
-                <div class="card pillar-card">
-                    <div class="card-header">
-                        <h3>Pillar Stress Levels</h3>
-                    </div>
-                    <div class="pillar-grid" id="pillarGrid">
-                        <!-- Populated by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Pillar Chart -->
-                <div class="card chart-card">
-                    <div class="card-header">
-                        <h3>7-Pillar Stress Radar</h3>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="pillarRadar"></canvas>
-                    </div>
-                </div>
-
-                <!-- Breach Alerts -->
-                <div class="card alerts-card">
-                    <div class="card-header">
-                        <h3>Active Alerts</h3>
-                    </div>
-                    <div class="alerts-list" id="alertsList">
-                        <div class="alert-placeholder">No active breaches</div>
-                    </div>
-                </div>
-
-                <!-- Historical Chart -->
-                <div class="card card-full history-card">
+                <!-- History Chart -->
+                <div class="chart-card chart-card-wide">
                     <div class="card-header">
                         <h3>Stress Index History</h3>
                         <div class="chart-controls">
-                            <button class="btn btn-sm" id="togglePillars" onclick="togglePillarLines()">Show Pillars</button>
-                            <select id="historyRange" onchange="updateHistoryRange()">
+                            <span class="loading-indicator" id="historyLoading">Loading...</span>
+                            <select id="historyRange" onchange="updateHistoryChart()">
                                 <option value="30">30 Days</option>
                                 <option value="90">90 Days</option>
-                                <option value="180" selected>180 Days</option>
+                                <option value="180" selected>6 Months</option>
                                 <option value="365">1 Year</option>
                                 <option value="730">2 Years</option>
                                 <option value="1825">5 Years</option>
+                                <option value="3650">10 Years</option>
+                                <option value="7300">20 Years</option>
+                                <option value="19710">Full History (1971+)</option>
                             </select>
                         </div>
                     </div>
-                    <div class="history-chart-container">
+                    <div class="chart-container history-container" id="historyContainer">
+                        <div class="chart-loading-overlay" id="historyOverlay">
+                            <div class="spinner"></div>
+                            <span>Loading data...</span>
+                        </div>
                         <canvas id="historyChart"></canvas>
                     </div>
-                    <div class="chart-legend" id="chartLegend">
-                        <span class="legend-item mac"><span class="legend-color"></span>Stress Index</span>
-                        <span class="legend-item liquidity hidden"><span class="legend-color"></span>Liquidity</span>
-                        <span class="legend-item valuation hidden"><span class="legend-color"></span>Valuation</span>
-                        <span class="legend-item positioning hidden"><span class="legend-color"></span>Positioning</span>
-                        <span class="legend-item volatility hidden"><span class="legend-color"></span>Volatility</span>
-                        <span class="legend-item policy hidden"><span class="legend-color"></span>Policy</span>
-                        <span class="legend-item contagion hidden"><span class="legend-color"></span>Contagion</span>
-                        <span class="legend-item private-credit hidden"><span class="legend-color"></span>Private Credit</span>
+                    <div class="chart-legend" id="historyLegend">
+                        <button class="legend-btn active" data-index="0">Composite</button>
+                        <button class="legend-btn" data-index="1">Liquidity</button>
+                        <button class="legend-btn" data-index="2">Valuation</button>
+                        <button class="legend-btn" data-index="3">Positioning</button>
+                        <button class="legend-btn" data-index="4">Volatility</button>
+                        <button class="legend-btn" data-index="5">Policy</button>
+                        <button class="legend-btn" data-index="6">Contagion</button>
+                        <button class="legend-btn" data-index="7">Priv Credit</button>
+                        <span class="legend-divider">|</span>
+                        <label class="toggle-btn" title="Caldara-Iacoviello GPR Index (secondary axis)">
+                            <input type="checkbox" id="gprToggle" onchange="toggleGPR()">
+                            <span class="toggle-label">GPR Index</span>
+                        </label>
+                        <label class="toggle-btn" title="FGF Geopolitical Risk Supercycle Tracker (coming soon)">
+                            <input type="checkbox" id="grsToggle" disabled>
+                            <span class="toggle-label grs-label">GRS Tracker <span class="coming-soon">(soon)</span></span>
+                        </label>
                     </div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div class="alerts-section" id="alertsSection" style="display: none;">
+                <div class="alert-banner" id="alertBanner">
+                    <span class="alert-icon">⚠</span>
+                    <span class="alert-text" id="alertText"></span>
                 </div>
             </div>
         </section>
@@ -152,177 +142,150 @@
         <!-- Backtest Section -->
         <section id="backtest" class="section">
             <div class="section-header">
-                <h2>Historical Backtest</h2>
-                <button class="btn btn-primary" onclick="loadBacktestHistory()">Load Historical Data</button>
+                <h2>54-Year Historical Backtest</h2>
+                <span class="section-badge">1971-2025</span>
             </div>
 
-            <!-- Historical MAC Chart with Crisis Events -->
-            <div class="card card-full backtest-chart-card">
+            <!-- Backtest Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="btObservations">2,814</div>
+                    <div class="stat-label">Weekly Observations</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-value" id="btTPR">81.5%</div>
+                    <div class="stat-label">True Positive Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="btCrises">22/27</div>
+                    <div class="stat-label">Crises Detected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="btLeadTime">42</div>
+                    <div class="stat-label">Avg Days Warning</div>
+                </div>
+            </div>
+
+            <!-- Backtest Chart -->
+            <div class="chart-card">
                 <div class="card-header">
-                    <h3>54-Year Market Stress Index (1971-2025)</h3>
-                    <span class="update-badge">2,814 weekly observations</span>
+                    <h3>Historical Stress Index with Crisis Events</h3>
                     <div class="chart-controls">
-                        <select id="backtestStart" onchange="loadBacktestHistory()">
+                        <select id="backtestStart" onchange="loadBacktestData()">
                             <option value="1971-01-01">Full History (1971)</option>
                             <option value="1990-01-01">1990-Present</option>
                             <option value="2000-01-01">2000-Present</option>
                             <option value="2006-01-01" selected>2006-Present</option>
-                            <option value="2015-01-01">2015-Present</option>
                             <option value="2020-01-01">2020-Present</option>
-                        </select>
-                        <select id="backtestInterval" onchange="loadBacktestHistory()">
-                            <option value="7">Weekly</option>
-                            <option value="14">Bi-weekly</option>
-                            <option value="30">Monthly</option>
                         </select>
                     </div>
                 </div>
-                <div class="backtest-chart-container">
+                <div class="chart-container backtest-container">
                     <canvas id="backtestChart"></canvas>
                 </div>
-                <div class="chart-legend backtest-legend">
-                    <span class="legend-item mac"><span class="legend-color"></span>Stress Index</span>
-                    <span class="legend-item crisis"><span class="legend-color"></span>Crisis Event</span>
-                    <span class="legend-item zone-comfortable"><span class="legend-color"></span>Comfortable (&lt;0.35)</span>
-                    <span class="legend-item zone-cautious"><span class="legend-color"></span>Cautious (0.35-0.50)</span>
-                    <span class="legend-item zone-stretched"><span class="legend-color"></span>Stretched (0.50-0.65)</span>
-                    <span class="legend-item zone-critical"><span class="legend-color"></span>Critical (&gt;0.65)</span>
-                </div>
-                <div class="backtest-loading" id="backtestLoading">
-                    <span>Loading historical FRED data...</span>
+                <div class="zone-legend">
+                    <span class="zone-item comfortable">Comfortable (&lt;0.42)</span>
+                    <span class="zone-item cautious">Cautious (0.42-0.49)</span>
+                    <span class="zone-item stretched">Stretched (0.49-0.58)</span>
+                    <span class="zone-item critical">Critical (&gt;0.58)</span>
+                    <span class="zone-item crisis">● Crisis Event</span>
                 </div>
             </div>
 
-            <!-- Crisis Prediction Analysis -->
-            <div class="backtest-summary" id="backtestSummary">
-                <div class="summary-card">
-                    <span class="summary-value" id="btTotal">--</span>
-                    <span class="summary-label">Weekly Observations</span>
-                </div>
-                <div class="summary-card">
-                    <span class="summary-value" id="btDateRange">--</span>
-                    <span class="summary-label">Date Range</span>
-                </div>
-                <div class="summary-card">
-                    <span class="summary-value" id="btCrisesDetected">--</span>
-                    <span class="summary-label">Crises Detected</span>
-                </div>
-                <div class="summary-card highlight">
-                    <span class="summary-value" id="btWarningRate">--%</span>
-                    <span class="summary-label">True Positive Rate</span>
-                </div>
-                <div class="summary-card">
-                    <span class="summary-value" id="btAvgLead">--</span>
-                    <span class="summary-label">Avg Lead Time (days)</span>
-                </div>
-                <div class="summary-card success">
-                    <span class="summary-value" id="btPredictionAcc">--%</span>
-                    <span class="summary-label">Prediction Accuracy</span>
-                </div>
-            </div>
-
-            <!-- Crisis Event Analysis Table -->
-            <div class="card card-full">
+            <!-- Crisis Table -->
+            <div class="table-card">
                 <div class="card-header">
-                    <h3>Crisis Prediction Analysis</h3>
+                    <h3>Crisis Detection Analysis</h3>
                 </div>
-                <div class="backtest-results" id="backtestResults">
-                    <table class="results-table">
+                <div class="table-container">
+                    <table class="data-table" id="crisisTable">
                         <thead>
                             <tr>
                                 <th>Crisis Event</th>
-                                <th>Event Date</th>
-                                <th>Stress at Event</th>
-                                <th>First Warning</th>
-                                <th>Days of Warning</th>
-                                <th>Days Stretched</th>
-                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Stress Level</th>
+                                <th>Warning Days</th>
+                                <th>Detection</th>
                             </tr>
                         </thead>
-                        <tbody id="backtestTableBody">
-                            <tr><td colspan="7" class="placeholder">Click "Load Historical Data" to analyze crisis predictions</td></tr>
+                        <tbody id="crisisTableBody">
+                            <!-- Generated by JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- Simulator Section -->
-        <section id="simulator" class="section">
+        <!-- Methodology Section -->
+        <section id="methodology" class="section">
             <div class="section-header">
-                <h2>Shock Simulator</h2>
+                <h2>Methodology</h2>
             </div>
 
-            <div class="simulator-grid">
-                <div class="card simulator-inputs">
-                    <div class="card-header">
-                        <h3>Input Parameters</h3>
-                    </div>
-                    <div class="input-group">
-                        <label>Shock Magnitude</label>
-                        <input type="range" id="shockMagnitude" min="0.5" max="3" step="0.1" value="1">
-                        <span class="range-value" id="shockValue">1.0x</span>
-                    </div>
-                    <div class="input-group">
-                        <label>GRRI Country Modifier</label>
-                        <input type="range" id="grriModifier" min="0.8" max="1.5" step="0.05" value="1">
-                        <span class="range-value" id="grriValue">1.00x</span>
-                    </div>
-                    <div class="input-group">
-                        <label>MAC Score Override (optional)</label>
-                        <input type="range" id="macOverride" min="0" max="1" step="0.05" value="0.5">
-                        <span class="range-value" id="macOverrideValue">0.50</span>
-                    </div>
-                    <button class="btn btn-primary btn-block" onclick="runSimulation()">
-                        Simulate Impact
-                    </button>
+            <div class="methodology-grid">
+                <div class="method-card">
+                    <h4>Stress Index Calculation</h4>
+                    <p>The MAC Stress Index measures market vulnerability. Higher values indicate greater stress and reduced shock absorption capacity.</p>
+                    <code>Stress Index = 1 - MAC Score = 1 - (Σ Pillar Scores / 7)</code>
                 </div>
 
-                <div class="card simulator-output">
-                    <div class="card-header">
-                        <h3>Simulation Results</h3>
+                <div class="method-card">
+                    <h4>7-Pillar Framework</h4>
+                    <ul>
+                        <li><strong>Liquidity:</strong> SOFR-IORB spread, CP-Treasury spread</li>
+                        <li><strong>Valuation:</strong> Term premium, IG/HY credit spreads</li>
+                        <li><strong>Positioning:</strong> CFTC futures positioning data</li>
+                        <li><strong>Volatility:</strong> VIX level and term structure</li>
+                        <li><strong>Policy:</strong> Fed funds room, balance sheet, PCE</li>
+                        <li><strong>Contagion:</strong> Cross-currency basis, credit ratios</li>
+                        <li><strong>Private Credit:</strong> Leveraged loan conditions</li>
+                    </ul>
+                </div>
+
+                <div class="method-card">
+                    <h4>Stress Thresholds</h4>
+                    <p class="calibration-note">Empirically calibrated from 54 years of data (1971-2025)</p>
+                    <div class="threshold-list">
+                        <div class="threshold comfortable">COMFORTABLE: &lt;0.42 — Normal conditions (~45% of history)</div>
+                        <div class="threshold cautious">CAUTIOUS: 0.42-0.49 — Elevated vigilance (~30%)</div>
+                        <div class="threshold stretched">STRETCHED: 0.49-0.58 — Reduced capacity (~18%)</div>
+                        <div class="threshold critical">CRITICAL: &gt;0.58 — High vulnerability (~7%)</div>
                     </div>
-                    <div class="simulation-results" id="simulationResults">
-                        <div class="result-equation">
-                            <span class="eq-part">Market Impact</span>
-                            <span class="eq-equals">=</span>
-                            <span class="eq-part" id="eqShock">Shock</span>
-                            <span class="eq-times">×</span>
-                            <span class="eq-part" id="eqGrri">GRRI</span>
-                            <span class="eq-times">×</span>
-                            <span class="eq-part" id="eqMac">MAC</span>
+                </div>
+
+                <div class="method-card">
+                    <h4>Data Sources & Updates</h4>
+                    <p>Primary data from FRED (Federal Reserve Economic Data). Updated weekly on Saturdays. Historical backtest uses validated proxy indicators for pre-1986 data gaps (realized volatility, Moody's spreads).</p>
+                </div>
+
+                <div class="method-card comparison-card">
+                    <h4>Comparison Overlays</h4>
+                    <div class="overlay-info">
+                        <div class="overlay-item">
+                            <span class="overlay-badge gpr">GPR</span>
+                            <div class="overlay-details">
+                                <strong>Caldara-Iacoviello Geopolitical Risk Index</strong>
+                                <p>Newspaper-based measure of geopolitical threats and events. Published in <em>American Economic Review</em> (2022). Measures the <em>cause</em> (geopolitical shocks) while MAC measures the <em>effect</em> (market vulnerability).</p>
+                                <span class="overlay-meta">Source: matteoiacoviello.com | Coverage: 1900-present | Index: 1900-2019=100</span>
+                            </div>
                         </div>
-                        <div class="result-impact">
-                            <span class="impact-label">Total Market Impact</span>
-                            <span class="impact-value" id="impactValue">--</span>
-                        </div>
-                        <div class="result-tier" id="riskTier">
-                            <span class="tier-label">Risk Tier:</span>
-                            <span class="tier-value">--</span>
+                        <div class="overlay-item coming-soon-item">
+                            <span class="overlay-badge grs">GRS</span>
+                            <div class="overlay-details">
+                                <strong>FGF Geopolitical Risk Supercycle (GRS) Tracker</strong>
+                                <p>GRRI-based measure of country-level risk across 4 pillars: <em>Political</em> (governance, conflict), <em>Economic</em> (macro stability, sanctions), <em>Social</em> (HDI, inequality, unrest), and <em>Environmental</em> (climate risk, disasters). 29 variables from World Bank, IMF, UNDP, V-Dem, and more.</p>
+                                <span class="overlay-meta status-coming">In Development — Data sources documented</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Thresholds Section -->
-        <section id="thresholds" class="section">
-            <div class="section-header">
-                <h2>Calibrated Thresholds</h2>
-            </div>
-
-            <div class="thresholds-grid" id="thresholdsGrid">
-                <!-- Populated by JavaScript -->
             </div>
         </section>
     </main>
 
     <footer class="footer">
-        <div class="footer-content">
-            <span>MAC Framework v4.5 &mdash; 7 Pillars, 54-Year Backtest (1971-2025)</span>
-            <span>Market Absorption Capacity Assessment Tool</span>
-            <a href="https://github.com/dev-fgf/grri-mac-framework" target="_blank">GitHub</a>
-        </div>
+        <span>MAC Framework v4.5 — 7 Pillars, 54-Year Backtest (1971-2025)</span>
+        <a href="https://github.com/dev-fgf/grri-mac-framework" target="_blank">GitHub</a>
     </footer>
 
     <script src="app.js"></script>

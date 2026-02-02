@@ -1,0 +1,271 @@
+{
+  "metadata": {
+    "name": "GRRI Data Sources",
+    "description": "Global Risk Rating Index data sources for GRS Tracker",
+    "version": "1.0.0",
+    "pillars": ["political", "economic", "social", "environmental"],
+    "update_frequency": "annual",
+    "notes": "Most sources are annual; some (IMF WEO) updated semi-annually"
+  },
+  "pillars": {
+    "political": {
+      "name": "Political Risk",
+      "weight": 0.25,
+      "variables": [
+        {
+          "name": "Rule of Law",
+          "source": "World Bank WGI",
+          "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+          "frequency": "annual",
+          "coverage": "1996-present",
+          "scale": "-2.5 to 2.5",
+          "notes": "Higher = better governance"
+        },
+        {
+          "name": "Government Effectiveness",
+          "source": "World Bank WGI",
+          "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+          "frequency": "annual",
+          "coverage": "1996-present",
+          "scale": "-2.5 to 2.5"
+        },
+        {
+          "name": "Regulatory Quality",
+          "source": "World Bank WGI",
+          "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+          "frequency": "annual",
+          "coverage": "1996-present",
+          "scale": "-2.5 to 2.5"
+        },
+        {
+          "name": "State Legitimacy",
+          "source": "Fragile States Index",
+          "url": "https://fragilestatesindex.org/excel/",
+          "frequency": "annual",
+          "coverage": "2006-present",
+          "scale": "0-10",
+          "notes": "Higher = more fragile"
+        },
+        {
+          "name": "Political Violence",
+          "source": "World Bank WGI",
+          "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+          "frequency": "annual",
+          "coverage": "1996-present",
+          "scale": "-2.5 to 2.5",
+          "indicator_code": "PV.EST"
+        },
+        {
+          "name": "Inter- and Intra-state Conflict",
+          "source": "UCDP (Uppsala)",
+          "url": "https://ucdp.uu.se/exploratory",
+          "frequency": "annual",
+          "coverage": "1946-present",
+          "notes": "Battle-related deaths, conflict intensity"
+        },
+        {
+          "name": "Cyber Events",
+          "source": "University of Maryland CISSM",
+          "url": "https://cissm.umd.edu/research-impact/publications/cyber-events-database-home",
+          "frequency": "event-based",
+          "coverage": "2014-present",
+          "notes": "State-sponsored cyber incidents"
+        }
+      ]
+    },
+    "economic": {
+      "name": "Economic Risk",
+      "weight": 0.25,
+      "variables": [
+        {
+          "name": "Economic Complexity",
+          "source": "Harvard Growth Lab",
+          "url": "https://atlas.hks.harvard.edu/data-downloads",
+          "frequency": "annual",
+          "coverage": "1995-present",
+          "notes": "ECI score - export sophistication"
+        },
+        {
+          "name": "Inflation",
+          "source": "IMF WEO",
+          "url": "https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.RES:WEO(6.0.0)",
+          "frequency": "semi-annual",
+          "coverage": "1980-present",
+          "indicator_code": "PCPIPCH"
+        },
+        {
+          "name": "Fiscal Balance",
+          "source": "IMF WEO",
+          "url": "https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.RES:WEO(6.0.0)",
+          "frequency": "semi-annual",
+          "coverage": "1980-present",
+          "indicator_code": "GGXCNL_NGDP",
+          "notes": "% of GDP"
+        },
+        {
+          "name": "Current Account Balance",
+          "source": "IMF WEO",
+          "url": "https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.RES:WEO(6.0.0)",
+          "frequency": "semi-annual",
+          "coverage": "1980-present",
+          "indicator_code": "BCA_NGDPD",
+          "notes": "% of GDP"
+        },
+        {
+          "name": "Central Bank Independence",
+          "source": "Garriga CBI Dataset",
+          "url": "https://sites.google.com/site/carogarriga/cbi-data-1",
+          "frequency": "periodic",
+          "coverage": "1970-2017",
+          "notes": "0-1 scale, may need updating"
+        },
+        {
+          "name": "Real GDP Growth",
+          "source": "IMF WEO",
+          "url": "https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.RES:WEO(6.0.0)",
+          "frequency": "semi-annual",
+          "coverage": "1980-present",
+          "indicator_code": "NGDP_RPCH"
+        },
+        {
+          "name": "Education Spending",
+          "source": "UNESCO",
+          "url": "https://databrowser.uis.unesco.org/view",
+          "frequency": "annual",
+          "coverage": "varies by country",
+          "notes": "% of GDP"
+        },
+        {
+          "name": "Trade Remedies (Sanctions, Anti-dumping)",
+          "source": "WTO",
+          "url": "https://trade-remedies.wto.org/en",
+          "frequency": "event-based",
+          "notes": "Countervailing duties, anti-dumping measures"
+        },
+        {
+          "name": "Sanctions",
+          "source": "Harvard Sanctions Database",
+          "url": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/SVR5W7",
+          "frequency": "event-based",
+          "coverage": "1950-2022",
+          "notes": "GSDB - Global Sanctions Database"
+        }
+      ]
+    },
+    "social": {
+      "name": "Social Risk",
+      "weight": 0.25,
+      "variables": [
+        {
+          "name": "Human Development Index",
+          "source": "UNDP",
+          "url": "https://hdr.undp.org/data-center/documentation-and-downloads",
+          "frequency": "annual",
+          "coverage": "1990-present",
+          "scale": "0-1"
+        },
+        {
+          "name": "Refugees",
+          "source": "UNHCR",
+          "url": "https://www.unhcr.org/refugee-statistics/download?url=2bxU2f",
+          "frequency": "annual",
+          "coverage": "1951-present",
+          "notes": "Refugee population by origin/asylum"
+        },
+        {
+          "name": "Inequality",
+          "source": "EC INFORM Risk Index",
+          "url": "https://drmkc.jrc.ec.europa.eu/inform-index/INFORM-Risk/Results-and-data",
+          "frequency": "annual",
+          "coverage": "2012-present"
+        },
+        {
+          "name": "Participation (Freedom of Association)",
+          "source": "V-Dem",
+          "url": "https://ourworldindata.org/grapher/freedom-of-association-index",
+          "frequency": "annual",
+          "coverage": "1789-present",
+          "scale": "0-1"
+        },
+        {
+          "name": "Rights",
+          "source": "V-Dem",
+          "url": "https://ourworldindata.org/grapher/freedom-of-association-index",
+          "frequency": "annual",
+          "coverage": "1789-present"
+        },
+        {
+          "name": "Social Capital (Suffrage)",
+          "source": "V-Dem",
+          "url": "https://ourworldindata.org/grapher/suffrage",
+          "frequency": "annual",
+          "coverage": "1789-present",
+          "notes": "Share of population with right to vote"
+        },
+        {
+          "name": "Unemployment",
+          "source": "IMF WEO",
+          "url": "https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.RES:WEO(6.0.0)",
+          "frequency": "semi-annual",
+          "indicator_code": "LUR"
+        },
+        {
+          "name": "Social Unrest",
+          "source": "Carnegie Endowment",
+          "url": "https://carnegieendowment.org/features/global-protest-tracker",
+          "frequency": "event-based",
+          "coverage": "2017-present",
+          "notes": "Global Protest Tracker"
+        }
+      ]
+    },
+    "environmental": {
+      "name": "Environmental Risk",
+      "weight": 0.25,
+      "variables": [
+        {
+          "name": "Climate Risk",
+          "source": "IMF / EC INFORM Risk Index",
+          "url": "https://climatedata.imf.org/datasets/7cae02f84ed547fbbd6210d90da19879/about",
+          "frequency": "annual",
+          "notes": "Physical climate risk indicators"
+        },
+        {
+          "name": "Fossil Fuel Subsidy",
+          "source": "IMF",
+          "url": "https://climatedata.imf.org/datasets/d48cfd2124954fb0900cef95f2db2724_0/about",
+          "frequency": "annual",
+          "notes": "Explicit and implicit subsidies"
+        },
+        {
+          "name": "Environment Technology Development",
+          "source": "OECD",
+          "url": "https://data-explorer.oecd.org/",
+          "frequency": "annual",
+          "notes": "Green patents, R&D spending"
+        },
+        {
+          "name": "Climate Humanitarian Toll",
+          "source": "World Risk Report (IFVH)",
+          "url": "https://weltrisikobericht.de/",
+          "frequency": "annual",
+          "notes": "WorldRiskIndex - exposure, vulnerability, coping"
+        },
+        {
+          "name": "Extreme Climate Events",
+          "source": "EM-DAT",
+          "url": "https://doc.emdat.be/docs/data-structure-and-content/emdat-sources/",
+          "frequency": "event-based",
+          "coverage": "1900-present",
+          "notes": "International Disaster Database"
+        }
+      ]
+    }
+  },
+  "aggregation": {
+    "method": "weighted_average",
+    "normalization": "min-max scaling to 0-100",
+    "missing_data": "use latest available or regional proxy",
+    "country_coverage": "G20 + select emerging markets"
+  }
+}

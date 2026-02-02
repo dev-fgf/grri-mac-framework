@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "name": "FGF Geopolitical Risk Supercycle (GRS) Tracker",
+    "version": "1.0.0",
+    "status": "development",
+    "description": "GRRI-based measure of country-level geopolitical and systemic risk",
+    "methodology": "Global Risk Rating Index (GRRI) - 29 variables across 4 pillars",
+    "coverage": "G20 + emerging markets",
+    "frequency": "Annual"
+  },
+  "pillars": {
+    "political": {
+      "name": "Political Risk",
+      "weight": 0.25,
+      "description": "Governance quality, conflict intensity, and state stability",
+      "sources": [
+        "World Bank WGI",
+        "Fragile States Index",
+        "UCDP Uppsala",
+        "UMD CISSM"
+      ],
+      "variables": 7
+    },
+    "economic": {
+      "name": "Economic Risk",
+      "weight": 0.25,
+      "description": "Macroeconomic stability, trade dynamics, and institutional strength",
+      "sources": [
+        "IMF WEO",
+        "Harvard Growth Lab",
+        "Garriga CBI",
+        "UNESCO",
+        "WTO",
+        "Harvard GSDB"
+      ],
+      "variables": 9
+    },
+    "social": {
+      "name": "Social Risk",
+      "weight": 0.25,
+      "description": "Human development, inequality, and social cohesion",
+      "sources": [
+        "UNDP HDI",
+        "UNHCR",
+        "EC INFORM",
+        "V-Dem",
+        "Carnegie Protest Tracker"
+      ],
+      "variables": 8
+    },
+    "environmental": {
+      "name": "Environmental Risk",
+      "weight": 0.25,
+      "description": "Climate vulnerability, transition risk, and disaster exposure",
+      "sources": [
+        "IMF Climate",
+        "OECD",
+        "World Risk Report",
+        "EM-DAT"
+      ],
+      "variables": 5
+    }
+  },
+  "countries": {
+    "g20": [
+      "ARG",
+      "AUS",
+      "BRA",
+      "CAN",
+      "CHN",
+      "FRA",
+      "DEU",
+      "IND",
+      "IDN",
+      "ITA",
+      "JPN",
+      "MEX",
+      "RUS",
+      "SAU",
+      "ZAF",
+      "KOR",
+      "TUR",
+      "GBR",
+      "USA"
+    ],
+    "extended": [
+      "EGY",
+      "NGA",
+      "POL",
+      "THA",
+      "VNM",
+      "ARE",
+      "MYS",
+      "PHL",
+      "PAK",
+      "IRN"
+    ]
+  },
+  "data": [],
+  "last_updated": null
+}
