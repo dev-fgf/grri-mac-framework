@@ -38,6 +38,7 @@ let grsData = null;  // GRS Tracker data cache (for future use)
 let crisisEventsData = null;  // Crisis events for chart overlay
 let showGPR = false; // GPR toggle state
 let showCrisisEvents = true; // Crisis events toggle state (on by default)
+let historyProcessedData = null; // Processed data for history chart (for plugin access)
 
 // ============================================
 // Initialization
@@ -456,8 +457,8 @@ function renderHistoryChart(data) {
         smoothingLabel = ' (4-week MA)';
     }
     
-    // Store for crisis events plugin
-    ctx._processedData = processedData;
+    // Store for crisis events plugin (module-level for plugin access)
+    historyProcessedData = processedData;
     
     const labels = processedData.map(d => formatDateLabel(d.date, historyDays));
     
@@ -488,10 +489,10 @@ function renderHistoryChart(data) {
     const historyCrisisPlugin = {
         id: 'historyCrisisLines',
         afterDraw: (chart) => {
-            if (!showCrisisEvents || !crisisEventsData?.events) return;
+            if (!showCrisisEvents || !crisisEventsData?.events || !historyProcessedData) return;
             
             const { ctx, chartArea: { left, right, top, bottom }, scales: { x, y } } = chart;
-            const dates = processedData.map(d => d.date);
+            const dates = historyProcessedData.map(d => d.date);
             
             // Only show events within the current time range
             const startDate = dates[0];
@@ -504,7 +505,7 @@ function renderHistoryChart(data) {
                 // Find the index for this crisis date
                 const eventDate = event.start_date;
                 const idx = dates.findIndex(d => d >= eventDate);
-                if (idx === -1 || idx >= labels.length) return;
+                if (idx === -1 || idx >= dates.length) return;
                 
                 const xPos = x.getPixelForValue(idx);
                 if (xPos < left || xPos > right) return;
@@ -594,10 +595,10 @@ function renderHistoryChart(data) {
                 tooltip: {
                     callbacks: {
                         afterBody: function(context) {
-                            if (!showCrisisEvents || !crisisEventsData?.events) return '';
+                            if (!showCrisisEvents || !crisisEventsData?.events || !historyProcessedData) return '';
                             
                             const idx = context[0].dataIndex;
-                            const pointDate = processedData[idx]?.date;
+                            const pointDate = historyProcessedData[idx]?.date;
                             if (!pointDate) return '';
                             
                             // Find crisis event at this date
