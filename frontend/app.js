@@ -35,7 +35,9 @@ let currentData = null;
 let historyDays = 180;
 let gprData = null;  // GPR Index data cache
 let grsData = null;  // GRS Tracker data cache (for future use)
+let crisisEventsData = null;  // Crisis events for chart overlay
 let showGPR = false; // GPR toggle state
+let showCrisisEvents = true; // Crisis events toggle state (on by default)
 
 // ============================================
 // Initialization
@@ -163,15 +165,40 @@ async function loadGRSData() {
     return null;
 }
 
+async function loadCrisisEvents() {
+    // Load crisis events data for chart overlay
+    if (crisisEventsData) return crisisEventsData;
+    
+    try {
+        const response = await fetch('crisis_events.json');
+        if (response.ok) {
+            crisisEventsData = await response.json();
+            console.log(`Loaded ${crisisEventsData.total} crisis events for overlay`);
+            return crisisEventsData;
+        }
+    } catch (error) {
+        console.log('Crisis events data not found');
+    }
+    return null;
+}
+
 function toggleGPR() {
     showGPR = document.getElementById('gprToggle').checked;
     updateHistoryChart();
+}
+
+function toggleCrisisEvents() {
+    showCrisisEvents = document.getElementById('crisisToggle')?.checked ?? true;
+    // Update both charts
+    if (historyChart) updateHistoryChart();
+    if (backtestChart) updateBacktestChart();
 }
 
 async function loadHistoryData() {
     // Load GPR data in background
     loadGPRData();
     loadGRSData();
+    loadCrisisEvents();
     
     // First try the API
     try {
@@ -213,6 +240,9 @@ async function loadHistoryData() {
 }
 
 async function loadBacktestData() {
+    // Load crisis events for overlay
+    await loadCrisisEvents();
+    
     try {
         // First try to load real backtest data from static JSON
         const response = await fetch('backtest_data.json');
@@ -546,7 +576,12 @@ function renderBacktestChart(data) {
     const labels = timeSeries.map(d => formatDateLabel(d.date, 3650));
     const stressData = timeSeries.map(d => 1 - d.mac_score);
     
-    // Crisis points
+    // Store time series for update function
+    ctx._timeSeries = timeSeries;
+    ctx._labels = labels;
+    ctx._stressData = stressData;
+    
+    // Crisis points from embedded data
     const crisisPoints = timeSeries.map((d, i) => d.crisis_event ? stressData[i] : null);
     
     // Zone background bands plugin
@@ -568,6 +603,45 @@ function renderBacktestChart(data) {
                 const yBottom = y.getPixelForValue(zone.min);
                 ctx.fillStyle = zone.color;
                 ctx.fillRect(left, yTop, right - left, yBottom - yTop);
+            });
+        }
+    };
+    
+    // Crisis events vertical lines plugin
+    const crisisLinesPlugin = {
+        id: 'crisisLines',
+        afterDraw: (chart) => {
+            if (!showCrisisEvents || !crisisEventsData?.events) return;
+            
+            const { ctx, chartArea: { left, right, top, bottom }, scales: { x, y } } = chart;
+            const dates = timeSeries.map(d => d.date);
+            
+            crisisEventsData.events.forEach(event => {
+                // Find the index for this crisis date
+                const eventDate = event.start_date;
+                const idx = dates.findIndex(d => d >= eventDate);
+                if (idx === -1 || idx >= labels.length) return;
+                
+                const xPos = x.getPixelForValue(idx);
+                if (xPos < left || xPos > right) return;
+                
+                // Severity-based color
+                const colors = {
+                    extreme: 'rgba(239, 68, 68, 0.7)',   // Red
+                    high: 'rgba(249, 115, 22, 0.6)',     // Orange
+                    moderate: 'rgba(251, 191, 36, 0.5)'  // Yellow
+                };
+                
+                // Draw vertical line
+                ctx.save();
+                ctx.strokeStyle = colors[event.severity] || colors.moderate;
+                ctx.lineWidth = event.severity === 'extreme' ? 2 : 1;
+                ctx.setLineDash(event.severity === 'extreme' ? [] : [4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.restore();
             });
         }
     };
@@ -608,7 +682,7 @@ function renderBacktestChart(data) {
     backtestChart = new Chart(ctx, {
         type: 'line',
         data: { labels, datasets },
-        plugins: [zoneBandsPlugin],
+        plugins: [zoneBandsPlugin, crisisLinesPlugin],
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -624,16 +698,36 @@ function renderBacktestChart(data) {
                         afterBody: function(context) {
                             const idx = context[0].dataIndex;
                             const point = timeSeries[idx];
+                            let extra = '';
+                            
+                            // Check embedded crisis event
                             if (point.crisis_event) {
-                                return `\n⚠ ${point.crisis_event.name}`;
+                                extra += `\n⚠ ${point.crisis_event.name}`;
                             }
-                            return '';
+                            
+                            // Check crisis events overlay
+                            if (showCrisisEvents && crisisEventsData?.events) {
+                                const pointDate = point.date;
+                                const nearbyEvent = crisisEventsData.events.find(e => 
+                                    pointDate >= e.start_date && pointDate <= e.end_date
+                                );
+                                if (nearbyEvent && !extra.includes(nearbyEvent.name)) {
+                                    extra += `\n📍 ${nearbyEvent.name} (${nearbyEvent.severity})`;
+                                }
+                            }
+                            
+                            return extra;
                         }
                     }
                 }
             }
         }
     });
+}
+
+function updateBacktestChart() {
+    if (!backtestChart) return;
+    backtestChart.update('none');
 }
 
 function updateBacktestStats(data) {

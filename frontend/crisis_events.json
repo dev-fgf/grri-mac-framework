@@ -1,0 +1,423 @@
+{
+  "events": [
+    {
+      "name": "Nixon Shock / Dollar Devaluation",
+      "start_date": "1971-08-15",
+      "end_date": "1971-12-31",
+      "severity": "moderate",
+      "description": "End of gold convertibility, wage-price controls, 10% import surcharge. Bretton Woods collapses.",
+      "expected_mac_range": [
+        0.45,
+        0.6
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "1973 Oil Crisis / OPEC Embargo",
+      "start_date": "1973-10-17",
+      "end_date": "1974-03-18",
+      "severity": "high",
+      "description": "OPEC oil embargo quadruples prices. Stagflation begins. Market believes Fed cannot solve both inflation and recession.",
+      "expected_mac_range": [
+        0.35,
+        0.5
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "1974 Bear Market Bottom",
+      "start_date": "1974-09-01",
+      "end_date": "1974-12-06",
+      "severity": "extreme",
+      "description": "S&P falls 48% from peak. Worst recession since Depression. Franklin National Bank fails. Faith in Fed at nadir.",
+      "expected_mac_range": [
+        0.3,
+        0.45
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "Volcker Shock / 1980 Recession",
+      "start_date": "1980-01-01",
+      "end_date": "1980-07-31",
+      "severity": "high",
+      "description": "Volcker raises Fed Funds to 20%. Intentional recession to break inflation. Markets question Fed resolve.",
+      "expected_mac_range": [
+        0.4,
+        0.55
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "1981-82 Double-Dip Recession",
+      "start_date": "1981-07-01",
+      "end_date": "1982-11-30",
+      "severity": "high",
+      "description": "Worst unemployment since Depression (10.8%). Penn Square Bank fails. Continental Illinois crisis begins.",
+      "expected_mac_range": [
+        0.35,
+        0.5
+      ],
+      "affected_countries": [
+        "USA",
+        "CAN",
+        "GBR"
+      ]
+    },
+    {
+      "name": "Continental Illinois / Too Big to Fail",
+      "start_date": "1984-05-09",
+      "end_date": "1984-07-26",
+      "severity": "moderate",
+      "description": "7th largest US bank fails. FDIC introduces TBTF doctrine. First modern systemic rescue.",
+      "expected_mac_range": [
+        0.45,
+        0.55
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "Black Monday 1987",
+      "start_date": "1987-10-19",
+      "end_date": "1987-12-31",
+      "severity": "extreme",
+      "description": "Largest one-day percentage decline in history (-22.6%). Greenspan provides immediate liquidity.",
+      "expected_mac_range": [
+        0.3,
+        0.45
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "Asian Financial Crisis",
+      "start_date": "1997-07-02",
+      "end_date": "1998-01-31",
+      "severity": "high",
+      "description": "Thai baht devaluation triggers Asian currency crisis, contagion to global EM",
+      "expected_mac_range": [
+        0.35,
+        0.55
+      ],
+      "affected_countries": [
+        "THA",
+        "IDN",
+        "KOR"
+      ]
+    },
+    {
+      "name": "Russian Default / LTCM Crisis",
+      "start_date": "1998-08-17",
+      "end_date": "1998-10-31",
+      "severity": "extreme",
+      "description": "Russian debt default triggers LTCM near-collapse, Fed orchestrates bailout",
+      "expected_mac_range": [
+        0.25,
+        0.45
+      ],
+      "affected_countries": [
+        "RUS",
+        "USA",
+        "GBR"
+      ]
+    },
+    {
+      "name": "Dot-com Bubble Peak",
+      "start_date": "2000-03-10",
+      "end_date": "2000-04-14",
+      "severity": "moderate",
+      "description": "NASDAQ peaks at 5,048, tech bubble begins deflating",
+      "expected_mac_range": [
+        0.4,
+        0.6
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "September 11 Attacks",
+      "start_date": "2001-09-11",
+      "end_date": "2001-10-31",
+      "severity": "high",
+      "description": "Terrorist attacks close markets, Fed provides massive liquidity",
+      "expected_mac_range": [
+        0.35,
+        0.5
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "Corporate Scandals (Enron/WorldCom)",
+      "start_date": "2002-06-01",
+      "end_date": "2002-10-09",
+      "severity": "high",
+      "description": "Enron and WorldCom bankruptcies, market reaches post-dot-com lows",
+      "expected_mac_range": [
+        0.35,
+        0.5
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "Pre-GFC Build-up",
+      "start_date": "2006-01-01",
+      "end_date": "2007-07-31",
+      "severity": "moderate",
+      "description": "Credit spreads compressed to historic lows, housing bubble peak",
+      "expected_mac_range": [
+        0.5,
+        0.7
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "BNP Paribas Freeze",
+      "start_date": "2007-08-09",
+      "end_date": "2007-09-30",
+      "severity": "high",
+      "description": "BNP Paribas freezes redemptions, subprime contagion begins",
+      "expected_mac_range": [
+        0.4,
+        0.6
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "FRA"
+      ]
+    },
+    {
+      "name": "Bear Stearns Collapse",
+      "start_date": "2008-03-16",
+      "end_date": "2008-04-30",
+      "severity": "high",
+      "description": "Bear Stearns fails, Fed facilitates JPMorgan acquisition",
+      "expected_mac_range": [
+        0.3,
+        0.5
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR"
+      ]
+    },
+    {
+      "name": "Lehman Brothers / Global Financial Crisis Peak",
+      "start_date": "2008-09-15",
+      "end_date": "2009-03-09",
+      "severity": "extreme",
+      "description": "Lehman bankruptcy, systemic crisis, markets freeze globally",
+      "expected_mac_range": [
+        0.1,
+        0.3
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "Flash Crash",
+      "start_date": "2010-05-06",
+      "end_date": "2010-05-07",
+      "severity": "moderate",
+      "description": "Intraday 9% S&P 500 decline, high-frequency trading breakdown",
+      "expected_mac_range": [
+        0.45,
+        0.55
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "European Sovereign Debt Crisis",
+      "start_date": "2011-07-01",
+      "end_date": "2012-09-06",
+      "severity": "high",
+      "description": "Periphery sovereign spreads spike, TARGET2 imbalances peak, Draghi 'whatever it takes'",
+      "expected_mac_range": [
+        0.35,
+        0.55
+      ],
+      "affected_countries": [
+        "DEU",
+        "FRA",
+        "ITA"
+      ]
+    },
+    {
+      "name": "US Debt Ceiling / Downgrade",
+      "start_date": "2011-08-05",
+      "end_date": "2011-08-31",
+      "severity": "moderate",
+      "description": "S&P downgrades US to AA+, VIX spikes, equity selloff",
+      "expected_mac_range": [
+        0.4,
+        0.55
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "Taper Tantrum",
+      "start_date": "2013-05-22",
+      "end_date": "2013-09-18",
+      "severity": "moderate",
+      "description": "Fed signals QE tapering, EM capital flight, 'Fragile Five' under pressure",
+      "expected_mac_range": [
+        0.45,
+        0.6
+      ],
+      "affected_countries": [
+        "BRA",
+        "IND",
+        "IDN"
+      ]
+    },
+    {
+      "name": "China Devaluation",
+      "start_date": "2015-08-11",
+      "end_date": "2015-09-30",
+      "severity": "moderate",
+      "description": "PBOC devalues yuan, triggers global equity selloff, commodity rout",
+      "expected_mac_range": [
+        0.45,
+        0.6
+      ],
+      "affected_countries": [
+        "CHN",
+        "USA",
+        "Emerging Markets"
+      ]
+    },
+    {
+      "name": "Volmageddon",
+      "start_date": "2018-02-05",
+      "end_date": "2018-02-08",
+      "severity": "moderate",
+      "description": "VIX ETF implosion, short vol blowup, XIV termination",
+      "expected_mac_range": [
+        0.35,
+        0.5
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "Q4 2018 Selloff / Fed Pivot",
+      "start_date": "2018-10-03",
+      "end_date": "2018-12-26",
+      "severity": "moderate",
+      "description": "Fed tightening + QT, S&P 500 down 20%, Christmas Eve low, Powell pivots",
+      "expected_mac_range": [
+        0.4,
+        0.6
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "COVID-19 Pandemic",
+      "start_date": "2020-03-09",
+      "end_date": "2020-03-23",
+      "severity": "extreme",
+      "description": "Global pandemic, fastest bear market ever, all asset class selloff, Fed unlimited QE",
+      "expected_mac_range": [
+        0.1,
+        0.25
+      ],
+      "affected_countries": [
+        "USA",
+        "GBR",
+        "DEU"
+      ]
+    },
+    {
+      "name": "UK Pension Crisis / Rate Shock",
+      "start_date": "2022-09-26",
+      "end_date": "2022-10-14",
+      "severity": "high",
+      "description": "Mini-budget chaos, gilt yields spike, BoE intervenes, LDI crisis",
+      "expected_mac_range": [
+        0.35,
+        0.55
+      ],
+      "affected_countries": [
+        "GBR",
+        "USA",
+        "Eurozone"
+      ]
+    },
+    {
+      "name": "SVB / Regional Banking Crisis",
+      "start_date": "2023-03-10",
+      "end_date": "2023-03-20",
+      "severity": "high",
+      "description": "Silicon Valley Bank fails, Signature Bank fails, Credit Suisse absorbed",
+      "expected_mac_range": [
+        0.4,
+        0.55
+      ],
+      "affected_countries": [
+        "USA"
+      ]
+    },
+    {
+      "name": "Yen Carry Trade Unwind",
+      "start_date": "2024-08-05",
+      "end_date": "2024-08-12",
+      "severity": "moderate",
+      "description": "BoJ hikes, yen surges 3% in days, unwinds global carry trades, Nikkei -12% single day",
+      "expected_mac_range": [
+        0.45,
+        0.6
+      ],
+      "affected_countries": [
+        "JPN",
+        "USA",
+        "global"
+      ]
+    }
+  ],
+  "total": 27,
+  "severity_counts": {
+    "extreme": 5,
+    "high": 11,
+    "moderate": 11
+  }
+}
