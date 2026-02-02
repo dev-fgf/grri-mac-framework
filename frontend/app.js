@@ -565,9 +565,22 @@ function renderHistoryChart(data) {
     }
     
     if (historyChart) {
+        // Preserve visibility state from current chart
+        const hiddenStates = historyChart.data.datasets.map((ds, i) => 
+            historyChart.getDatasetMeta(i).hidden
+        );
+        
         historyChart.data.labels = labels;
         historyChart.data.datasets = datasets;
         historyChart.options.scales = scales;
+        
+        // Restore visibility state
+        hiddenStates.forEach((hidden, i) => {
+            if (i < datasets.length) {
+                historyChart.getDatasetMeta(i).hidden = hidden;
+            }
+        });
+        
         historyChart.update('none');
         return;
     }
