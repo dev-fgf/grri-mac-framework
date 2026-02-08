@@ -28,6 +28,210 @@ class CrisisEvent:
 # Comprehensive crisis event database
 CRISIS_EVENTS = [
     # ==========================================================================
+    # PRE-FED ERA (1907-1913) - No Central Bank
+    # No lender of last resort, gold standard constraint, J.P. Morgan era
+    # Data: NBER Macrohistory, Schwert volatility, Shiller equity prices
+    # ==========================================================================
+    CrisisEvent(
+        name="Panic of 1907",
+        start_date=datetime(1907, 10, 14),
+        end_date=datetime(1908, 2, 28),
+        affected_countries=["USA", "GBR", "FRA", "DEU", "ITA"],
+        expected_pillars_in_breach=["liquidity", "volatility", "policy", "contagion"],
+        expected_mac_range=(0.15, 0.35),
+        severity="extreme",
+        description="Trust company runs, stock market crash (-50%), J.P. Morgan private bailout. "
+                    "No central bank existed. Gold reserves strained by 1906 SF earthquake.",
+        key_indicators={
+            "call_money_rate_pct": 125,  # Spiked to 125% intraday
+            "schwert_vol_pct": 45,  # ~45% annualised
+            "rr_govt_spread_bps": 250,  # Railroad-govt spread
+            "gold_reserve_constraint": "severe",
+        }
+    ),
+
+    CrisisEvent(
+        name="1910-1911 Recession / Market Decline",
+        start_date=datetime(1910, 7, 1),
+        end_date=datetime(1911, 1, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity"],
+        expected_mac_range=(0.45, 0.60),
+        severity="moderate",
+        description="Mild recession following antitrust actions against Standard Oil. "
+                    "Market declined ~15%. Led to creation of Pujo Committee investigating money trusts.",
+        key_indicators={
+            "call_money_rate_pct": 6,
+            "schwert_vol_pct": 18,
+        }
+    ),
+
+    # ==========================================================================
+    # EARLY FED ERA (1913-1929) - New Central Bank, Gold Standard
+    # Fed learning to operate, WWI financing, post-war adjustment
+    # ==========================================================================
+    CrisisEvent(
+        name="1914 Exchange Closure / WWI Outbreak",
+        start_date=datetime(1914, 7, 31),
+        end_date=datetime(1914, 12, 12),
+        affected_countries=["USA", "GBR", "FRA", "DEU", "AUT"],
+        expected_pillars_in_breach=["liquidity", "contagion", "policy"],
+        expected_mac_range=(0.20, 0.40),
+        severity="extreme",
+        description="NYSE closed for 4.5 months (Jul 31 - Dec 12). European gold demands, "
+                    "transatlantic cable system disrupted. Fed opened Nov 16 during crisis.",
+        key_indicators={
+            "exchange_closed_days": 137,
+            "gold_outflows": "severe",
+            "gbp_usd_deviation_pct": 5,
+        }
+    ),
+
+    CrisisEvent(
+        name="Post-WWI Deflation / 1920-21 Depression",
+        start_date=datetime(1920, 1, 1),
+        end_date=datetime(1921, 7, 31),
+        affected_countries=["USA", "GBR", "DEU"],
+        expected_pillars_in_breach=["policy", "valuation"],
+        expected_mac_range=(0.30, 0.50),
+        severity="high",
+        description="Sharpest deflation in US history (-18% CPI). Fed raised discount rate to 7%. "
+                    "DJIA fell 47%. Agricultural sector devastated. Quick V-shaped recovery.",
+        key_indicators={
+            "fed_discount_rate_pct": 7.0,
+            "cpi_change_pct": -18,
+            "baa_aaa_spread_bps": 120,
+        }
+    ),
+
+    CrisisEvent(
+        name="1929 Stock Market Crash",
+        start_date=datetime(1929, 10, 24),
+        end_date=datetime(1929, 11, 13),
+        affected_countries=["USA", "GBR", "DEU", "FRA", "CAN"],
+        expected_pillars_in_breach=["volatility", "positioning", "liquidity"],
+        expected_mac_range=(0.15, 0.35),
+        severity="extreme",
+        description="Black Thursday / Black Tuesday. DJIA fell 25% in 2 days. "
+                    "Extreme margin leverage. NYSE margin debt at record levels.",
+        key_indicators={
+            "schwert_vol_pct": 40,
+            "djia_decline_pct": -40,  # Through Nov
+            "margin_debt_to_gdp_pct": 8.5,  # Historically extreme
+            "call_money_rate_pct": 20,
+        }
+    ),
+
+    # ==========================================================================
+    # GREAT DEPRESSION / WWII ERA (1929-1945)
+    # Banking panics, gold standard collapse, wartime controls
+    # ==========================================================================
+    CrisisEvent(
+        name="Banking Panic of 1930-31",
+        start_date=datetime(1930, 10, 1),
+        end_date=datetime(1931, 10, 31),
+        affected_countries=["USA", "GBR", "DEU", "AUT"],
+        expected_pillars_in_breach=["liquidity", "contagion", "policy", "valuation"],
+        expected_mac_range=(0.10, 0.25),
+        severity="extreme",
+        description="First wave of US bank failures. 1,352 banks failed in 1930. "
+                    "Austrian Creditanstalt collapse (May 1931) triggered European crisis. "
+                    "UK abandoned gold standard (Sep 1931).",
+        key_indicators={
+            "bank_failures": 1352,
+            "baa_aaa_spread_bps": 300,
+            "gold_reserve_pressure": "severe",
+        }
+    ),
+
+    CrisisEvent(
+        name="1933 Bank Holiday / FDR Emergency",
+        start_date=datetime(1933, 2, 14),
+        end_date=datetime(1933, 4, 30),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity", "policy", "valuation"],
+        expected_mac_range=(0.10, 0.25),
+        severity="extreme",
+        description="National bank holiday declared March 6-13. Emergency Banking Act. "
+                    "US left gold standard. DJIA had fallen 89% from 1929 peak. "
+                    "Glass-Steagall Act passed June 1933.",
+        key_indicators={
+            "banks_closed": 4004,
+            "djia_from_peak_pct": -89,
+            "gold_standard": "abandoned",
+        }
+    ),
+
+    CrisisEvent(
+        name="1937-38 Recession / Roosevelt Recession",
+        start_date=datetime(1937, 8, 1),
+        end_date=datetime(1938, 6, 30),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["volatility", "policy"],
+        expected_mac_range=(0.30, 0.50),
+        severity="high",
+        description="DJIA fell 49%. Fed doubled reserve requirements (1936-37), "
+                    "fiscal tightening. Third worst recession in 20th century.",
+        key_indicators={
+            "schwert_vol_pct": 35,
+            "djia_decline_pct": -49,
+            "reserve_req_doubled": True,
+        }
+    ),
+
+    # ==========================================================================
+    # POST-WAR ERA (1945-1962) - Bretton Woods, Fed-Treasury Accord
+    # Fixed exchange rates, regulated banking, limited financial innovation
+    # ==========================================================================
+    CrisisEvent(
+        name="1948-49 Post-War Recession",
+        start_date=datetime(1948, 11, 1),
+        end_date=datetime(1949, 10, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["policy"],
+        expected_mac_range=(0.50, 0.65),
+        severity="moderate",
+        description="Post-WWII inventory adjustment. S&P fell 21%. "
+                    "Transition from wartime to peacetime economy.",
+        key_indicators={
+            "sp500_decline_pct": -21,
+            "policy_constrained": "Fed-Treasury peg",
+        }
+    ),
+
+    CrisisEvent(
+        name="1953 Post-Korean War Recession",
+        start_date=datetime(1953, 7, 1),
+        end_date=datetime(1954, 5, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["policy"],
+        expected_mac_range=(0.50, 0.65),
+        severity="moderate",
+        description="Defense spending cuts post-Korea. Fed-Treasury Accord (1951) "
+                    "gave Fed independence. First post-Accord recession test.",
+        key_indicators={
+            "sp500_decline_pct": -15,
+            "fed_independent": True,
+        }
+    ),
+
+    CrisisEvent(
+        name="1957-58 Recession / Sputnik Shock",
+        start_date=datetime(1957, 8, 1),
+        end_date=datetime(1958, 4, 30),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["volatility"],
+        expected_mac_range=(0.45, 0.60),
+        severity="moderate",
+        description="Eisenhower recession. S&P fell 22%. Sputnik (Oct 57) added "
+                    "geopolitical anxiety. Fed cut rates from 3.5% to 1.75%.",
+        key_indicators={
+            "sp500_decline_pct": -22,
+            "fed_funds_pct": 3.5,
+        }
+    ),
+
+    # ==========================================================================
     # PRE-BRETTON WOODS COLLAPSE (1962-1971) - Fixed Exchange Rates
     # Fed constrained by gold convertibility, limited tools
     # ==========================================================================

@@ -2,8 +2,13 @@
 """
 Run MAC framework backtest for the academic paper.
 
-This script runs historical backtests (1971-2025) and generates
-empirical results for validation. All results are stored persistently.
+This script runs historical backtests and generates empirical results
+for validation.  Supports three modes:
+  Standard:  1971-2025  (FRED data only)
+  Extended:  1962-2025  (FRED + Moody's proxies)
+  Full:      1907-2025  (FRED + NBER + Shiller + Schwert + BoE + FINRA)
+
+All results are stored persistently in data/backtest_results/.
 """
 
 import os
@@ -50,14 +55,24 @@ def main():
     parser.add_argument(
         "--start",
         type=str,
-        default="2004-01-01",
-        help="Start date (YYYY-MM-DD)"
+        default="1971-02-05",
+        help="Start date (YYYY-MM-DD).  Use 1907-01-01 for full history."
     )
     parser.add_argument(
         "--end",
         type=str,
         default="2024-12-31",
         help="End date (YYYY-MM-DD)"
+    )
+    parser.add_argument(
+        "--extended",
+        action="store_true",
+        help="Run extended backtest from 1907 (requires historical data downloads)"
+    )
+    parser.add_argument(
+        "--era-weights",
+        action="store_true",
+        help="Use era-specific pillar weights (recommended for pre-1971 backtest)"
     )
     parser.add_argument(
         "--frequency",
@@ -86,11 +101,23 @@ def main():
     args = parser.parse_args()
 
     # Parse dates
-    start_date = datetime.strptime(args.start, "%Y-%m-%d")
+    if args.extended:
+        start_date = datetime(1907, 1, 1)
+        print("Using --extended mode: backtest from 1907")
+    else:
+        start_date = datetime.strptime(args.start, "%Y-%m-%d")
     end_date = datetime.strptime(args.end, "%Y-%m-%d")
 
+    # Determine backtest mode label
+    if start_date.year < 1962:
+        mode_label = f"EXTENDED ({start_date.year}-{end_date.year})"
+    elif start_date.year < 1990:
+        mode_label = f"HISTORICAL ({start_date.year}-{end_date.year})"
+    else:
+        mode_label = f"STANDARD ({start_date.year}-{end_date.year})"
+
     print("=" * 70)
-    print("MAC FRAMEWORK 20-YEAR BACKTEST")
+    print(f"MAC FRAMEWORK BACKTEST — {mode_label}")
     print("=" * 70)
     print(f"Period: {start_date.date()} to {end_date.date()}")
     print(f"Frequency: {args.frequency}")
@@ -193,7 +220,16 @@ def main():
         return 0
 
     print("Initializing backtest runner...")
-    runner = BacktestRunner()
+    use_era_weights = getattr(args, 'era_weights', False)
+    runner = BacktestRunner(use_era_weights=use_era_weights)
+    
+    if start_date.year < 1962:
+        print("⚡ Extended mode: era-specific proxy chains active")
+        if use_era_weights:
+            print("   Using era-specific pillar weights")
+        else:
+            print("   Using equal pillar weights (pass --era-weights for era-specific)")
+    
 
     print("Starting backtest... This may take several minutes.")
     print()

@@ -10,6 +10,7 @@ import azure.functions as func
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.database import get_database
+from shared.mac_scorer import calculate_mac
 
 logger = logging.getLogger(__name__)
 
@@ -102,20 +103,15 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             # Update existing point instead of adding
             logger.info(f"Updating existing point for {date_str}")
         
-        # Build new data point from cached indicators
+        # Score all 7 pillars using the real MAC scorer
+        mac_result = calculate_mac(cached_indicators)
+        mac_score = mac_result["mac_score"]
         pillar_scores = {
-            "liquidity": cached_indicators.get("liquidity_score", 0.5),
-            "valuation": cached_indicators.get("valuation_score", 0.5),
-            "positioning": cached_indicators.get("positioning_score", 0.5),
-            "volatility": cached_indicators.get("volatility_score", 0.5),
-            "policy": cached_indicators.get("policy_score", 0.5),
-            "contagion": cached_indicators.get("contagion_score", 0.5),
+            name: data["score"]
+            for name, data in mac_result["pillar_scores"].items()
         }
-        
-        # Calculate MAC score (simple average)
-        mac_score = sum(pillar_scores.values()) / len(pillar_scores)
         status = get_status(mac_score)
-        multiplier = 2 - mac_score  # Multiplier formula
+        multiplier = mac_result.get("multiplier", 2 - mac_score)
         
         new_point = {
             "date": date_str,
@@ -123,7 +119,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "status": status,
             "multiplier": round(multiplier, 6),
             "pillar_scores": {k: round(v, 4) for k, v in pillar_scores.items()},
-            "breach_flags": [],
+            "breach_flags": mac_result.get("breach_flags", []),
             "indicators": {}
         }
         

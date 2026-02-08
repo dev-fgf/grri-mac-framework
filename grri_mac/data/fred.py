@@ -70,12 +70,22 @@ class FREDClient:
         "M2SL": "M2SL",  # M2 Money Supply (1959+)
         "FED_FUNDS_TARGET": "DFEDTARU",  # Fed funds target upper
         "FED_FUNDS_RATE": "FEDFUNDS",  # Effective federal funds rate (monthly average)
+        # Extended historical series for 1907+ backtest
+        "INTDSRUSM193N": "INTDSRUSM193N",  # Fed Discount Rate (1913+, monthly)
+        "IRLTLT01USM156N": "IRLTLT01USM156N",  # Long-Term Govt Bond Yield (1920+)
+        "GDPA": "GDPA",  # Nominal GDP Annual (1929+)
     }
 
     # Historical cutoff dates for indicator transitions
     SOFR_START_DATE = datetime(2018, 4, 3)  # SOFR launch date
     IORB_START_DATE = datetime(2021, 7, 29)  # IORB replaced IOER
     LIBOR_END_DATE = datetime(2023, 6, 30)  # LIBOR discontinued
+
+    # Extended historical boundaries for 1907+ backtest
+    MOODYS_START = datetime(1919, 1, 1)       # Moody's Aaa/Baa yields
+    DISCOUNT_RATE_START = datetime(1948, 1, 1) # Fed discount rate (FRED starts 1948)
+    NBER_DATA_START = datetime(1907, 1, 1)     # NBER Macrohistory coverage
+    TB3MS_START = datetime(1934, 1, 1)         # 3-month T-Bill monthly
 
     def __init__(self, api_key: Optional[str] = None):
         """
@@ -93,6 +103,9 @@ class FREDClient:
         self._last_request_time = 0.0
         self._min_request_interval = 0.5  # 0.5 seconds = 120 requests/minute
         self._backtest_mode = False  # When True, only use cached data (no API calls)
+
+        # Lazy-loaded historical data provider for pre-1954 data
+        self._historical_provider = None
         
         # Load persisted cache from disk
         self._load_cache_from_disk()
@@ -443,8 +456,12 @@ class FREDClient:
             return self.get_libor_ois_spread(date)
         elif date >= self.FED_FUNDS_START:  # 1954+: Use FF-TBill
             return self._get_ff_tbill_spread(date)
+        elif date >= self.TB3MS_START:  # 1934+: Use discount rate - TBill
+            return self._get_discount_tbill_spread(date)
+        elif date >= self.NBER_DATA_START:  # 1907+: Use NBER call money - govt rate
+            return self._get_historical_funding_spread(date)
         else:
-            raise ValueError(f"No funding spread data available before 1954 for date {date}")
+            raise ValueError(f"No funding spread data available before 1907 for date {date}")
 
     def _get_ff_tbill_spread(self, date: datetime) -> float:
         """
@@ -471,19 +488,65 @@ class FREDClient:
         
         return (ff_value - tb_value) * 100  # Convert to bps
 
+    def _get_historical_provider(self):
+        """Lazy-load HistoricalDataProvider for pre-1954 data."""
+        if self._historical_provider is None:
+            from .historical_sources import HistoricalDataProvider
+            self._historical_provider = HistoricalDataProvider()
+        return self._historical_provider
+
+    def _get_discount_tbill_spread(self, date: datetime) -> float:
+        """
+        Get discount rate - T-Bill spread for 1934-1954 period.
+        
+        Uses Fed discount rate (INTDSRUSM193N, 1913+) and 3M T-Bill (TB3MS, 1934+).
+        """
+        discount = self.get_value_for_date("INTDSRUSM193N", date, lookback_days=35)
+        tbill = self.get_value_for_date("TB3MS", date, lookback_days=35)
+        
+        if discount is not None and tbill is not None:
+            return (discount - tbill) * 100  # Convert to bps
+        
+        # Fallback: just use discount rate level as stress indicator
+        if discount is not None:
+            return discount * 20  # Scale: 5% rate → 100bps equiv
+        
+        raise ValueError(f"No funding spread data for {date}")
+
+    def _get_historical_funding_spread(self, date: datetime) -> float:
+        """
+        Get funding stress spread for pre-1934 dates using NBER data.
+        
+        Uses Call Money Rate - Short-Term Govt Rate from NBER Macrohistory.
+        Analogous to TED spread / SOFR-IORB spread.
+        """
+        provider = self._get_historical_provider()
+        spread = provider.get_funding_stress_spread(date)
+        if spread is not None:
+            return spread
+        raise ValueError(f"No historical funding spread for {date}")
+
     def get_cp_treasury_spread(self, date: Optional[datetime] = None) -> float:
         """Get CP-Treasury spread in basis points for a specific date."""
         if date is None:
             date = datetime.now()
 
-        # Use lookback for weekend/holiday handling
-        cp_value = self.get_value_for_date("DCPN3M", date, lookback_days=10)
-        treasury_value = self.get_value_for_date("DTB3", date, lookback_days=10)
+        # Modern era: use CP rate series
+        if date >= datetime(1997, 1, 2):
+            cp_value = self.get_value_for_date("DCPN3M", date, lookback_days=10)
+            treasury_value = self.get_value_for_date("DTB3", date, lookback_days=10)
 
-        if cp_value is None or treasury_value is None:
-            raise ValueError(f"No CP-Treasury data available for date {date}")
+            if cp_value is not None and treasury_value is not None:
+                return (cp_value - treasury_value) * 100  # Convert to bps
 
-        return (cp_value - treasury_value) * 100  # Convert to bps
+        # Pre-1997: use NBER commercial paper rate
+        if date >= self.NBER_DATA_START:
+            provider = self._get_historical_provider()
+            spread = provider.get_cp_spread(date)
+            if spread is not None:
+                return spread
+
+        raise ValueError(f"No CP-Treasury data available for date {date}")
 
     def get_term_premium_10y(self, date: Optional[datetime] = None) -> float:
         """Get 10-year term premium in basis points for a specific date."""
@@ -524,7 +587,7 @@ class FREDClient:
                 # ICE BofA returns percentage (1.26 = 1.26%), convert to bps
                 return value * 100  # Convert to bps
         
-        # Pre-1997: Use Moody's Baa - 10Y Treasury as proxy
+        # 1919-1997: Use Moody's Baa - 10Y Treasury as proxy
         # Use 35-day lookback for monthly data
         baa_yield = self.get_value_for_date("BAA", date, lookback_days=35)
         treasury_10y = self.get_value_for_date("DGS10", date, lookback_days=35)
@@ -532,10 +595,22 @@ class FREDClient:
         if baa_yield is not None and treasury_10y is not None:
             baa_spread = baa_yield - treasury_10y
             # Baa-Treasury is ~40bps wider than IG OAS on average
-            # Convert to bps and apply calibration
             ig_proxy = baa_spread * 100 - 40
             return max(ig_proxy, 50)  # Floor at 50bps
-        
+
+        # Try Moody's Baa - long-term govt yield (pre-DGS10)
+        lt_govt = self.get_value_for_date("IRLTLT01USM156N", date, lookback_days=35)
+        if baa_yield is not None and lt_govt is not None:
+            ig_proxy = (baa_yield - lt_govt) * 100 - 40
+            return max(ig_proxy, 50)
+
+        # Pre-1919: Use NBER railroad bond spreads
+        if date >= self.NBER_DATA_START:
+            provider = self._get_historical_provider()
+            spread = provider.get_ig_oas_proxy(date)
+            if spread is not None:
+                return max(spread, 50)
+
         raise ValueError(f"No IG OAS data available for date {date}")
 
     def get_hy_oas(self, date: Optional[datetime] = None) -> float:
@@ -556,7 +631,7 @@ class FREDClient:
                 # ICE BofA returns percentage (5.72 = 5.72%), convert to bps
                 return value * 100  # Convert to bps
         
-        # Pre-1997: Use Baa-Aaa spread scaled up as proxy
+        # 1919-1997: Use Baa-Aaa spread scaled up as proxy
         # Use 35-day lookback for monthly data
         baa = self.get_value_for_date("BAA", date, lookback_days=35)
         aaa = self.get_value_for_date("AAA", date, lookback_days=35)
@@ -566,7 +641,14 @@ class FREDClient:
             baa_aaa_spread = (baa - aaa) * 100  # Convert to bps
             hy_proxy = baa_aaa_spread * 4.5
             return max(hy_proxy, 250)  # Floor at 250bps
-        
+
+        # Pre-1919: Use NBER railroad bond spread × 3.75
+        if date >= self.NBER_DATA_START:
+            provider = self._get_historical_provider()
+            hy_proxy = provider.get_hy_oas_proxy(date)
+            if hy_proxy is not None:
+                return max(hy_proxy, 250)
+
         raise ValueError(f"No HY OAS data available for date {date}")
 
     def get_vix(self, date: Optional[datetime] = None) -> float:
@@ -603,7 +685,22 @@ class FREDClient:
                     return realized_vol
             except Exception:
                 pass
-        
+
+        # Pre-1971: Use Shiller monthly prices for realised vol
+        if date >= datetime(1871, 1, 1):
+            try:
+                provider = self._get_historical_provider()
+                # Try Schwert volatility series first (1802-1987)
+                vix_equiv = provider.get_vix_proxy(date)
+                if vix_equiv is not None:
+                    return vix_equiv
+                # Fallback: Shiller monthly realised vol × 1.3 VRP
+                rv = provider.get_realised_vol_from_shiller(date)
+                if rv is not None:
+                    return rv * 1.3  # Variance risk premium
+            except Exception:
+                pass
+
         raise ValueError(f"No VIX data available for date {date}")
 
     def _compute_realized_volatility(
@@ -690,9 +787,25 @@ class FREDClient:
         if value is not None:
             return value
 
-        # Fallback to effective rate
-        value = self.get_value_for_date("FEDFUNDS", date, lookback_days=10)
-        return value
+        # Fallback to effective rate (1954+)
+        value = self.get_value_for_date("FEDFUNDS", date, lookback_days=35)
+        if value is not None:
+            return value
+
+        # 1913-1954: Use Fed discount rate as policy rate proxy
+        if date >= self.DISCOUNT_RATE_START:
+            value = self.get_value_for_date("INTDSRUSM193N", date, lookback_days=35)
+            if value is not None:
+                return value
+
+        # Pre-1913: No central bank — return a synthetic low rate
+        # reflecting absence of lender-of-last-resort capacity.
+        # Per data spec: policy pillar gets structural penalty of 0.15-0.25.
+        # Return a low rate so policy_room_bps is small → low policy score.
+        if date >= self.NBER_DATA_START:
+            return 0.25  # Effectively near-zero policy room
+
+        return None
 
     def get_policy_room(self, date: Optional[datetime] = None) -> Optional[float]:
         """Get policy room (distance from ELB) in basis points.

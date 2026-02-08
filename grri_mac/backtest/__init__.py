@@ -12,6 +12,14 @@ from .calibration import (
     run_robustness_analysis,
     format_robustness_report,
 )
+from .era_configs import (
+    get_era,
+    get_available_pillars,
+    get_default_score,
+    get_era_weights,
+    get_era_overrides,
+    ERA_BOUNDARIES,
+)
 
 __all__ = [
     "BacktestEngine",
@@ -27,4 +35,11 @@ __all__ = [
     "RobustnessReport",
     "run_robustness_analysis",
     "format_robustness_report",
+    # Era-specific configs
+    "get_era",
+    "get_available_pillars",
+    "get_default_score",
+    "get_era_weights",
+    "get_era_overrides",
+    "ERA_BOUNDARIES",
 ]

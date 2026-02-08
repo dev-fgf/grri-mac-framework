@@ -20,6 +20,7 @@ from ..pillars.private_credit import PrivateCreditPillar, PrivateCreditIndicator
 from ..mac.composite import calculate_mac, get_mac_interpretation
 from ..mac.momentum import calculate_momentum, MACStatus, MACMomentum
 from .crisis_events import CRISIS_EVENTS, get_crisis_for_date
+from .era_configs import get_era, get_available_pillars, get_default_score, get_era_weights
 
 
 @dataclass
@@ -44,14 +45,17 @@ class BacktestPoint:
 class BacktestRunner:
     """Run historical backtests of the MAC framework."""
 
-    def __init__(self, fred_api_key: Optional[str] = None):
+    def __init__(self, fred_api_key: Optional[str] = None, use_era_weights: bool = False):
         """
         Initialize backtest runner.
 
         Args:
             fred_api_key: FRED API key (or will use FRED_API_KEY env var)
+            use_era_weights: If True, use era-specific pillar weights for
+                             pre-1971 periods (recommended for extended backtests)
         """
         self.fred = FREDClient(fred_api_key)
+        self.use_era_weights = use_era_weights
 
         # Initialize pillars (7 pillars total)
         self.liquidity = LiquidityPillar(fred_client=self.fred)
@@ -84,6 +88,8 @@ class BacktestRunner:
             "BAMLC0A0CM", "BAMLH0A0HYM2",
             # Valuation pillar - historical (Moody's from 1919)
             "AAA", "BAA", "DGS10", "BAA10Y",
+            # Valuation pillar - extended historical
+            "IRLTLT01USM156N",  # Long-term govt yield (1920+)
             # Volatility pillar - modern
             "VIXCLS", "VXOCLS",
             # Volatility pillar - historical (realized vol from 1971)
@@ -92,6 +98,9 @@ class BacktestRunner:
             "DGS2", "WALCL",
             # Policy pillar - historical (pre-2002)
             "BOGMBASE", "M2SL",
+            # Policy pillar - extended historical
+            "INTDSRUSM193N",  # Fed discount rate (1913+)
+            "GDPA",  # Annual GDP (1929+)
             # Private Credit pillar
             "DRTSCIS", "DRISCFS",
         ]))
@@ -108,12 +117,19 @@ class BacktestRunner:
         """
         Calculate MAC score for a specific date.
 
+        Uses era-aware scoring: pillars without data for the given date
+        receive default scores, and era-specific weights are applied when
+        *use_era_weights* is True.
+
         Args:
             date: Date to calculate MAC for
 
         Returns:
             BacktestPoint with MAC score and metadata
         """
+        # Determine which pillars have data for this era
+        availability = get_available_pillars(date)
+
         # Fetch indicators for this date
         liquidity_indicators = self._fetch_liquidity_indicators(date)
         valuation_indicators = self._fetch_valuation_indicators(date)
@@ -133,18 +149,38 @@ class BacktestRunner:
         private_credit_scores = self.private_credit.calculate_scores(private_credit_indicators)
 
         # Aggregate into pillar dict (7 pillars)
+        # For unavailable pillars, substitute era-appropriate defaults
         pillar_scores = {
             "liquidity": liquidity_scores.composite,
             "valuation": valuation_scores.composite,
-            "positioning": positioning_scores.composite,
+            "positioning": (
+                positioning_scores.composite
+                if availability["positioning"]
+                else get_default_score("positioning", date)
+            ),
             "volatility": volatility_scores.composite,
-            "policy": policy_scores.composite,
-            "contagion": contagion_scores.composite,
-            "private_credit": private_credit_scores.composite,
+            "policy": (
+                policy_scores.composite
+                if availability["policy"]
+                else get_default_score("policy", date)
+            ),
+            "contagion": (
+                contagion_scores.composite
+                if availability["contagion"]
+                else get_default_score("contagion", date)
+            ),
+            "private_credit": (
+                private_credit_scores.composite
+                if availability["private_credit"]
+                else get_default_score("private_credit", date)
+            ),
         }
 
+        # Use era-specific weights if enabled
+        weights = get_era_weights(date) if self.use_era_weights else None
+
         # Calculate MAC composite
-        mac_result = calculate_mac(pillar_scores)
+        mac_result = calculate_mac(pillar_scores, weights=weights)
 
         # Calculate momentum from historical data
         momentum = calculate_momentum(
@@ -428,8 +464,24 @@ class BacktestRunner:
             # 1990-1996: VIX available, Moody's credit proxies
             # TED spread available (1986+)
             return "fair"
+        elif date >= datetime(1971, 2, 5):
+            # 1971-1990: NASDAQ realised vol proxy, Moody's credit
+            return "poor"
+        elif date >= datetime(1954, 7, 1):
+            # 1954-1971: Fed Funds era, monthly data for most indicators
+            return "poor"
+        elif date >= datetime(1934, 1, 1):
+            # 1934-1954: T-Bill available, Moody's from 1919
+            return "poor"
+        elif date >= datetime(1919, 1, 1):
+            # 1919-1934: Moody's credit, Fed discount rate, NBER rates
+            return "poor"
+        elif date >= datetime(1907, 1, 1):
+            # 1907-1919: NBER Macrohistory only, no Fed, monthly data
+            # Schwert volatility, railroad bond spreads
+            return "poor"
         else:
-            # Pre-1990: VIX not available, use VXO proxy
+            # Pre-1907: insufficient data
             return "poor"
 
     def generate_validation_report(self, backtest_df: pd.DataFrame) -> dict:

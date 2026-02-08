@@ -565,10 +565,8 @@ function renderHistoryChart(data) {
     }
     
     if (historyChart) {
-        // Preserve visibility state from current chart
-        const hiddenStates = historyChart.data.datasets.map((ds, i) => 
-            historyChart.getDatasetMeta(i).hidden
-        );
+        // Preserve visibility state from current datasets
+        const hiddenStates = historyChart.data.datasets.map(ds => ds.hidden);
         
         historyChart.data.labels = labels;
         historyChart.data.datasets = datasets;
@@ -576,8 +574,8 @@ function renderHistoryChart(data) {
         
         // Restore visibility state
         hiddenStates.forEach((hidden, i) => {
-            if (i < datasets.length) {
-                historyChart.getDatasetMeta(i).hidden = hidden;
+            if (i < datasets.length && hidden !== undefined) {
+                historyChart.data.datasets[i].hidden = hidden;
             }
         });
         
@@ -811,9 +809,13 @@ function renderCrisisTable(data) {
 
 function toggleDataset(index) {
     if (!historyChart) return;
-    const meta = historyChart.getDatasetMeta(index);
-    meta.hidden = !meta.hidden;
-    historyChart.update('none');
+    
+    // Toggle the dataset hidden property directly
+    const dataset = historyChart.data.datasets[index];
+    if (dataset) {
+        dataset.hidden = !dataset.hidden;
+        historyChart.update('none');
+    }
 }
 
 async function updateHistoryChart() {
