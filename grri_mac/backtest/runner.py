@@ -6,7 +6,7 @@ Now includes 7th Private Credit pillar and momentum tracking.
 
 from datetime import datetime, timedelta
 from typing import Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import pandas as pd
 
 from ..data.fred import FREDClient
@@ -18,9 +18,9 @@ from ..pillars.positioning import PositioningPillar, PositioningIndicators
 from ..pillars.contagion import ContagionPillar, ContagionIndicators
 from ..pillars.private_credit import PrivateCreditPillar, PrivateCreditIndicators, SLOOSData, BDCData
 from ..mac.composite import calculate_mac, get_mac_interpretation, ML_OPTIMIZED_WEIGHTS
-from ..mac.momentum import calculate_momentum, MACStatus, MACMomentum
+from ..mac.momentum import calculate_momentum
 from .crisis_events import CRISIS_EVENTS, get_crisis_for_date
-from .era_configs import get_era, get_available_pillars, get_default_score, get_era_weights
+from .era_configs import get_era_weights
 
 
 @dataclass

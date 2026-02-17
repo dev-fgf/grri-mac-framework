@@ -12,14 +12,14 @@ Calculates:
 import os
 import sys
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from grri_mac.backtest.crisis_events import CRISIS_EVENTS
 
 
-def load_results(filename="backtest_results.csv"):
+def load_results(filename="data/backtest_results/backtest_improved.csv"):
     """Load backtest results."""
     if not os.path.exists(filename):
         print(f"ERROR: {filename} not found!")

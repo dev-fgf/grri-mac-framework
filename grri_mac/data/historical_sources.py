@@ -12,11 +12,10 @@ Data files are expected in data/historical/ directory as CSV/Excel.
 Run download_historical_data.py to fetch publicly available datasets.
 """
 
-import os
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict
 
 import numpy as np
 import pandas as pd
