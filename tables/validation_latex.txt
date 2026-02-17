@@ -7,25 +7,51 @@
 \toprule
 \textbf{Crisis Event} & \textbf{Date} & \textbf{Severity} & \textbf{Warning} & \textbf{Lead Time (days)} \\
 \midrule
-Pre-GFC Build-up & 2006-01-01 & Moderate & Yes & 24 \\
-BNP Paribas Freeze & 2007-08-09 & High & Yes & 84 \\
-Bear Stearns Collapse & 2008-03-16 & High & Yes & 87 \\
-Lehman Brothers \slash  Global Financial & 2008-09-15 & Extreme & No & - \\
-Flash Crash & 2010-05-06 & Moderate & No & - \\
-European Sovereign Debt Crisis & 2011-07-01 & High & No & - \\
-US Debt Ceiling \slash  Downgrade & 2011-08-05 & Moderate & No & - \\
-Taper Tantrum & 2013-05-22 & Moderate & Yes & 34 \\
-China Devaluation & 2015-08-11 & Moderate & No & - \\
-Q4 2018 Selloff \slash  Fed Pivot & 2018-10-03 & Moderate & No & - \\
-Volmageddon & 2018-02-05 & Moderate & No & - \\
-COVID-19 Pandemic & 2020-03-09 & Extreme & No & - \\
+Panic of 1907 & 1907-10-14 & Extreme & Yes & 90 \\
+1910-1911 Recession \slash  Market Decli & 1910-07-01 & Moderate & Yes & 87 \\
+1914 Exchange Closure \slash  WWI Outbre & 1914-07-31 & Extreme & Yes & 87 \\
+Post-WWI Deflation \slash  1920-21 Depre & 1920-01-01 & High & Yes & 86 \\
+1929 Stock Market Crash & 1929-10-24 & Extreme & Yes & 86 \\
+Banking Panic of 1930-31 & 1930-10-01 & Extreme & Yes & 85 \\
+1933 Bank Holiday \slash  FDR Emergency & 1933-02-14 & Extreme & Yes & 84 \\
+1937-38 Recession \slash  Roosevelt Rece & 1937-08-01 & High & Yes & 89 \\
+1948-49 Post-War Recession & 1948-11-01 & Moderate & Yes & 90 \\
+1953 Post-Korean War Recession & 1953-07-01 & Moderate & No & - \\
+1957-58 Recession \slash  Sputnik Shock & 1957-08-01 & Moderate & No & - \\
+Kennedy Slide \slash  Flash Crash of 196 & 1962-05-28 & Moderate & No & - \\
+Credit Crunch of 1966 & 1966-08-01 & Moderate & Yes & 48 \\
+Penn Central Bankruptcy & 1970-06-21 & High & Yes & 54 \\
+Nixon Shock \slash  Dollar Devaluation & 1971-08-15 & Moderate & Yes & 89 \\
+1973 Oil Crisis \slash  OPEC Embargo & 1973-10-17 & High & Yes & 78 \\
+1974 Bear Market Bottom & 1974-09-01 & Extreme & No & - \\
+Volcker Shock \slash  1980 Recession & 1980-01-01 & High & Yes & 63 \\
+1981-82 Double-Dip Recession & 1981-07-01 & High & Yes & 85 \\
+Continental Illinois \slash  Too Big to  & 1984-05-09 & Moderate & Yes & 36 \\
+Black Monday 1987 & 1987-10-19 & Extreme & No & - \\
+Asian Financial Crisis & 1997-07-02 & High & Yes & 22 \\
+Russian Default \slash  LTCM Crisis & 1998-08-17 & Extreme & Yes & 13 \\
+Dot-com Bubble Peak & 2000-03-10 & Moderate & No & - \\
+September 11 Attacks & 2001-09-11 & High & No & - \\
+Corporate Scandals (Enron\slash WorldCom & 2002-06-01 & High & No & - \\
+Pre-GFC Build-up & 2006-01-01 & Moderate & Yes & 40 \\
+BNP Paribas Freeze & 2007-08-09 & High & Yes & 86 \\
+Bear Stearns Collapse & 2008-03-16 & High & Yes & 89 \\
+Lehman Brothers \slash  Global Financial & 2008-09-15 & Extreme & Yes & 90 \\
+Flash Crash & 2010-05-06 & Moderate & Yes & 86 \\
+European Sovereign Debt Crisis & 2011-07-01 & High & Yes & 87 \\
+US Debt Ceiling \slash  Downgrade & 2011-08-05 & Moderate & Yes & 87 \\
+Taper Tantrum & 2013-05-22 & Moderate & Yes & 85 \\
+China Devaluation & 2015-08-11 & Moderate & Yes & 84 \\
+Q4 2018 Selloff \slash  Fed Pivot & 2018-10-03 & Moderate & Yes & 57 \\
+Volmageddon & 2018-02-05 & Moderate & Yes & 90 \\
+COVID-19 Pandemic & 2020-03-09 & Extreme & Yes & 6 \\
 UK Pension Crisis \slash  Rate Shock & 2022-09-26 & High & No & - \\
 SVB \slash  Regional Banking Crisis & 2023-03-10 & High & No & - \\
-Yen Carry Trade Unwind & 2024-08-05 & Moderate & No & - \\
+Yen Carry Trade Unwind & 2024-08-05 & Moderate & Yes & 90 \\
 \midrule
 \multicolumn{5}{l}{\textbf{Summary Statistics}} \\
-\multicolumn{5}{l}{True Positive Rate: 26.7\%} \\
-\multicolumn{5}{l}{Average Lead Time: 57.2 days} \\
+\multicolumn{5}{l}{True Positive Rate: 75.6\%} \\
+\multicolumn{5}{l}{Average Lead Time: 72.5 days} \\
 \bottomrule
 \end{tabular}
 \end{table}

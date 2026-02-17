@@ -60,8 +60,22 @@ def calculate_crisis_warnings(df, warning_threshold=0.5, warning_window_days=90)
             (df.index < crisis.start_date)
         ]
 
-        # Check for warning signals
-        warnings = warning_period[warning_period['mac_score'] < warning_threshold]
+        # Check for warning signals: level-based OR momentum-based
+        level_warnings = warning_period[
+            warning_period['mac_score'] < warning_threshold
+        ]
+
+        # Momentum-based: MAC below relaxed threshold AND rapid deterioration
+        momentum_warnings = pd.DataFrame()
+        if 'momentum_4w' in warning_period.columns:
+            momentum_warnings = warning_period[
+                (warning_period['mac_score'] < warning_threshold + 0.1)
+                & (warning_period['momentum_4w'].fillna(0) < -0.04)
+            ]
+
+        warnings = pd.concat(
+            [level_warnings, momentum_warnings]
+        ).drop_duplicates()
 
         has_warning = len(warnings) > 0
 

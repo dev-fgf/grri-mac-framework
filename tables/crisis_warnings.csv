@@ -1,16 +1,42 @@
 crisis,start_date,severity,warning_detected,lead_time_days,min_mac_before_crisis,min_mac_during_crisis,warning_window_days
-Pre-GFC Build-up,2006-01-01,moderate,Yes,24,0.491,0.369,90
-BNP Paribas Freeze,2007-08-09,high,Yes,84,0.369,0.337,90
-Bear Stearns Collapse,2008-03-16,high,Yes,87,0.401,0.463,90
-Lehman Brothers / Global Financial Crisis Peak,2008-09-15,extreme,No,0,0.505,0.348,90
-Flash Crash,2010-05-06,moderate,No,0,0.534,0.531,90
-European Sovereign Debt Crisis,2011-07-01,high,No,0,0.522,0.492,90
-US Debt Ceiling / Downgrade,2011-08-05,moderate,No,0,0.515,0.510,90
-Taper Tantrum,2013-05-22,moderate,Yes,34,0.498,0.508,90
-China Devaluation,2015-08-11,moderate,No,0,0.514,0.500,90
-Q4 2018 Selloff / Fed Pivot,2018-10-03,moderate,No,0,0.617,0.535,90
-Volmageddon,2018-02-05,moderate,No,0,0.593,0.620,90
-COVID-19 Pandemic,2020-03-09,extreme,No,0,0.542,0.407,90
-UK Pension Crisis / Rate Shock,2022-09-26,high,No,0,0.500,0.500,90
-SVB / Regional Banking Crisis,2023-03-10,high,No,0,0.500,0.500,90
-Yen Carry Trade Unwind,2024-08-05,moderate,No,0,0.500,0.500,90
+Panic of 1907,1907-10-14,extreme,Yes,90,N/A,N/A,90
+1910-1911 Recession / Market Decline,1910-07-01,moderate,Yes,87,N/A,N/A,90
+1914 Exchange Closure / WWI Outbreak,1914-07-31,extreme,Yes,87,0.302,0.302,90
+Post-WWI Deflation / 1920-21 Depression,1920-01-01,high,Yes,86,0.018,N/A,90
+1929 Stock Market Crash,1929-10-24,extreme,Yes,86,0.123,0.146,90
+Banking Panic of 1930-31,1930-10-01,extreme,Yes,85,0.151,N/A,90
+1933 Bank Holiday / FDR Emergency,1933-02-14,extreme,Yes,84,0.013,0.013,90
+1937-38 Recession / Roosevelt Recession,1937-08-01,high,Yes,89,0.172,N/A,90
+1948-49 Post-War Recession,1948-11-01,moderate,Yes,90,0.116,0.209,90
+1953 Post-Korean War Recession,1953-07-01,moderate,No,0,0.677,0.470,90
+1957-58 Recession / Sputnik Shock,1957-08-01,moderate,No,0,0.697,0.481,90
+Kennedy Slide / Flash Crash of 1962,1962-05-28,moderate,No,0,0.617,0.553,90
+Credit Crunch of 1966,1966-08-01,moderate,Yes,48,0.448,0.448,90
+Penn Central Bankruptcy,1970-06-21,high,Yes,54,0.492,0.607,90
+Nixon Shock / Dollar Devaluation,1971-08-15,moderate,Yes,89,0.457,0.400,90
+1973 Oil Crisis / OPEC Embargo,1973-10-17,high,Yes,78,0.423,0.518,90
+1974 Bear Market Bottom,1974-09-01,extreme,No,0,0.626,0.529,90
+Volcker Shock / 1980 Recession,1980-01-01,high,Yes,63,0.413,0.214,90
+1981-82 Double-Dip Recession,1981-07-01,high,Yes,85,0.377,0.210,90
+Continental Illinois / Too Big to Fail,1984-05-09,moderate,Yes,36,0.395,0.405,90
+Black Monday 1987,1987-10-19,extreme,No,0,0.615,0.375,90
+Asian Financial Crisis,1997-07-02,high,Yes,22,0.496,0.452,90
+Russian Default / LTCM Crisis,1998-08-17,extreme,Yes,13,0.546,0.382,90
+Dot-com Bubble Peak,2000-03-10,moderate,No,0,0.593,0.535,90
+September 11 Attacks,2001-09-11,high,No,0,0.557,0.330,90
+Corporate Scandals (Enron/WorldCom),2002-06-01,high,No,0,0.598,0.400,90
+Pre-GFC Build-up,2006-01-01,moderate,Yes,40,0.460,0.328,90
+BNP Paribas Freeze,2007-08-09,high,Yes,86,0.428,0.456,90
+Bear Stearns Collapse,2008-03-16,high,Yes,89,0.298,0.292,90
+Lehman Brothers / Global Financial Crisis Peak,2008-09-15,extreme,Yes,90,0.279,N/A,90
+Flash Crash,2010-05-06,moderate,Yes,86,0.388,N/A,90
+European Sovereign Debt Crisis,2011-07-01,high,Yes,87,0.388,0.134,90
+US Debt Ceiling / Downgrade,2011-08-05,moderate,Yes,87,0.374,0.249,90
+Taper Tantrum,2013-05-22,moderate,Yes,85,0.327,0.325,90
+China Devaluation,2015-08-11,moderate,Yes,84,0.299,0.290,90
+Q4 2018 Selloff / Fed Pivot,2018-10-03,moderate,Yes,57,0.445,0.490,90
+Volmageddon,2018-02-05,moderate,Yes,90,0.258,0.456,90
+COVID-19 Pandemic,2020-03-09,extreme,Yes,6,0.448,0.126,90
+UK Pension Crisis / Rate Shock,2022-09-26,high,No,0,0.516,0.492,90
+SVB / Regional Banking Crisis,2023-03-10,high,No,0,0.538,0.534,90
+Yen Carry Trade Unwind,2024-08-05,moderate,Yes,90,0.513,0.554,90

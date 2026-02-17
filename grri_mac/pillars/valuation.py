@@ -6,12 +6,18 @@ Indicators:
 - 10Y term premium
 - IG OAS (Investment Grade Option-Adjusted Spread)
 - HY OAS (High Yield Option-Adjusted Spread)
+
+Scoring approach: RANGE-BASED (two-sided)
+Both compressed AND extremely wide spreads indicate problems:
+- Compressed = complacency / repricing risk
+- Wide = crisis / distress
+Only spreads in a "healthy" middle range score as ample.
 """
 
 from dataclasses import dataclass
 from typing import Optional
 
-from ..mac.scorer import score_indicator_simple
+from ..mac.scorer import score_indicator_range
 
 
 @dataclass
@@ -36,22 +42,32 @@ class ValuationScores:
 class ValuationPillar:
     """Valuation pillar calculator."""
 
-    # Thresholds from specification (in basis points)
+    # Range-based thresholds: both too-tight AND too-wide = bad
+    # Calibrated from historical backtest analysis
     THRESHOLDS = {
         "term_premium": {
-            "ample": 100,   # > 100 bps
-            "thin": 0,      # 0-100 bps
-            "breach": -50,  # < 0 bps (using -50 as deep breach)
+            "ample_low": 40,       # Normal range: 40-120 bps
+            "ample_high": 120,
+            "thin_low": 0,         # Thin: 0-40 or 120-200
+            "thin_high": 200,
+            "breach_low": -50,     # Breach: < -50 (inversion) or > 250 (panic)
+            "breach_high": 250,
         },
         "ig_oas": {
-            "ample": 150,  # > 150 bps
-            "thin": 80,    # 80-150 bps
-            "breach": 50,  # < 80 bps (using 50 as deep breach)
+            "ample_low": 100,      # Normal range: 100-180 bps
+            "ample_high": 180,
+            "thin_low": 75,        # Thin: 75-100 or 180-280
+            "thin_high": 280,
+            "breach_low": 60,      # Breach: < 60 (too tight) or > 400 (crisis)
+            "breach_high": 400,
         },
         "hy_oas": {
-            "ample": 450,  # > 450 bps
-            "thin": 300,   # 300-450 bps
-            "breach": 200, # < 300 bps (using 200 as deep breach)
+            "ample_low": 350,      # Normal range: 350-550 bps
+            "ample_high": 550,
+            "thin_low": 280,       # Thin: 280-350 or 550-800
+            "thin_high": 800,
+            "breach_low": 200,     # Breach: < 200 (too tight) or > 1000 (crisis)
+            "breach_high": 1000,
         },
     }
 
@@ -87,36 +103,33 @@ class ValuationPillar:
         return indicators
 
     def score_term_premium(self, tp_bps: float) -> float:
-        """Score 10Y term premium (higher is better)."""
+        """Score 10Y term premium (should be in healthy range)."""
         t = self.THRESHOLDS["term_premium"]
-        return score_indicator_simple(
+        return score_indicator_range(
             tp_bps,
-            t["ample"],
-            t["thin"],
-            t["breach"],
-            lower_is_better=False,
+            ample_range=(t["ample_low"], t["ample_high"]),
+            thin_range=(t["thin_low"], t["thin_high"]),
+            breach_range=(t["breach_low"], t["breach_high"]),
         )
 
     def score_ig_oas(self, oas_bps: float) -> float:
-        """Score IG OAS (higher spread = more buffer = better)."""
+        """Score IG OAS (should be in healthy range; too tight or too wide = bad)."""
         t = self.THRESHOLDS["ig_oas"]
-        return score_indicator_simple(
+        return score_indicator_range(
             oas_bps,
-            t["ample"],
-            t["thin"],
-            t["breach"],
-            lower_is_better=False,
+            ample_range=(t["ample_low"], t["ample_high"]),
+            thin_range=(t["thin_low"], t["thin_high"]),
+            breach_range=(t["breach_low"], t["breach_high"]),
         )
 
     def score_hy_oas(self, oas_bps: float) -> float:
-        """Score HY OAS (higher spread = more buffer = better)."""
+        """Score HY OAS (should be in healthy range; too tight or too wide = bad)."""
         t = self.THRESHOLDS["hy_oas"]
-        return score_indicator_simple(
+        return score_indicator_range(
             oas_bps,
-            t["ample"],
-            t["thin"],
-            t["breach"],
-            lower_is_better=False,
+            ample_range=(t["ample_low"], t["ample_high"]),
+            thin_range=(t["thin_low"], t["thin_high"]),
+            breach_range=(t["breach_low"], t["breach_high"]),
         )
 
     def calculate(

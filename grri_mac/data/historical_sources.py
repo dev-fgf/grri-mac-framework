@@ -264,7 +264,7 @@ def load_schwert_volatility() -> Optional[pd.Series]:
     """
     Load Schwert's monthly stock return volatility series.
 
-    Expected file: data/historical/schwert/volatility.csv
+    Expected file: data/historical/schwert/schwert_volatility.csv
     Format: CSV with columns 'date' and 'volatility' (annualised %)
 
     For VIX-equivalent conversion, apply 1.3x variance risk premium multiplier.
@@ -274,7 +274,7 @@ def load_schwert_volatility() -> Optional[pd.Series]:
         pandas Series of monthly annualised volatility (%)
     """
     schwert_dir = HISTORICAL_DATA_DIR / "schwert"
-    filepath = schwert_dir / "volatility.csv"
+    filepath = schwert_dir / "schwert_volatility.csv"
 
     if not filepath.exists():
         logger.warning(f"Schwert volatility data not found at {filepath}")
@@ -814,7 +814,7 @@ class HistoricalDataProvider:
         # Schwert
         schwert_dir = HISTORICAL_DATA_DIR / "schwert"
         summary["schwert"] = {
-            "available": (schwert_dir / "volatility.csv").exists(),
+            "available": (schwert_dir / "schwert_volatility.csv").exists(),
             "path": str(schwert_dir),
         }
 
