@@ -13,7 +13,6 @@ jobs:
     steps:
       - name: Refresh indicators and FRED series
         run: |
-        run: |
           echo "=== Refreshing indicator cache + FRED series ==="
           response=$(curl -s -w "\n%{http_code}" -X POST "https://white-glacier-0020b2f1e.2.azurestaticapps.net/api/refresh")
           http_code=$(echo "$response" | tail -n1)
