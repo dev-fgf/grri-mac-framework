@@ -39,7 +39,7 @@ def _approx(a: float, b: float, tol: float = 0.05) -> bool:
 
 class TestPolicyBindingConstraint:
 
-    def setup(self):
+    def setup_method(self):
         self.pillar = PolicyPillar()
 
     def test_min_function_high_dispersion(self):
@@ -171,7 +171,7 @@ class TestPolicyBindingConstraint:
 
 class TestVRPEstimation:
 
-    def setup(self):
+    def setup_method(self):
         self.pillar = VolatilityPillar()
 
     def test_vrp_stable_regime(self):
@@ -249,7 +249,7 @@ class TestVRPEstimation:
 
 class TestDecorrelation:
 
-    def setup(self):
+    def setup_method(self):
         self.decorrelator = PrivateCreditDecorrelator()
 
     def _make_synthetic_data(self, n=252, signal_strength=0.0):
