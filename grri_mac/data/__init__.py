@@ -16,6 +16,20 @@ from .historical_proxies import (
     list_available_proxies,
     get_proxy_warnings,
 )
+from .blob_store import (
+    BlobStore,
+    DataTier,
+    get_blob_store,
+    RAW_CONTAINER,
+    CLEANED_CONTAINER,
+)
+from .pipeline import (
+    DataPipeline,
+    IngestResult,
+    BatchIngestResult,
+    SourceDescriptor,
+    FRED_MAC_SERIES,
+)
 
 __all__ = [
     # Core data clients
@@ -35,4 +49,16 @@ __all__ = [
     "YAHOO_TICKERS",
     "list_available_proxies",
     "get_proxy_warnings",
+    # Azure Blob Storage data lake
+    "BlobStore",
+    "DataTier",
+    "get_blob_store",
+    "RAW_CONTAINER",
+    "CLEANED_CONTAINER",
+    # Ingestion pipeline
+    "DataPipeline",
+    "IngestResult",
+    "BatchIngestResult",
+    "SourceDescriptor",
+    "FRED_MAC_SERIES",
 ]
