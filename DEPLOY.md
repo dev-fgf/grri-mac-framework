@@ -4,34 +4,36 @@ Deploy the GRRI-MAC Framework to Azure Static Web Apps (SWA) with Azure Function
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  Azure Static Web Apps (Free Tier)               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────────────┐     ┌────────────────────────────┐   │
-│  │   Static Frontend    │     │    Azure Functions API     │   │
-│  │   (frontend/)        │────▶│    (api/)                  │   │
-│  │                      │     │                            │   │
-│  │  - index.html        │     │  - /api/health             │   │
-│  │  - styles.css        │     │  - /api/mac/demo           │   │
-│  │  - app.js            │     │  - /api/mac/calculate      │   │
-│  │  - Chart.js (CDN)    │     │  - /api/backtest/run       │   │
-│  └──────────────────────┘     │  - /api/simulate           │   │
-│                               │  - /api/thresholds         │   │
-│                               └─────────────┬──────────────┘   │
-│                                             │                   │
-│                               ┌─────────────▼──────────────┐   │
-│                               │   Azure Table Storage      │   │
-│                               │                            │   │
-│                               │  - fredseries (24 series)  │   │
-│                               │  - backtesthistory (2814)  │   │
-│                               │  - backtestcache           │   │
-│                               │  - machistory              │   │
-│                               │  - grridata                │   │
-│                               └────────────────────────────┘   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph LR
+    subgraph SWA ["Azure Static Web Apps (Free Tier)"]
+        subgraph FE ["Static Frontend (frontend/)"]
+            HTML["index.html"]
+            CSS["styles.css"]
+            JS["app.js"]
+            CJS["Chart.js CDN"]
+        end
+
+        subgraph API ["Azure Functions API (api/)"]
+            H["/api/health"]
+            D["/api/mac/demo"]
+            C["/api/mac/calculate"]
+            B["/api/backtest/run"]
+            S["/api/simulate"]
+            T["/api/thresholds"]
+        end
+
+        subgraph DB ["Azure Table Storage"]
+            T1["fredseries (24 series)"]
+            T2["backtesthistory"]
+            T3["backtestcache"]
+            T4["machistory"]
+            T5["grridata"]
+        end
+
+        FE -->|fetch| API
+        API -->|read/write| DB
+    end
 ```
 
 ## Prerequisites

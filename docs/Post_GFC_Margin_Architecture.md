@@ -45,30 +45,91 @@ The current positioning pillar tracks **Treasury basis trades**, **CFTC speculat
 
 ## Architecture: How Each Channel Maps to Pillars
 
-```
-                    ┌─────────────┐
-                    │  Composite   │
-                    │  MAC Score   │
-                    └──────┬──────┘
-                           │
-        ┌──────┬───────┬───┴───┬───────┬──────────┬──────────┐
-        │      │       │       │       │          │          │
-   Liquidity  Val  Positioning Vol  Policy  Contagion  Priv Credit
-        │             │        │              │          │
-   ┌────┴────┐  ┌─────┴────┐ ┌┴────────┐ ┌───┴─────┐ ┌──┴──┐
-   │ SOFR-   │  │ Basis    │ │ VIX     │ │ XCcy    │ │SLOOS│
-   │ IORB    │  │ trade    │ │ VVIX    │ │ basis   │ │ HY  │
-   │ CP-Tsy  │  │ Spec net │ │ VIX/    │ │ IG-HY   │ │ OAS │
-   │ ON RRP* │  │ SVXY AUM │ │ VIX3M   │ │ Fin OAS │ │     │
-   │         │  │ Margin   │ │ VIX9D/  │ │ BTC-SPY │ │     │
-   │         │  │ debt*    │ │ VIX     │ │ corr    │ │     │
-   │         │  │ Lev ETF* │ │ 0DTE**  │ │ Crypto  │ │     │
-   │         │  │ PB lev***│ │         │ │ Fut OI  │ │     │
-   └─────────┘  └──────────┘ └─────────┘ └─────────┘ └─────┘
+```mermaid
+graph TD
+    MAC["Composite MAC Score"]
 
-   Bold = Live (Tier 1)    * = Tier 2    ** = Tier 2 (exact)
-  *** = Tier 3 (proprietary)
+    LIQ["Liquidity"]
+    VAL["Valuation"]
+    POS["Positioning"]
+    VOL["Volatility"]
+    POL["Policy"]
+    CON["Contagion"]
+    PC["Private Credit"]
+
+    MAC --> LIQ
+    MAC --> VAL
+    MAC --> POS
+    MAC --> VOL
+    MAC --> POL
+    MAC --> CON
+    MAC --> PC
+
+    subgraph liq_ind [" "]
+        L1["SOFR-IORB spread"]
+        L2["CP-Treasury spread"]
+        L3["ON RRP usage *"]
+    end
+    LIQ --> liq_ind
+
+    subgraph pos_ind [" "]
+        P1["Basis trade size"]
+        P2["Spec net %ile"]
+        P3["SVXY AUM"]
+        P4["Margin debt *"]
+        P5["Leveraged ETF AUM *"]
+        P6["PB leverage ***"]
+    end
+    POS --> pos_ind
+
+    subgraph vol_ind [" "]
+        V1["VIX level"]
+        V2["VVIX"]
+        V3["VIX / VIX3M slope"]
+        V4["VIX9D / VIX ratio"]
+        V5["0DTE exact vol **"]
+    end
+    VOL --> vol_ind
+
+    subgraph con_ind [" "]
+        C1["XCcy basis"]
+        C2["IG-HY spread ratio"]
+        C3["Financial OAS"]
+        C4["BTC-SPY correlation"]
+        C5["Crypto futures OI"]
+    end
+    CON --> con_ind
+
+    subgraph pc_ind [" "]
+        PC1["SLOOS C&I tightening"]
+        PC2["HY OAS"]
+    end
+    PC --> pc_ind
+
+    style L1 fill:#10b981,color:#fff
+    style L2 fill:#10b981,color:#fff
+    style L3 fill:#f59e0b,color:#000
+    style P1 fill:#10b981,color:#fff
+    style P2 fill:#10b981,color:#fff
+    style P3 fill:#10b981,color:#fff
+    style P4 fill:#f59e0b,color:#000
+    style P5 fill:#f59e0b,color:#000
+    style P6 fill:#ef4444,color:#fff
+    style V1 fill:#10b981,color:#fff
+    style V2 fill:#10b981,color:#fff
+    style V3 fill:#10b981,color:#fff
+    style V4 fill:#10b981,color:#fff
+    style V5 fill:#f59e0b,color:#000
+    style C1 fill:#10b981,color:#fff
+    style C2 fill:#10b981,color:#fff
+    style C3 fill:#10b981,color:#fff
+    style C4 fill:#10b981,color:#fff
+    style C5 fill:#10b981,color:#fff
+    style PC1 fill:#10b981,color:#fff
+    style PC2 fill:#10b981,color:#fff
 ```
+
+> Green = Tier 1 (live) | Amber = Tier 2 (next) | Red = Tier 3 (proprietary)
 
 ---
 
