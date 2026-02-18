@@ -74,3 +74,18 @@ local.settings.json
 
 # Temporary analysis outputs
 real_data_pull.json
+
+# Data lake (raw + cleaned blobs stored in Azure, not in git)
+data/datalake/
+
+# Large data files (downloaded/generated, stored in Azure)
+data/fred_cache/
+data/historical/
+data/backtest_results/
+data/gpr_data.xls
+data/historical_indicators.json
+data/historical_mac_results.json
+data/private_credit_analysis.json
+data/competitor_indices.json
+data/grs_data_sources.json
+data/mac.db
