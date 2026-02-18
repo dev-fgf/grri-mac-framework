@@ -6,13 +6,31 @@ Indicators:
 - VIX level
 - VIX term structure (M2/M1)
 - Realized vs implied volatility gap
+- Time-varying Volatility Risk Premium (VRP) multiplier (v6 §4.4.5)
+
+VRP Architecture (v6 §4.4.5):
+  VRP_t = 1.05 + 0.015 × σ(vol-of-vol)_{12m}
+  Clipped to [1.05, 1.55]
+  
+  Dual computation: both with and without VRP applied.
+  Quality flag raised when |MAC_with_VRP − MAC_without_VRP| > 0.05.
 """
 
 from dataclasses import dataclass
 from typing import Optional
 import math
+import logging
 
 from ..mac.scorer import score_indicator_range
+
+logger = logging.getLogger(__name__)
+
+# ── VRP constants (v6 §4.4.5) ───────────────────────────────────────────
+VRP_BASE = 1.05          # Minimum premium (long-run average ~5%)
+VRP_SENSITIVITY = 0.015  # Coefficient on vol-of-vol σ
+VRP_FLOOR = 1.05         # Minimum VRP multiplier
+VRP_CEILING = 1.55       # Maximum VRP multiplier
+VRP_QUALITY_THRESHOLD = 0.05  # MAC divergence that triggers quality flag
 
 
 @dataclass
@@ -23,7 +41,20 @@ class VolatilityIndicators:
     vix_term_structure: Optional[float] = None  # M2/M1 ratio
     realized_vol: Optional[float] = None
     implied_vol: Optional[float] = None
-    vix_history: Optional[list[float]] = None  # For persistence calculation
+    vix_history: Optional[list[float]] = None  # For persistence + VRP calc
+
+
+@dataclass
+class VRPResult:
+    """Time-varying Volatility Risk Premium calculation result."""
+
+    vrp_multiplier: float = VRP_BASE    # The VRP_t value
+    vol_of_vol_12m: Optional[float] = None  # σ(vol-of-vol) used
+    data_quality: str = "good"          # "good", "insufficient", "stale"
+    score_with_vrp: float = 0.5
+    score_without_vrp: float = 0.5
+    divergence: float = 0.0             # |with - without|
+    quality_flag: bool = False          # True if divergence > threshold
 
 
 @dataclass
@@ -34,6 +65,7 @@ class VolatilityScores:
     term_structure: float = 0.5
     rv_iv_gap: float = 0.5
     composite: float = 0.5
+    vrp: Optional[VRPResult] = None     # VRP dual computation result
 
 
 class VolatilityPillar:
@@ -208,20 +240,107 @@ class VolatilityPillar:
             return std * math.sqrt(252) * 100  # Annualized, in percent
         return std * 100
 
+    def calculate_vol_of_vol(
+        self,
+        vix_history: list[float],
+        lookback_days: int = 252,
+    ) -> Optional[float]:
+        """Calculate rolling standard deviation of VIX changes (vol-of-vol).
+
+        This measures how erratic the volatility regime itself is.
+        Used as the time-varying input to VRP estimation.
+
+        Args:
+            vix_history: List of VIX values (most recent last)
+            lookback_days: Rolling window (default: 252 = 12 months)
+
+        Returns:
+            σ(vol-of-vol) over the lookback window, or None if insufficient data
+        """
+        if not vix_history or len(vix_history) < max(20, lookback_days // 2):
+            return None
+
+        # Use available history up to lookback_days
+        recent = vix_history[-lookback_days:] if len(vix_history) > lookback_days \
+            else vix_history
+
+        # Daily VIX changes (not returns — VIX is already in vol space)
+        changes = [recent[i] - recent[i - 1] for i in range(1, len(recent))]
+        if len(changes) < 10:
+            return None
+
+        n = len(changes)
+        mean_change = sum(changes) / n
+        variance = sum((c - mean_change) ** 2 for c in changes) / (n - 1)
+        return math.sqrt(variance)
+
+    def calculate_vrp(
+        self,
+        vix_history: Optional[list[float]] = None,
+        lookback_days: int = 252,
+    ) -> VRPResult:
+        """Calculate time-varying Volatility Risk Premium (v6 §4.4.5).
+
+        Formula: VRP_t = 1.05 + 0.015 × σ(vol-of-vol)_{12m}
+        Clipped to [1.05, 1.55].
+
+        The VRP multiplier scales the volatility pillar score, reflecting
+        that high vol-of-vol regimes carry additional risk beyond what
+        the VIX level alone captures.
+
+        Args:
+            vix_history: Historical VIX values for vol-of-vol calculation
+            lookback_days: Rolling window for σ calculation
+
+        Returns:
+            VRPResult with multiplier, diagnostics, and quality assessment
+        """
+        result = VRPResult()
+
+        if not vix_history or len(vix_history) < 20:
+            result.data_quality = "insufficient"
+            return result
+
+        vol_of_vol = self.calculate_vol_of_vol(vix_history, lookback_days)
+        if vol_of_vol is None:
+            result.data_quality = "insufficient"
+            return result
+
+        result.vol_of_vol_12m = vol_of_vol
+
+        # VRP_t = 1.05 + 0.015 × σ(vol-of-vol)
+        raw_vrp = VRP_BASE + VRP_SENSITIVITY * vol_of_vol
+        result.vrp_multiplier = max(VRP_FLOOR, min(VRP_CEILING, raw_vrp))
+
+        # Data quality: if we have less than half the lookback, flag it
+        if len(vix_history) < lookback_days // 2:
+            result.data_quality = "insufficient"
+        elif len(vix_history) < lookback_days:
+            result.data_quality = "partial"
+        else:
+            result.data_quality = "good"
+
+        return result
+
     def calculate(
         self,
         indicators: Optional[VolatilityIndicators] = None,
         apply_persistence_penalty: bool = True,
+        apply_vrp: bool = True,
     ) -> VolatilityScores:
         """
         Calculate volatility pillar scores.
 
+        Dual computation (v6 §4.4.5): calculates both with and without VRP.
+        Reports divergence and raises quality flag if > 0.05 threshold.
+
         Args:
             indicators: Optional pre-fetched indicators. If None, will fetch.
             apply_persistence_penalty: Apply penalty for extended low-vol
+            apply_vrp: Apply time-varying VRP multiplier
 
         Returns:
-            VolatilityScores with individual and composite scores
+            VolatilityScores with individual and composite scores + VRP result
         """
         if indicators is None:
             indicators = self.fetch_indicators()
@@ -245,7 +364,8 @@ class VolatilityPillar:
             )
             scored_count += 1
 
-        # Calculate composite
+        # Calculate base composite (without VRP)
+        base_composite = 0.5
         if scored_count > 0:
             total = 0.0
             if indicators.vix_level is not None:
@@ -254,17 +374,37 @@ class VolatilityPillar:
                 total += scores.term_structure
             if indicators.realized_vol is not None and indicators.implied_vol is not None:
                 total += scores.rv_iv_gap
-            scores.composite = total / scored_count
+            base_composite = total / scored_count
 
-            # Apply VIX persistence penalty if enabled and history available
+            # Apply VIX persistence penalty if enabled
             if apply_persistence_penalty and indicators.vix_history:
                 persistence_penalty = self.calculate_vix_persistence_penalty(
                     indicators.vix_history
                 )
-                scores.composite = max(0.0, scores.composite - persistence_penalty)
-        else:
-            scores.composite = 0.5
+                base_composite = max(0.0, base_composite - persistence_penalty)
 
+        # ── VRP dual computation (v6 §4.4.5) ────────────────────────
+        vrp_result = self.calculate_vrp(indicators.vix_history)
+        vrp_result.score_without_vrp = base_composite
+
+        if apply_vrp and vrp_result.data_quality != "insufficient":
+            # VRP multiplier amplifies the distance from "safe" (1.0)
+            # Higher VRP → larger penalty when composite < 1.0
+            # score_with_vrp = 1.0 - (1.0 - base) × VRP_t
+            gap = 1.0 - base_composite
+            adjusted_gap = gap * vrp_result.vrp_multiplier
+            vrp_composite = max(0.0, 1.0 - adjusted_gap)
+
+            vrp_result.score_with_vrp = vrp_composite
+            vrp_result.divergence = abs(vrp_composite - base_composite)
+            vrp_result.quality_flag = vrp_result.divergence > VRP_QUALITY_THRESHOLD
+
+            scores.composite = vrp_composite
+        else:
+            vrp_result.score_with_vrp = base_composite
+            scores.composite = base_composite
+
+        scores.vrp = vrp_result
         return scores
 
     def get_score(self) -> float:

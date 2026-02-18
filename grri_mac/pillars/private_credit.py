@@ -67,6 +67,13 @@ from typing import Optional, Dict, List, Tuple
 from datetime import datetime, timedelta
 from enum import Enum
 
+from .private_credit_decorrelation import (
+    DecorrelationResult,
+    DecorrelationTimeSeries,
+    PrivateCreditDecorrelator,
+    blend_decorrelated_with_sloos,
+)
+
 
 class PrivateCreditStress(Enum):
     """Private credit stress levels."""
@@ -159,6 +166,7 @@ class PrivateCreditIndicators:
     bdc: Optional[BDCData] = None
     leveraged_loans: Optional[LeveragedLoanData] = None
     pe_firms: Optional[PEFirmData] = None
+    decorrelation_ts: Optional[DecorrelationTimeSeries] = None  # v6 §4.7
 
 
 @dataclass
@@ -172,6 +180,10 @@ class PrivateCreditScores:
     
     composite: float = 0.5
     stress_level: PrivateCreditStress = PrivateCreditStress.BENIGN
+    
+    # v6 §4.7 — Decorrelation results
+    decorrelation: Optional[DecorrelationResult] = None
+    composite_method: str = "fixed_weight"  # "fixed_weight" or "decorrelated_blend"
     
     # Narrative
     warning_signals: List[str] = None
@@ -472,6 +484,10 @@ class PrivateCreditPillar:
         """
         Calculate comprehensive private credit stress scores.
         
+        v6 §4.7 architecture:
+        - If decorrelation time series available: composite = 60% decorrelated + 40% SLOOS
+        - Otherwise: fallback to fixed-weight composite (SLOOS/BDC/LL/PE)
+        
         Args:
             indicators: All private credit indicators
             
@@ -505,13 +521,44 @@ class PrivateCreditPillar:
         else:
             pe_score = 0.5
         
-        # Composite score
-        composite = (
-            sloos_score * self.WEIGHTS["sloos"] +
-            bdc_score * self.WEIGHTS["bdc"] +
-            ll_score * self.WEIGHTS["leveraged_loans"] +
-            pe_score * self.WEIGHTS["pe_firms"]
-        )
+        # ── v6 §4.7: Decorrelation pipeline ─────────────────────────
+        decorr_result = None
+        composite_method = "fixed_weight"
+        
+        if indicators.decorrelation_ts is not None:
+            decorrelator = PrivateCreditDecorrelator()
+            decorr_result = decorrelator.decorrelate(indicators.decorrelation_ts)
+            
+            if decorr_result.data_quality != "insufficient":
+                # Use decorrelated blend: 60% decorrelated + 40% SLOOS
+                composite = blend_decorrelated_with_sloos(
+                    decorr_result.decorrelated_score,
+                    sloos_score,
+                    decorr_result.data_quality,
+                )
+                composite_method = "decorrelated_blend"
+                
+                if decorr_result.ewma_z is not None and decorr_result.ewma_z < -1.5:
+                    all_warnings.append(
+                        f"DECORRELATED: Private credit specific stress at "
+                        f"{decorr_result.ewma_z:.2f}σ (after removing equity/credit factors)"
+                    )
+            else:
+                # Insufficient decorrelation data — fallback
+                composite = (
+                    sloos_score * self.WEIGHTS["sloos"] +
+                    bdc_score * self.WEIGHTS["bdc"] +
+                    ll_score * self.WEIGHTS["leveraged_loans"] +
+                    pe_score * self.WEIGHTS["pe_firms"]
+                )
+        else:
+            # No decorrelation data — original fixed-weight composite
+            composite = (
+                sloos_score * self.WEIGHTS["sloos"] +
+                bdc_score * self.WEIGHTS["bdc"] +
+                ll_score * self.WEIGHTS["leveraged_loans"] +
+                pe_score * self.WEIGHTS["pe_firms"]
+            )
         
         # Determine stress level
         if composite < 0.25:
@@ -530,6 +577,8 @@ class PrivateCreditPillar:
             pe_firm_score=pe_score,
             composite=composite,
             stress_level=stress_level,
+            decorrelation=decorr_result,
+            composite_method=composite_method,
             warning_signals=all_warnings,
         )
     
