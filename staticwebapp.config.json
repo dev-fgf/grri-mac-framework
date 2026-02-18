@@ -1,5 +1,21 @@
 {
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "userDetailsClaim": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/b28c1159-d8ec-4219-b519-bd1c1b65e687/v2.0",
+          "clientIdSettingName": "AAD_CLIENT_ID",
+          "clientSecretSettingName": "AAD_CLIENT_SECRET"
+        }
+      }
+    }
+  },
   "routes": [
+    {
+      "route": "/api/health",
+      "allowedRoles": ["authenticated"]
+    },
     {
       "route": "/api/*",
       "allowedRoles": ["anonymous"]
@@ -20,7 +36,7 @@
     }
   },
   "globalHeaders": {
-    "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.azurestaticapps.net cdn.jsdelivr.net",
+    "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.azurestaticapps.net https://login.microsoftonline.com cdn.jsdelivr.net",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY"
   },

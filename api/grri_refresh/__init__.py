@@ -20,6 +20,9 @@ import logging
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.database import get_database
+from shared.health_registry import (
+    validate_source, make_down_report, record_health,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +74,6 @@ ISO3_TO_ISO2 = {
     'ARE': 'AE', 'MYS': 'MY', 'PHL': 'PH', 'PAK': 'PK', 'IRN': 'IR',
 }
 ISO2_TO_ISO3 = {v: k for k, v in ISO3_TO_ISO2.items()}
-}
 
 
 def fetch_imf_weo_data() -> dict:
@@ -364,6 +366,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     
     # === Fetch IMF WEO Data ===
     logger.info("Fetching IMF WEO data...")
+    import time as _time
+    _t = _time.time()
     try:
         imf_data = fetch_imf_weo_data()
         result["sources"]["IMF_WEO"] = {
@@ -371,14 +375,27 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "indicators": len(imf_data.get("indicators", {})),
             "errors": imf_data.get("errors", [])
         }
+        imf_inds = imf_data.get("indicators", {})
+        flat = {}
+        for code, countries in imf_inds.items():
+            if countries:
+                flat[f"weo_{code}"] = len(countries)
+        report = validate_source("IMF_WEO", flat)
+        report["latency_ms"] = int((_time.time() - _t) * 1000)
+        record_health(db, "IMF_WEO", report)
     except Exception as e:
         logger.error(f"IMF WEO fetch failed: {e}")
         imf_data = {"indicators": {}}
         result["sources"]["IMF_WEO"] = {"status": "error", "error": str(e)}
         result["success"] = False
-    
+        try:
+            record_health(db, "IMF_WEO", make_down_report("IMF_WEO", str(e)))
+        except Exception:
+            pass
+
     # === Fetch World Bank WGI Data ===
     logger.info("Fetching World Bank WGI data...")
+    _t = _time.time()
     try:
         wgi_data = fetch_world_bank_wgi_data()
         result["sources"]["World_Bank_WGI"] = {
@@ -386,11 +403,23 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "indicators": len(wgi_data.get("indicators", {})),
             "errors": wgi_data.get("errors", [])
         }
+        wgi_inds = wgi_data.get("indicators", {})
+        flat = {}
+        for code, countries in wgi_inds.items():
+            if countries:
+                flat[code] = len(countries)
+        report = validate_source("WORLD_BANK", flat)
+        report["latency_ms"] = int((_time.time() - _t) * 1000)
+        record_health(db, "WORLD_BANK", report)
     except Exception as e:
         logger.error(f"World Bank WGI fetch failed: {e}")
         wgi_data = {"indicators": {}}
         result["sources"]["World_Bank_WGI"] = {"status": "error", "error": str(e)}
         result["success"] = False
+        try:
+            record_health(db, "WORLD_BANK", make_down_report("WORLD_BANK", str(e)))
+        except Exception:
+            pass
     
     # === Calculate GRRI Scores ===
     logger.info("Calculating GRRI scores...")

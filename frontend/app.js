@@ -39,6 +39,7 @@ let crisisEventsData = null;  // Crisis events for chart overlay
 let showGPR = false; // GPR toggle state
 let showCrisisEvents = true; // Crisis events toggle state (on by default)
 let historyProcessedData = null; // Processed data for history chart (for plugin access)
+let adminHealthLoaded = false; // Admin page lazy load flag
 
 // ============================================
 // Initialization
@@ -47,7 +48,9 @@ let historyProcessedData = null; // Processed data for history chart (for plugin
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initLegendButtons();
+    initAdminTabs();
     loadDashboard();
+    checkAuth();
 });
 
 function initNavigation() {
@@ -67,6 +70,10 @@ function initNavigation() {
             // Load backtest data on first visit
             if (sectionId === 'backtest' && !backtestChart) {
                 loadBacktestData();
+            }
+            // Load admin health on first visit
+            if (sectionId === 'admin' && !adminHealthLoaded) {
+                loadAdminHealth();
             }
         });
     });
@@ -1045,6 +1052,220 @@ function checkDataHealth(health) {
         banner.style.display = 'flex';
     } else {
         banner.style.display = 'none';
+    }
+}
+
+// ============================================
+// Admin: Auth + Data Quality Page
+// ============================================
+
+async function checkAuth() {
+    try {
+        const res = await fetch('/.auth/me');
+        const data = await res.json();
+        if (data.clientPrincipal) {
+            const link = document.querySelector('.nav-admin-link');
+            if (link) link.style.display = '';
+            return data.clientPrincipal;
+        }
+    } catch (e) {
+        // Auth unavailable (local dev) — admin link stays hidden
+    }
+    return null;
+}
+
+function initAdminTabs() {
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+            const target = 'adminTab' + tab.dataset.adminTab.toUpperCase();
+            const el = document.getElementById(target);
+            if (el) el.style.display = '';
+        });
+    });
+}
+
+async function loadAdminHealth() {
+    const prompt = document.getElementById('adminLoginPrompt');
+    const content = document.getElementById('adminContent');
+
+    try {
+        const res = await fetch(`${API_BASE}/health`);
+        if (res.status === 401) {
+            if (prompt) prompt.style.display = '';
+            if (content) content.style.display = 'none';
+            return;
+        }
+        const health = await res.json();
+        if (prompt) prompt.style.display = 'none';
+        if (content) content.style.display = '';
+
+        renderMACHealth(health.mac);
+        renderGRRIHealth(health.grri);
+        renderMRFIHealth(health.mrfi);
+        adminHealthLoaded = true;
+    } catch (e) {
+        if (prompt) prompt.style.display = '';
+        if (content) content.style.display = 'none';
+    }
+}
+
+function renderHealthCard(source, data) {
+    const status = data.status || 'unknown';
+    let details = '';
+
+    if (data.update_frequency) {
+        details += `<div class="detail-row"><span class="detail-label">Frequency</span><span>${data.update_frequency}</span></div>`;
+    }
+    if (data.last_success) {
+        const ago = timeSince(data.last_success);
+        details += `<div class="detail-row"><span class="detail-label">Last success</span><span>${ago}</span></div>`;
+    }
+    if (data.indicators) {
+        details += `<div class="detail-row"><span class="detail-label">Indicators</span><span>${data.indicators}</span></div>`;
+    }
+    if (data.latency_ms) {
+        details += `<div class="detail-row"><span class="detail-label">Latency</span><span>${data.latency_ms}ms</span></div>`;
+    }
+    if (data.missing_indicators && data.missing_indicators.length) {
+        details += `<div class="missing">Missing: ${data.missing_indicators.join(', ')}</div>`;
+    }
+    if (data.range_violations && data.range_violations.length) {
+        const viols = data.range_violations.map(v => `${v.indicator}=${v.value}`).join(', ');
+        details += `<div class="violations">Range violations: ${viols}</div>`;
+    }
+    if (data.staleness_note) {
+        details += `<div class="missing">${data.staleness_note}</div>`;
+    }
+    if (data.error) {
+        details += `<div class="violations">Error: ${data.error}</div>`;
+    }
+    if (data.note) {
+        details += `<div class="detail-row"><span class="detail-label">${data.note}</span></div>`;
+    }
+
+    return `<div class="health-card ${status}">
+        <div class="health-card-header">
+            <span class="health-card-title">${data.display_name || source}</span>
+            <span class="health-status-badge ${status}">${status}</span>
+        </div>
+        <div class="health-card-details">${details}</div>
+    </div>`;
+}
+
+function renderSummaryBar(sectionData, containerId) {
+    const el = document.getElementById(containerId);
+    if (!el || !sectionData) return;
+
+    const s = sectionData.summary;
+    if (!s) {
+        el.innerHTML = `<span class="summary-status" style="color: var(--text-secondary)">Status: ${sectionData.status || 'unknown'}</span>`;
+        return;
+    }
+
+    const statusColor = sectionData.status === 'healthy' ? 'var(--comfortable)'
+        : sectionData.status === 'degraded' ? 'var(--cautious)'
+        : sectionData.status === 'down' ? 'var(--critical)'
+        : 'var(--text-secondary)';
+
+    el.innerHTML = `
+        <span class="summary-status" style="color: ${statusColor}">${(sectionData.status || 'unknown').toUpperCase()}</span>
+        <span>${s.total_sources} sources</span>
+        <span style="color: var(--comfortable)">${s.healthy || 0} healthy</span>
+        ${s.degraded ? `<span style="color: var(--cautious)">${s.degraded} degraded</span>` : ''}
+        ${s.stale ? `<span style="color: var(--cautious)">${s.stale} stale</span>` : ''}
+        ${s.down ? `<span style="color: var(--critical)">${s.down} down</span>` : ''}
+        ${s.unknown ? `<span>${s.unknown} unknown</span>` : ''}
+    `;
+}
+
+function renderMACHealth(mac) {
+    if (!mac) return;
+    renderSummaryBar(mac, 'macSummary');
+    const grid = document.getElementById('macHealthGrid');
+    if (!grid || !mac.sources) return;
+    grid.innerHTML = Object.entries(mac.sources)
+        .map(([k, v]) => renderHealthCard(k, v)).join('');
+}
+
+function renderGRRIHealth(grri) {
+    if (!grri) return;
+    renderSummaryBar(grri, 'grriSummary');
+    const grid = document.getElementById('grriHealthGrid');
+    if (grid && grri.sources) {
+        grid.innerHTML = Object.entries(grri.sources)
+            .map(([k, v]) => renderHealthCard(k, v)).join('');
+    }
+
+    // Completeness matrix
+    const matrix = document.getElementById('grriCompleteness');
+    if (matrix && grri.completeness) {
+        const c = grri.completeness;
+        let rows = '';
+        for (const [pillar, info] of Object.entries(c)) {
+            const cls = info.implemented ? 'implemented' : 'not-implemented';
+            const status = info.implemented
+                ? `${info.countries} countries`
+                : 'Not implemented';
+            rows += `<tr><td style="text-transform: capitalize">${pillar}</td>
+                <td class="${cls}">${status}</td>
+                <td class="${cls}">${info.implemented ? 'Yes' : 'No'}</td></tr>`;
+        }
+        matrix.innerHTML = `<h4>GRRI Pillar Coverage</h4>
+            <table><thead><tr><th>Pillar</th><th>Coverage</th><th>Active</th></tr></thead>
+            <tbody>${rows}</tbody></table>`;
+    }
+}
+
+function renderMRFIHealth(mrfi) {
+    if (!mrfi) return;
+    const el = document.getElementById('mrfiSummary');
+    if (el) {
+        el.innerHTML = `
+            <span class="summary-status" style="color: var(--text-secondary)">NOT INTEGRATED</span>
+            <span>${mrfi.note || 'MRFI repo not yet merged'}</span>
+        `;
+    }
+
+    const grid = document.getElementById('mrfiHealthGrid');
+    if (!grid || !mrfi.sources) return;
+    grid.innerHTML = Object.entries(mrfi.sources).map(([key, src]) => {
+        let details = '';
+        if (src.series_count) {
+            details += `<div class="detail-row"><span class="detail-label">Series</span><span>${src.series_count}</span></div>`;
+        }
+        if (src.shared_with_mac !== undefined) {
+            details += `<div class="detail-row"><span class="detail-label">Shared with MAC</span><span>${src.shared_with_mac ? 'Yes' : 'No'}</span></div>`;
+        }
+        if (src.note) {
+            details += `<div class="detail-row"><span class="detail-label">${src.note}</span></div>`;
+        }
+        return `<div class="health-card not-monitored">
+            <div class="health-card-header">
+                <span class="health-card-title">${src.display_name || key}</span>
+                <span class="health-status-badge not-monitored">not monitored</span>
+            </div>
+            <div class="health-card-details">${details}</div>
+        </div>`;
+    }).join('');
+}
+
+function timeSince(isoStr) {
+    try {
+        const d = new Date(isoStr);
+        const now = new Date();
+        const secs = Math.floor((now - d) / 1000);
+        if (secs < 60) return 'just now';
+        const mins = Math.floor(secs / 60);
+        if (mins < 60) return `${mins}m ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs}h ago`;
+        const days = Math.floor(hrs / 24);
+        return `${days}d ago`;
+    } catch (e) {
+        return isoStr || 'unknown';
     }
 }
 

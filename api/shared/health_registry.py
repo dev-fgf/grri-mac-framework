@@ -6,21 +6,22 @@ before they silently degrade the dashboard.
 
 Health state is persisted to Azure Table Storage (or in-memory fallback)
 and surfaced via /api/health and the frontend admin banner.
+
+Three indices are monitored:
+- MAC (Market Absorption Capacity) — 7 live sources
+- GRRI (Global Risk Rating Index) — 2 live sources (World Bank, IMF)
+- MRFI (Market Resilience Financialization Index) — inventory only
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# === Source Specifications ===
-# Each source declares what it should return and plausible value bounds.
-# Ranges are deliberately wide — these are plausibility checks, not
-# market-level alerts. A value outside range means the parser is likely
-# reading the wrong field or the source changed units/format.
+# === MAC Source Specifications ===
 
-SOURCE_SPECS = {
+MAC_SOURCE_SPECS = {
     "FRED": {
         "display_name": "FRED API",
         "update_frequency": "daily",
@@ -110,13 +111,104 @@ SOURCE_SPECS = {
     },
 }
 
+# === GRRI Source Specifications ===
+
+GRRI_SOURCE_SPECS = {
+    "WORLD_BANK": {
+        "display_name": "World Bank WGI + Development",
+        "update_frequency": "annual",
+        "max_staleness_hours": 8760,  # 365 days
+        "expected_indicators": [
+            "rule_of_law",
+            "gov_effectiveness",
+            "regulatory_quality",
+            "gdp_growth",
+            "inflation",
+            "unemployment",
+        ],
+        "value_ranges": {
+            "rule_of_law": (-2.5, 2.5),
+            "gov_effectiveness": (-2.5, 2.5),
+            "regulatory_quality": (-2.5, 2.5),
+            "gdp_growth": (-25, 25),
+            "inflation": (-5, 1000),
+            "unemployment": (0, 60),
+        },
+    },
+    "IMF_WEO": {
+        "display_name": "IMF World Economic Outlook",
+        "update_frequency": "semi-annual",
+        "max_staleness_hours": 4320,  # 180 days
+        "expected_indicators": [
+            "weo_inflation",
+            "weo_fiscal_balance",
+            "weo_gdp_growth",
+        ],
+        "value_ranges": {
+            "weo_inflation": (-5, 1000),
+            "weo_fiscal_balance": (-30, 30),
+            "weo_gdp_growth": (-25, 25),
+        },
+    },
+}
+
+# === MRFI Source Inventory (not yet integrated) ===
+
+MRFI_SOURCE_INVENTORY = {
+    "FRED_MRFI": {
+        "display_name": "FRED API (MRFI series)",
+        "series_count": 20,
+        "shared_with_mac": True,
+        "status": "not_monitored",
+        "note": "Shared ~60% with MAC FRED sources",
+    },
+    "YFINANCE": {
+        "display_name": "Yahoo Finance (equities/ETFs)",
+        "series_count": 18,
+        "shared_with_mac": False,
+        "status": "not_monitored",
+        "note": "SPY, QQQ, TLT, HYG, SVXY, BDCs, PE managers",
+    },
+    "CFTC_MRFI": {
+        "display_name": "CFTC CoT (Treasury/VIX positioning)",
+        "series_count": 2,
+        "shared_with_mac": True,
+        "status": "not_monitored",
+        "note": "Weekly bulk ZIP + Socrata API",
+    },
+    "BIS_MRFI": {
+        "display_name": "BIS (OTC derivs + credit gap)",
+        "series_count": 2,
+        "shared_with_mac": True,
+        "status": "not_monitored",
+        "note": "Semi-annual bulk CSV",
+    },
+    "FINRA": {
+        "display_name": "FINRA Margin Statistics",
+        "series_count": 1,
+        "shared_with_mac": False,
+        "status": "not_monitored",
+        "note": "Monthly Excel download",
+    },
+    "FED_Z1": {
+        "display_name": "Fed Z.1 Financial Accounts",
+        "series_count": 1,
+        "shared_with_mac": False,
+        "status": "not_monitored",
+        "note": "Quarterly — broker-dealer leverage",
+    },
+}
+
+# Combined specs for backward compat (used by validate_source)
+SOURCE_SPECS = {**MAC_SOURCE_SPECS, **GRRI_SOURCE_SPECS}
+
 
 def validate_source(source_name: str, returned_indicators: dict) -> dict:
     """Validate a source's response against its spec.
 
     Args:
         source_name: Key into SOURCE_SPECS (e.g. "FRED", "CBOE")
-        returned_indicators: Dict of indicator_name -> value actually returned
+        returned_indicators: Dict of indicator_name -> value returned
 
     Returns:
         Health report dict with status, missing indicators, range violations
@@ -134,12 +226,10 @@ def validate_source(source_name: str, returned_indicators: dict) -> dict:
     missing = []
     range_violations = []
 
-    # Schema check: are expected indicators present?
     for ind in spec["expected_indicators"]:
         if ind not in returned_indicators:
             missing.append(ind)
 
-    # Range check: are values plausible?
     for ind, value in returned_indicators.items():
         if ind in spec.get("value_ranges", {}):
             lo, hi = spec["value_ranges"][ind]
@@ -150,7 +240,6 @@ def validate_source(source_name: str, returned_indicators: dict) -> dict:
                     "expected_range": [lo, hi],
                 })
 
-    # Determine status
     if not returned_indicators:
         status = "down"
     elif missing or range_violations:
@@ -168,11 +257,7 @@ def validate_source(source_name: str, returned_indicators: dict) -> dict:
         "range_violations": range_violations,
     }
 
-    # Only set last_success if we got data and it looks valid
-    if returned_indicators and not range_violations:
-        report["last_success"] = now
-    elif returned_indicators:
-        # Got data but with range violations — still a partial success
+    if returned_indicators:
         report["last_success"] = now
 
     return report
@@ -186,12 +271,12 @@ def make_down_report(source_name: str, error: str) -> dict:
         "last_attempt": datetime.utcnow().isoformat(),
         "error": error,
         "indicators_returned": [],
-        "indicators_expected": SOURCE_SPECS.get(source_name, {}).get(
-            "expected_indicators", []
-        ),
-        "missing_indicators": SOURCE_SPECS.get(source_name, {}).get(
-            "expected_indicators", []
-        ),
+        "indicators_expected": SOURCE_SPECS.get(
+            source_name, {}
+        ).get("expected_indicators", []),
+        "missing_indicators": SOURCE_SPECS.get(
+            source_name, {}
+        ).get("expected_indicators", []),
         "range_violations": [],
     }
 
@@ -205,15 +290,9 @@ def record_health(db, source_name: str, report: dict):
 
 
 def get_health_summary(db) -> dict:
-    """Build aggregate health summary from stored reports.
+    """Build aggregate health summary for the frontend banner.
 
-    Returns dict suitable for inclusion in API response:
-    {
-        "status": "healthy"|"degraded",
-        "degraded_sources": ["CBOE"],
-        "stale_sources": ["BIS"],
-        "down_sources": [],
-    }
+    Only checks MAC sources (the ones that affect the live dashboard).
     """
     try:
         reports = db.get_all_health_reports()
@@ -228,11 +307,13 @@ def get_health_summary(db) -> dict:
     down = []
     now = datetime.utcnow()
 
-    for source_name, report in reports.items():
-        status = report.get("status", "unknown")
+    for source_name in MAC_SOURCE_SPECS:
+        report = reports.get(source_name)
+        if not report:
+            continue
 
-        # Check staleness against spec
-        spec = SOURCE_SPECS.get(source_name, {})
+        status = report.get("status", "unknown")
+        spec = MAC_SOURCE_SPECS[source_name]
         max_hours = spec.get("max_staleness_hours")
         last_success = report.get("last_success")
 
@@ -251,7 +332,6 @@ def get_health_summary(db) -> dict:
         elif status == "degraded":
             degraded.append(source_name)
 
-    # Aggregate status
     if down:
         overall = "down"
     elif degraded or stale:
@@ -267,22 +347,15 @@ def get_health_summary(db) -> dict:
     }
 
 
-def get_detailed_health(db) -> dict:
-    """Build detailed per-source health report for /api/health endpoint."""
-    try:
-        reports = db.get_all_health_reports()
-    except Exception:
-        return {
-            "status": "unknown",
-            "timestamp": datetime.utcnow().isoformat(),
-            "error": "Health data unavailable",
-        }
-
-    now = datetime.utcnow()
+def _build_source_details(specs, reports, now):
+    """Build per-source detail dicts for a set of source specs."""
     sources = {}
-    counts = {"healthy": 0, "degraded": 0, "stale": 0, "down": 0, "unknown": 0}
+    counts = {
+        "healthy": 0, "degraded": 0,
+        "stale": 0, "down": 0, "unknown": 0,
+    }
 
-    for source_name, spec in SOURCE_SPECS.items():
+    for source_name, spec in specs.items():
         report = reports.get(source_name)
 
         if not report:
@@ -290,12 +363,13 @@ def get_detailed_health(db) -> dict:
                 "display_name": spec["display_name"],
                 "status": "unknown",
                 "note": "No data fetched yet",
-                "update_frequency": spec.get("update_frequency", "unknown"),
+                "update_frequency": spec.get(
+                    "update_frequency", "unknown"
+                ),
             }
             counts["unknown"] += 1
             continue
 
-        # Compute staleness
         status = report.get("status", "unknown")
         last_success = report.get("last_success")
         staleness_note = None
@@ -303,56 +377,136 @@ def get_detailed_health(db) -> dict:
         if last_success:
             try:
                 last_dt = datetime.fromisoformat(last_success)
-                hours_since = (now - last_dt).total_seconds() / 3600
+                hours_since = (
+                    (now - last_dt).total_seconds() / 3600
+                )
                 max_hours = spec.get("max_staleness_hours", 24)
-
                 if hours_since > max_hours:
                     status = "stale"
                     days = int(hours_since / 24)
-                    staleness_note = f"{days} days since last update (max: {int(max_hours / 24)}d)"
+                    staleness_note = (
+                        f"{days}d since last update "
+                        f"(max: {int(max_hours / 24)}d)"
+                    )
             except (ValueError, TypeError):
                 pass
 
-        n_returned = len(report.get("indicators_returned", []))
+        n_returned = len(
+            report.get("indicators_returned", [])
+        )
         n_expected = len(spec["expected_indicators"])
 
-        source_detail = {
+        detail = {
             "display_name": spec["display_name"],
             "status": status,
-            "update_frequency": spec.get("update_frequency", "unknown"),
+            "update_frequency": spec.get(
+                "update_frequency", "unknown"
+            ),
             "last_success": last_success,
             "last_attempt": report.get("last_attempt"),
             "indicators": f"{n_returned}/{n_expected}",
-            "missing_indicators": report.get("missing_indicators", []),
-            "range_violations": report.get("range_violations", []),
+            "missing_indicators": report.get(
+                "missing_indicators", []
+            ),
+            "range_violations": report.get(
+                "range_violations", []
+            ),
         }
 
         if report.get("error"):
-            source_detail["error"] = report["error"]
+            detail["error"] = report["error"]
         if report.get("latency_ms"):
-            source_detail["latency_ms"] = report["latency_ms"]
+            detail["latency_ms"] = report["latency_ms"]
         if staleness_note:
-            source_detail["staleness_note"] = staleness_note
+            detail["staleness_note"] = staleness_note
 
-        sources[source_name] = source_detail
+        sources[source_name] = detail
         counts[status] = counts.get(status, 0) + 1
 
-    # Aggregate
     if counts.get("down", 0) > 0:
         overall = "down"
-    elif counts.get("degraded", 0) > 0 or counts.get("stale", 0) > 0:
+    elif (counts.get("degraded", 0) > 0
+          or counts.get("stale", 0) > 0):
         overall = "degraded"
-    elif counts.get("unknown", 0) == len(SOURCE_SPECS):
+    elif counts.get("unknown", 0) == len(specs):
         overall = "unknown"
     else:
         overall = "healthy"
 
     return {
         "status": overall,
-        "timestamp": now.isoformat(),
-        "summary": {
-            "total_sources": len(SOURCE_SPECS),
-            **counts,
-        },
+        "summary": {"total_sources": len(specs), **counts},
         "sources": sources,
+    }
+
+
+def get_grri_completeness(db) -> dict:
+    """Check GRRI data completeness from stored GRRI records."""
+    pillars = {
+        "political": {"implemented": True, "countries": 0},
+        "economic": {"implemented": True, "countries": 0},
+        "social": {"implemented": False, "countries": 0},
+        "environmental": {"implemented": False, "countries": 0},
+    }
+
+    try:
+        grri_data = db.get_grri_latest()
+        if grri_data:
+            for country in grri_data:
+                scores = country if isinstance(country, dict) else {}
+                if scores.get("political_score") is not None:
+                    pillars["political"]["countries"] += 1
+                if scores.get("economic_score") is not None:
+                    pillars["economic"]["countries"] += 1
+                if scores.get("social_score") is not None:
+                    pillars["social"]["countries"] += 1
+                    pillars["social"]["implemented"] = True
+                if scores.get("environmental_score") is not None:
+                    pillars["environmental"]["countries"] += 1
+                    pillars["environmental"]["implemented"] = True
+    except Exception:
+        pass
+
+    return pillars
+
+
+def get_detailed_health(db) -> dict:
+    """Build full 3-section health report for /api/health."""
+    try:
+        reports = db.get_all_health_reports()
+    except Exception:
+        reports = {}
+
+    now = datetime.utcnow()
+
+    # MAC section
+    mac_health = _build_source_details(
+        MAC_SOURCE_SPECS, reports, now
+    )
+
+    # GRRI section
+    grri_health = _build_source_details(
+        GRRI_SOURCE_SPECS, reports, now
+    )
+    grri_health["completeness"] = get_grri_completeness(db)
+
+    # MRFI section (inventory only)
+    mrfi_health = {
+        "status": "not_integrated",
+        "note": (
+            "MRFI repo not yet merged. "
+            "Showing source inventory only."
+        ),
+        "sources": MRFI_SOURCE_INVENTORY,
+    }
+
+    # Overall status (driven by MAC — it's the live dashboard)
+    overall = mac_health["status"]
+
+    return {
+        "status": overall,
+        "timestamp": now.isoformat(),
+        "mac": mac_health,
+        "grri": grri_health,
+        "mrfi": mrfi_health,
     }

@@ -18,6 +18,7 @@
             <a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a>
             <a href="#backtest" class="nav-link" data-section="backtest">Backtest</a>
             <a href="#methodology" class="nav-link" data-section="methodology">Methodology</a>
+            <a href="#admin" class="nav-link nav-admin-link" data-section="admin" style="display: none;">Data Quality</a>
         </div>
         <div class="nav-status">
             <span class="status-dot" id="statusDot"></span>
@@ -294,6 +295,43 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin: Data Quality (AAD-gated) -->
+        <section id="admin" class="section">
+            <div class="section-header">
+                <h2>Data Source Quality Monitor</h2>
+                <span class="section-badge admin-badge">Admin</span>
+            </div>
+
+            <div class="admin-login-prompt" id="adminLoginPrompt">
+                <p>This page requires FGF authentication.</p>
+                <a href="/.auth/login/aad" class="admin-login-btn">Sign in with Microsoft</a>
+            </div>
+
+            <div class="admin-content" id="adminContent" style="display: none;">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-admin-tab="mac">MAC</button>
+                    <button class="admin-tab" data-admin-tab="grri">GRRI</button>
+                    <button class="admin-tab" data-admin-tab="mrfi">MRFI</button>
+                </div>
+
+                <div class="admin-tab-content" id="adminTabMAC">
+                    <div class="admin-summary" id="macSummary"></div>
+                    <div class="health-grid" id="macHealthGrid"></div>
+                </div>
+
+                <div class="admin-tab-content" id="adminTabGRRI" style="display: none;">
+                    <div class="admin-summary" id="grriSummary"></div>
+                    <div class="health-grid" id="grriHealthGrid"></div>
+                    <div class="completeness-matrix" id="grriCompleteness"></div>
+                </div>
+
+                <div class="admin-tab-content" id="adminTabMRFI" style="display: none;">
+                    <div class="admin-summary" id="mrfiSummary"></div>
+                    <div class="health-grid" id="mrfiHealthGrid"></div>
                 </div>
             </div>
         </section>

@@ -952,6 +952,225 @@ body {
 }
 
 /* ============================================
+   Admin: Data Quality Page
+   ============================================ */
+
+.nav-admin-link {
+    position: relative;
+    padding-left: 1.2em !important;
+}
+
+.nav-admin-link::before {
+    content: "\1F512";
+    position: absolute;
+    left: 0;
+    font-size: 0.7em;
+    opacity: 0.7;
+}
+
+.admin-badge {
+    background: rgba(251, 191, 36, 0.15) !important;
+    color: var(--cautious) !important;
+}
+
+.admin-login-prompt {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-lg);
+    color: var(--text-secondary);
+}
+
+.admin-login-btn {
+    display: inline-block;
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-xl);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.admin-login-btn:hover {
+    border-color: var(--accent);
+}
+
+.admin-tabs {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--space-xs);
+}
+
+.admin-tab {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: var(--space-sm) var(--space-lg);
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.admin-tab:hover {
+    color: var(--text-primary);
+}
+
+.admin-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.admin-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.admin-summary .summary-status {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.health-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    border-left: 3px solid var(--border);
+}
+
+.health-card.healthy { border-left-color: var(--comfortable); }
+.health-card.degraded { border-left-color: var(--cautious); }
+.health-card.stale { border-left-color: var(--cautious); }
+.health-card.down { border-left-color: var(--critical); }
+.health-card.unknown { border-left-color: var(--text-secondary); }
+.health-card.not-monitored { border-left-color: var(--text-secondary); }
+
+.health-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.health-card-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.health-status-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.health-status-badge.healthy {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--comfortable);
+}
+.health-status-badge.degraded,
+.health-status-badge.stale {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--cautious);
+}
+.health-status-badge.down {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--critical);
+}
+.health-status-badge.unknown,
+.health-status-badge.not-monitored {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+}
+
+.health-card-details {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.health-card-details .detail-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.health-card-details .detail-label {
+    opacity: 0.7;
+}
+
+.health-card-details .violations {
+    color: var(--critical);
+    font-size: 0.75rem;
+    margin-top: 4px;
+}
+
+.health-card-details .missing {
+    color: var(--cautious);
+    font-size: 0.75rem;
+    margin-top: 4px;
+}
+
+.completeness-matrix {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    overflow-x: auto;
+}
+
+.completeness-matrix h4 {
+    margin-bottom: var(--space-sm);
+    font-size: 0.9rem;
+}
+
+.completeness-matrix table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.completeness-matrix th,
+.completeness-matrix td {
+    padding: 6px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.completeness-matrix th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+.completeness-matrix .implemented { color: var(--comfortable); }
+.completeness-matrix .not-implemented { color: var(--text-secondary); }
+
+/* ============================================
    Footer
    ============================================ */
 

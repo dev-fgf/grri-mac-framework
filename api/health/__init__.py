@@ -33,10 +33,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 
+    # Belt-and-braces auth check (SWA route also enforces)
+    user = req.headers.get("x-ms-client-principal-name")
+    if not user:
+        return func.HttpResponse(
+            json.dumps({"error": "Authentication required"}),
+            status_code=401,
+            mimetype="application/json"
+        )
+
     try:
         db = get_database()
         health = get_detailed_health(db)
         health["version"] = "2.0.0"
+        health["authenticated_user"] = user
 
         return func.HttpResponse(
             json.dumps(health, indent=2),
