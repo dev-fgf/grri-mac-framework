@@ -1,5 +1,5 @@
 """Extract BoE millennium dataset into CSV files."""
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 import numpy as np
 import calendar
 import os
@@ -12,7 +12,10 @@ xl = pd.ExcelFile(xl_path, engine="openpyxl")
 # ===== GBP/USD =====
 gbp_sheet = [s for s in xl.sheet_names if "1791" in s][0]
 print(f"GBP/USD sheet: {gbp_sheet}")
-df = pd.read_excel(xl_path, sheet_name=gbp_sheet, engine="openpyxl", header=None, skiprows=6)
+df = pd.read_excel(
+    xl_path, sheet_name=gbp_sheet,
+    engine="openpyxl", header=None, skiprows=6,
+)
 df.columns = ["year", "month_name", "rate"]
 
 month_map = {m: i for i, m in enumerate(calendar.month_abbr) if m}
@@ -37,7 +40,10 @@ print(f"GBP/USD: {len(out)} obs ({first} to {last})")
 # ===== Bank Rate (D1 sheet) =====
 rate_sheet = [s for s in xl.sheet_names if "D1" in s][0]
 print(f"\nBank Rate sheet: {rate_sheet}")
-df2 = pd.read_excel(xl_path, sheet_name=rate_sheet, engine="openpyxl", header=None)
+df2 = pd.read_excel(
+    xl_path, sheet_name=rate_sheet,
+    engine="openpyxl", header=None,
+)
 # Show first 20 rows to understand structure
 print("First 20 rows:")
 for i in range(min(20, len(df2))):
@@ -69,7 +75,10 @@ if data_start is not None:
             dt = pd.Timestamp(row.iloc[0])
             rate = float(row.iloc[1])
             if not np.isnan(rate):
-                bank_rows.append({"date": dt.strftime("%Y-%m-%d"), "rate": rate})
+                bank_rows.append({
+                    "date": dt.strftime("%Y-%m-%d"),
+                    "rate": rate,
+                })
         except (ValueError, TypeError):
             continue
     if bank_rows:

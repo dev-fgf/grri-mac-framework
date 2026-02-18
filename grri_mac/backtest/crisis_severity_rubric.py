@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 # ---------------------------------------------------------------------------
@@ -32,26 +31,26 @@ from typing import Optional
 class MarketDysfunction(Enum):
     """Market functioning disruption levels (§13.2.2 Dimension 2)."""
     NONE = "none"           # Orderly repricing
-    MODERATE = "moderate"   # Elevated bid-ask, failed auctions, ETF dislocations
-    SEVERE = "severe"       # Circuit breakers, Treasury dysfunction, repo seizure
-    EXTREME = "extreme"     # Market closure, clearing failure, LOLR facilities
+    MODERATE = "moderate"   # Elevated bid-ask, ETF dislocations
+    SEVERE = "severe"       # Circuit breakers, repo seizure
+    EXTREME = "extreme"     # Market closure, LOLR facilities
 
 
 class PolicyResponse(Enum):
     """Policy response intensity levels (§13.2.2 Dimension 3)."""
     NONE = "none"                   # None or routine
-    VERBAL = "verbal"               # Verbal guidance, minor operational adj.
-    EMERGENCY_TARGETED = "targeted" # Emergency cut or targeted facility
-    EMERGENCY_BROAD = "broad"       # Multiple emergency cuts, broad facilities
-    UNLIMITED = "unlimited"         # Unlimited/open-ended QE, blanket guarantees
+    VERBAL = "verbal"               # Verbal guidance
+    EMERGENCY_TARGETED = "targeted"  # Emergency cut
+    EMERGENCY_BROAD = "broad"       # Multiple emergency cuts
+    UNLIMITED = "unlimited"         # Unlimited QE
 
 
 class ContagionBreadth(Enum):
     """Contagion breadth levels (§13.2.2 Dimension 4)."""
-    SINGLE = "single"       # One asset class or sector
-    TWO_THREE = "two_three" # 2–3 segments
-    BROAD_DOMESTIC = "broad" # Most domestic asset classes
-    GLOBAL_SYSTEMIC = "global" # International, >3 major markets
+    SINGLE = "single"        # One asset class or sector
+    TWO_THREE = "two_three"  # 2–3 segments
+    BROAD_DOMESTIC = "broad"  # Most domestic asset classes
+    GLOBAL_SYSTEMIC = "global"  # International, >3 markets
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +268,8 @@ def validate_csr_independence() -> dict:
             "Treasury announcements, CBO fiscal response estimates."
         ),
         "contagion_breadth": (
-            "Bloomberg cross-asset correlations, BIS cross-border banking flows, "
+            "Bloomberg cross-asset correlations, "
+            "BIS cross-border banking flows, "
             "EMBI spreads, cross-currency basis."
         ),
         "duration": (
@@ -277,9 +277,14 @@ def validate_csr_independence() -> dict:
             "Schwert (1989) monthly estimates pre-1990."
         ),
         "independence_statement": (
-            "All five CSR dimensions are derived entirely from market price data, "
-            "observable microstructure events, public policy announcements, and "
-            "cross-asset correlation data. None require computation of the MAC "
-            "score, knowledge of pillar scores, or any output from the MAC framework."
+            "All five CSR dimensions are derived "
+            "entirely from market price data, "
+            "observable microstructure events, "
+            "public policy announcements, and "
+            "cross-asset correlation data. None "
+            "require computation of the MAC "
+            "score, knowledge of pillar scores, "
+            "or any output from the MAC "
+            "framework."
         ),
     }

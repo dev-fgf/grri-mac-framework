@@ -1,5 +1,5 @@
 """Calculate empirically-calibrated thresholds from backtest data."""
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 df = pd.read_csv('data/backtest_results/backtest_full_1971_2025.csv')
 df['stress'] = 1 - df['mac_score']

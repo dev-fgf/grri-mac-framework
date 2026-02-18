@@ -1,10 +1,10 @@
 """Tests for P1 work packages: WP-7, WP-9, WP-10, WP-11.
 
 Covers:
-  WP-7:  Precision-recall framework (PR curve, Fβ, FP taxonomy, operating points)
-  WP-9:  SVAR cascade estimation (VAR, IRF, GIRF, robustness, acceleration, Granger)
-  WP-10: Sovereign bond proxy (spread mapping, calibration, era benchmarks)
-  WP-11: Backtest enhancements (per-era detection, data quality tiers, Fixes A–F)
+  WP-7:  Precision-recall framework
+  WP-9:  SVAR cascade estimation
+  WP-10: Sovereign bond proxy
+  WP-11: Backtest enhancements
 """
 
 import json
@@ -21,19 +21,9 @@ import numpy as np
 
 from grri_mac.backtest.precision_recall import (
     ClientArchetype,
-    CrisisWindow,
-    EraFPR,
     FPCategory,
-    FPClassification,
-    OperatingPointReport,
     PRPoint,
-    PrecisionRecallReport,
     STANDARD_OPERATING_POINTS,
-    TAU_MIN,
-    TAU_MAX,
-    TAU_STEP,
-    CRISIS_WINDOW_WEEKS,
-    LEAD_TIME_WEEKS,
     build_crisis_windows,
     compute_precision_recall_curve,
     optimal_threshold_for_beta,
@@ -183,8 +173,16 @@ class TestCrisisWindows(unittest.TestCase):
         windows = build_crisis_windows(events)
         # 7 weeks before — within lead-time but outside ±6w window
         test_date = datetime(2020, 6, 1) - timedelta(weeks=7)
-        self.assertTrue(_is_in_any_window(test_date, windows, include_lead=True))
-        self.assertFalse(_is_in_any_window(test_date, windows, include_lead=False))
+        self.assertTrue(
+            _is_in_any_window(
+                test_date, windows, include_lead=True,
+            )
+        )
+        self.assertFalse(
+            _is_in_any_window(
+                test_date, windows, include_lead=False,
+            )
+        )
 
 
 class TestFPClassification(unittest.TestCase):
@@ -301,7 +299,8 @@ class TestPRCurve(unittest.TestCase):
         report = compute_precision_recall_curve(
             self.weekly_data, self.crisis_events,
         )
-        # Some FPs should exist (non-crisis weeks with MAC < 0.50 from momentum)
+        # Some FPs should exist
+        # (non-crisis weeks with MAC < 0.50)
         # The exact count depends on momentum signals; just check structure
         self.assertIsInstance(report.fp_classifications, list)
 
@@ -313,10 +312,18 @@ class TestPRHelpers(unittest.TestCase):
         """optimal_threshold_for_beta returns a valid τ."""
         # Minimal synthetic curve
         curve = [
-            PRPoint(tau=0.30, tp=5, fp=2, fn=5, precision=0.71, recall=0.50,
-                    f1=0.59, f05=0.66, f2=0.53, signal_weeks=7, fp_per_year=0.5),
-            PRPoint(tau=0.50, tp=8, fp=5, fn=2, precision=0.62, recall=0.80,
-                    f1=0.70, f05=0.65, f2=0.76, signal_weeks=13, fp_per_year=1.2),
+            PRPoint(
+                tau=0.30, tp=5, fp=2, fn=5,
+                precision=0.71, recall=0.50,
+                f1=0.59, f05=0.66, f2=0.53,
+                signal_weeks=7, fp_per_year=0.5,
+            ),
+            PRPoint(
+                tau=0.50, tp=8, fp=5, fn=2,
+                precision=0.62, recall=0.80,
+                f1=0.70, f05=0.65, f2=0.76,
+                signal_weeks=13, fp_per_year=1.2,
+            ),
         ]
         tau_star, fb = optimal_threshold_for_beta(curve, beta=1.0)
         self.assertIn(tau_star, [0.30, 0.50])
@@ -400,7 +407,9 @@ class TestClientArchetypes(unittest.TestCase):
 # WP-9 TESTS
 # ═══════════════════════════════════════════════════════════════════════════
 
-def _make_synthetic_pillar_data(T: int = 200, seed: int = 42) -> Dict[str, List[float]]:
+def _make_synthetic_pillar_data(
+    T: int = 200, seed: int = 42,
+) -> Dict[str, List[float]]:
     """Generate synthetic pillar score data for SVAR testing."""
     rng = np.random.RandomState(seed)
     pillars = CHOLESKY_ORDERING
@@ -422,8 +431,10 @@ class TestVAREstimation(unittest.TestCase):
 
     def setup_method(self, method=None):
         self.data = _make_synthetic_pillar_data(200)
-        K = len(CHOLESKY_ORDERING)
-        raw = np.column_stack([np.array(self.data[p]) for p in CHOLESKY_ORDERING])
+        raw = np.column_stack(
+            [np.array(self.data[p])
+             for p in CHOLESKY_ORDERING]
+        )
         self.diff = np.diff(raw, axis=0)
 
     def test_estimate_var_shapes(self):
@@ -452,11 +463,16 @@ class TestIRF(unittest.TestCase):
     def setup_method(self, method=None):
         self.data = _make_synthetic_pillar_data(200)
         K = len(CHOLESKY_ORDERING)
-        raw = np.column_stack([np.array(self.data[p]) for p in CHOLESKY_ORDERING])
+        raw = np.column_stack(
+            [np.array(self.data[p])
+             for p in CHOLESKY_ORDERING]
+        )
         diff = np.diff(raw, axis=0)
         self.K = K
         B, self.Sigma, _ = estimate_var(diff, 2)
-        from grri_mac.predictive.cascade_var import _extract_coefficient_matrices
+        from grri_mac.predictive.cascade_var import (  # noqa: E501
+            _extract_coefficient_matrices,
+        )
         self.A = _extract_coefficient_matrices(B, K, 2)
 
     def test_cirf_shape(self):
@@ -496,13 +512,19 @@ class TestSVAREstimate(unittest.TestCase):
         self.assertEqual(est.pillar_names, CHOLESKY_ORDERING)
         self.assertEqual(est.transmission_matrix.shape, (6, 6))
         # Normalised → max abs = 1
-        self.assertAlmostEqual(np.max(np.abs(est.transmission_matrix)), 1.0, places=5)
+        self.assertAlmostEqual(
+            np.max(np.abs(est.transmission_matrix)),
+            1.0, places=5,
+        )
 
     def test_transmission_matrix_to_dict(self):
         """Converts numpy matrix to nested dict for shock_propagation.py."""
         data = _make_synthetic_pillar_data(200)
         est = estimate_svar(data)
-        d = transmission_matrix_to_dict(est.transmission_matrix, est.pillar_names)
+        d = transmission_matrix_to_dict(
+            est.transmission_matrix,
+            est.pillar_names,
+        )
         # Should have 6 sources
         self.assertEqual(len(d), 6)
         for source, targets in d.items():
@@ -605,7 +627,10 @@ class TestSVARPipeline(unittest.TestCase):
         """Report formatting produces readable text."""
         data = _make_synthetic_pillar_data(200)
         report = run_svar_pipeline(
-            data, run_robustness=False, run_acceleration=False, run_granger=True,
+            data,
+            run_robustness=False,
+            run_acceleration=False,
+            run_granger=True,
         )
         text = format_svar_report(report)
         self.assertIn("SVAR CASCADE ESTIMATION REPORT", text)
@@ -619,7 +644,9 @@ class TestSVARConstants(unittest.TestCase):
         """6 pillars in theory-motivated order."""
         self.assertEqual(len(CHOLESKY_ORDERING), 6)
         self.assertEqual(CHOLESKY_ORDERING[0], "policy")      # slowest
-        self.assertEqual(CHOLESKY_ORDERING[-1], "positioning") # fastest
+        self.assertEqual(
+            CHOLESKY_ORDERING[-1], "positioning",
+        )  # fastest
 
     def test_critical_thresholds(self):
         """Critical thresholds defined for all 6 pillars."""
@@ -804,7 +831,10 @@ class TestSovereignProxyConstants(unittest.TestCase):
         self.assertGreaterEqual(len(UK_STRESS_EPISODES), 8)
         for ep in UK_STRESS_EPISODES:
             self.assertIsInstance(ep, HistoricalStressEpisode)
-            self.assertTrue(ep.expected_mac_range[0] < ep.expected_mac_range[1])
+            self.assertTrue(
+                ep.expected_mac_range[0]
+                < ep.expected_mac_range[1]
+            )
 
     def test_data_sources(self):
         """At least 5 data sources documented."""
@@ -842,7 +872,10 @@ class TestProxyMACReport(unittest.TestCase):
             ),
         ]
         series = build_proxy_mac_series(obs)
-        text = format_proxy_mac_report(series, "United Kingdom", UK_STRESS_EPISODES)
+        text = format_proxy_mac_report(
+            series, "United Kingdom",
+            UK_STRESS_EPISODES,
+        )
         self.assertIn("SOVEREIGN BOND PROXY MAC", text)
         self.assertIn("STRESS EPISODE VALIDATION", text)
 
@@ -862,19 +895,34 @@ class TestDataQualityTiers(unittest.TestCase):
         self.runner = BacktestRunner.__new__(BacktestRunner)
 
     def test_excellent_post_2018(self):
-        self.assertEqual(self.runner._assess_data_quality(datetime(2024, 1, 1)), "excellent")
+        result = self.runner._assess_data_quality(
+            datetime(2024, 1, 1),
+        )
+        self.assertEqual(result, "excellent")
 
     def test_good_2011_2018(self):
-        self.assertEqual(self.runner._assess_data_quality(datetime(2015, 6, 1)), "good")
+        result = self.runner._assess_data_quality(
+            datetime(2015, 6, 1),
+        )
+        self.assertEqual(result, "good")
 
     def test_fair_1990_2011(self):
-        self.assertEqual(self.runner._assess_data_quality(datetime(2005, 1, 1)), "fair")
+        result = self.runner._assess_data_quality(
+            datetime(2005, 1, 1),
+        )
+        self.assertEqual(result, "fair")
 
     def test_poor_pre_1990(self):
-        self.assertEqual(self.runner._assess_data_quality(datetime(1960, 1, 1)), "poor")
+        result = self.runner._assess_data_quality(
+            datetime(1960, 1, 1),
+        )
+        self.assertEqual(result, "poor")
 
     def test_poor_pre_1907(self):
-        self.assertEqual(self.runner._assess_data_quality(datetime(1890, 1, 1)), "poor")
+        result = self.runner._assess_data_quality(
+            datetime(1890, 1, 1),
+        )
+        self.assertEqual(result, "poor")
 
 
 class TestRunnerDocstring(unittest.TestCase):
@@ -907,7 +955,7 @@ class TestValidationReportStructure(unittest.TestCase):
 
     def test_report_has_era_detection(self):
         """generate_validation_report returns per_era_detection."""
-        import pandas as pd
+        import pandas as pd  # type: ignore[import-untyped]
         # Minimal mock backtest DataFrame
         dates = pd.date_range("2020-01-01", periods=10, freq="W")
         df = pd.DataFrame({
@@ -926,7 +974,7 @@ class TestValidationReportStructure(unittest.TestCase):
 
     def test_fixes_applied_all_six(self):
         """Fixes A through F are all documented."""
-        import pandas as pd
+        import pandas as pd  # type: ignore[import-untyped]
         dates = pd.date_range("2020-01-01", periods=5, freq="W")
         df = pd.DataFrame({
             "mac_score": [0.60] * 5,

@@ -15,8 +15,7 @@ positives.  Implements:
 from __future__ import annotations
 
 import json
-import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
@@ -150,7 +149,7 @@ class PrecisionRecallReport:
     """Complete precision-recall analysis output."""
     curve: List[PRPoint]
     operating_points: List[OperatingPointReport]
-    optimal_tau_by_beta: Dict[str, Tuple[float, float]]   # archetype → (τ*, Fβ*)
+    optimal_tau_by_beta: Dict[str, Tuple[float, float]]
     era_fpr: List[EraFPR]
     fp_classifications: List[FPClassification]
     total_weeks: int
@@ -168,7 +167,10 @@ def _f_beta(precision: float, recall: float, beta: float) -> float:
     """Compute Fβ score.  Returns 0.0 when both precision and recall are 0."""
     if precision + recall == 0:
         return 0.0
-    return (1.0 + beta ** 2) * precision * recall / (beta ** 2 * precision + recall)
+    return (
+        (1.0 + beta ** 2) * precision * recall
+        / (beta ** 2 * precision + recall)
+    )
 
 
 def build_crisis_windows(
@@ -259,7 +261,10 @@ def _classify_fp(
         date=date,
         mac_score=mac_score,
         category=FPCategory.GENUINE,
-        reason="No identifiable stress event, near-miss, or structural artefact",
+        reason=(
+            "No identifiable stress event, "
+            "near-miss, or structural artefact"
+        ),
     )
 
 
@@ -302,7 +307,10 @@ def compute_precision_recall_curve(
     sample_years = (max_date - min_date).days / 365.25
 
     # Pre-classify weeks as crisis/non-crisis
-    crisis_week_flags = [_is_in_any_window(d["date"], windows) for d in weekly_data]
+    crisis_week_flags = [
+        _is_in_any_window(d["date"], windows)
+        for d in weekly_data
+    ]
     total_weeks = len(weekly_data)
     crisis_weeks = sum(crisis_week_flags)
     non_crisis_weeks = total_weeks - crisis_weeks
@@ -609,7 +617,10 @@ def format_precision_recall_report(report: PrecisionRecallReport) -> str:
 
     # Breakeven precision example
     be = breakeven_precision(30, 1500)
-    lines.append(f"  Breakeven precision (30 bps FP cost, 1500 bps FN cost): {be:.3f}")
+    lines.append(
+        "  Breakeven precision "
+        f"(30 bps FP cost, 1500 bps FN cost): {be:.3f}"
+    )
     lines.append("  → Framework adds expected value at any operating point "
                  "with precision > 2%.")
     lines.append("")

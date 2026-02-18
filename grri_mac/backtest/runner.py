@@ -1,23 +1,25 @@
 """Backtest runner for MAC framework.
 
-Calculates MAC scores over historical periods and validates against crisis events.
-Now includes 7th Private Credit pillar and momentum tracking.
+Calculates MAC scores over historical periods and
+validates against crisis events.
+Now includes 7th Private Credit pillar and momentum.
 
 Methodological Fixes (v6 §14):
-    Fix A — Exclude missing pillars from composite (has_data tracking)
-    Fix B — Wire up contagion proxy via BAA10Y (Moody's Baa-10Y spread)
-    Fix C — Range-based valuation scoring (two-sided)
-    Fix D — ML-optimised weights for modern era (2006+); era weights for historical
-    Fix E — Era-aware calibration factor (0.78/0.90/1.00 by era)
-    Fix F — Momentum-enhanced warning detection (level + 4w momentum)
+    Fix A — Exclude missing pillars from composite
+    Fix B — Wire contagion proxy via BAA10Y
+    Fix C — Range-based valuation scoring
+    Fix D — ML-optimised weights for modern era
+    Fix E — Era-aware calibration factor
+    Fix F — Momentum-enhanced warning detection
 
-Together these fixes raised TPR from 26.7% to 75.6% across 41 crises (1907–2025).
+These fixes raised TPR from 26.7% to 75.6% across
+41 crises (1907–2025).
 """
 
 from datetime import datetime, timedelta
 from typing import Optional, List
 from dataclasses import dataclass
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 from ..data.fred import FREDClient
 from ..pillars.liquidity import LiquidityPillar, LiquidityIndicators
@@ -26,8 +28,14 @@ from ..pillars.volatility import VolatilityPillar, VolatilityIndicators
 from ..pillars.policy import PolicyPillar, PolicyIndicators
 from ..pillars.positioning import PositioningPillar, PositioningIndicators
 from ..pillars.contagion import ContagionPillar, ContagionIndicators
-from ..pillars.private_credit import PrivateCreditPillar, PrivateCreditIndicators, SLOOSData, BDCData
-from ..mac.composite import calculate_mac, get_mac_interpretation, ML_OPTIMIZED_WEIGHTS
+from ..pillars.private_credit import (
+    PrivateCreditPillar, PrivateCreditIndicators,
+    SLOOSData, BDCData,
+)
+from ..mac.composite import (
+    calculate_mac, get_mac_interpretation,
+    ML_OPTIMIZED_WEIGHTS,
+)
 from ..mac.momentum import calculate_momentum
 from .crisis_events import CRISIS_EVENTS, get_crisis_for_date
 from .era_configs import get_era_weights
@@ -48,7 +56,7 @@ class BacktestPoint:
     momentum_1w: Optional[float] = None
     momentum_4w: Optional[float] = None
     trend_direction: str = "unknown"
-    mac_status: str = "UNKNOWN"  # COMFORTABLE, CAUTIOUS, DETERIORATING, STRETCHED, CRITICAL
+    mac_status: str = "UNKNOWN"  # COMFORTABLE … CRITICAL
     is_deteriorating: bool = False
 
 
@@ -66,10 +74,12 @@ class BacktestRunner:
 
         Args:
             fred_api_key: FRED API key (or will use FRED_API_KEY env var)
-            use_era_weights: If True, use era-specific pillar weights for
-                             pre-1971 periods (recommended for extended backtests)
-            calibration_factor: Multiplicative adjustment for MAC scores (default 0.78,
-                                derived from cross-validation against historical crises)
+            use_era_weights: If True, use era-specific
+                pillar weights for pre-1971 periods
+                (recommended for extended backtests)
+            calibration_factor: Multiplicative adjustment
+                for MAC scores (default 0.78, derived
+                from cross-validation)
         """
         self.fred = FREDClient(fred_api_key)
         self.use_era_weights = use_era_weights
@@ -82,17 +92,24 @@ class BacktestRunner:
         self.policy = PolicyPillar(fred_client=self.fred)
         self.positioning = PositioningPillar()  # Uses synthetic for now
         self.contagion = ContagionPillar()  # Placeholder scores for now
-        self.private_credit = PrivateCreditPillar(fred_client=self.fred)  # 7th pillar
+        self.private_credit = PrivateCreditPillar(
+            fred_client=self.fred,
+        )  # 7th pillar
         
         # Historical MAC scores for momentum calculation
         self._historical_macs: List[dict] = []
 
-    def _prefetch_fred_data(self, start_date: datetime, end_date: datetime) -> None:
+    def _prefetch_fred_data(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> None:
         """
-        Pre-fetch all required FRED series for the backtest period.
-        This dramatically reduces API calls by loading data once upfront.
-        
-        Supports backtesting from 1962-present with appropriate historical proxies.
+        Pre-fetch all required FRED series.
+
+        Dramatically reduces API calls by loading
+        data once upfront.  Supports backtesting
+        from 1962-present with historical proxies.
         """
         # All FRED series used across pillars (modern + historical proxies)
         # Using a set to avoid duplicates
@@ -123,7 +140,8 @@ class BacktestRunner:
             "DRTSCIS", "DRISCFS",
         ]))
         
-        # Add buffer for lookback calculations (larger for realized vol computation)
+        # Add buffer for lookback calculations
+        # (larger for realized vol computation)
         buffer_start = start_date - timedelta(days=90)
         
         self.fred.prefetch_series(series_to_fetch, buffer_start, end_date)
@@ -136,11 +154,12 @@ class BacktestRunner:
         Calculate MAC score for a specific date.
 
         Applies six methodological fixes (v6 §14):
-        - Fix A: Only pillars with real indicator data participate in the composite.
-          Pillars with no data are excluded (not set to 0.5), preventing dilution.
-        - Fix B: Contagion pillar uses BAA10Y (Moody's Baa-10Y spread) from 1919+.
-        - Fix C: Range-based two-sided valuation scoring (both extremes are risky).
-        - Fix D: ML-optimized weights for modern era (2006+), era weights for
+        - Fix A: Only pillars with real indicator data
+          participate in the composite.  Pillars with
+          no data are excluded (not set to 0.5).
+        - Fix B: Contagion uses BAA10Y (1919+).
+        - Fix C: Range-based two-sided valuation.
+        - Fix D: ML-optimized weights for modern era
           historical periods, equal weights otherwise.
         - Fix E: Era-aware calibration factor (0.78/0.90/1.00 by era).
         - Fix F: Momentum-enhanced warning detection in downstream analysis.
@@ -198,8 +217,10 @@ class BacktestRunner:
             "volatility": volatility_indicators.vix_level is not None,
             "policy": policy_indicators.policy_room_bps is not None,
             "positioning": (
-                positioning_indicators.basis_trade_size_billions is not None
-                or positioning_indicators.treasury_spec_net_percentile is not None
+                positioning_indicators
+                .basis_trade_size_billions is not None
+                or positioning_indicators
+                .treasury_spec_net_percentile is not None
                 or positioning_indicators.svxy_aum_millions is not None
             ),
             "contagion": (
@@ -238,7 +259,8 @@ class BacktestRunner:
         # Fix E: Apply calibration factor (era-aware)
         # The 0.78 factor was calibrated against modern (post-2006) scenarios.
         # For pre-1971 data, structural differences (higher Schwert vol, wider
-        # railroad spreads) already compress scores; applying 0.78 over-penalises.
+        # railroad spreads) already compress scores;
+        # applying 0.78 over-penalises.
         if date >= datetime(2006, 1, 1):
             cal = self.calibration_factor        # Full calibration
         elif date >= datetime(1971, 2, 5):
@@ -306,7 +328,7 @@ class BacktestRunner:
         self._historical_macs = []
         
         # Track which warnings have been shown to avoid spam
-        self._warnings_shown = set()
+        self._warnings_shown: set[str] = set()
         
         # Pre-fetch all required FRED series for efficiency
         self._prefetch_fred_data(start_date, end_date)
@@ -340,7 +362,13 @@ class BacktestRunner:
                 if progress >= last_progress + 5:
                     last_progress = progress
                     bar = "█" * (progress // 5) + "░" * (20 - progress // 5)
-                    print(f"\r[{bar}] {progress}% ({point_count}/{total_points}) - {current_date.date()} MAC={point.mac_score:.2f}", end="", flush=True)
+                    print(
+                        f"\r[{bar}] {progress}% "
+                        f"({point_count}/{total_points}) "
+                        f"- {current_date.date()} "
+                        f"MAC={point.mac_score:.2f}",
+                        end="", flush=True,
+                    )
 
             except Exception as e:
                 point_count += 1
@@ -387,41 +415,64 @@ class BacktestRunner:
             self._warnings_shown.add(warning_key)
             # Silently skip - warnings clutter output during long backtests
 
-    def _fetch_liquidity_indicators(self, date: datetime) -> LiquidityIndicators:
+    def _fetch_liquidity_indicators(
+        self, date: datetime,
+    ) -> LiquidityIndicators:
         """Fetch liquidity indicators for a date."""
         indicators = LiquidityIndicators()
 
         try:
             # Use date-aware liquidity spread (SOFR-IORB or LIBOR-OIS)
-            indicators.sofr_iorb_spread_bps = self.fred.get_liquidity_spread(date)
-        except Exception as e:
-            self._warn_once("liquidity_spread", f"Liquidity spread unavailable for some dates")
+            indicators.sofr_iorb_spread_bps = (
+                self.fred.get_liquidity_spread(date)
+            )
+        except Exception:
+            self._warn_once(
+                "liquidity_spread",
+                "Liquidity spread unavailable",
+            )
 
         try:
-            indicators.cp_treasury_spread_bps = self.fred.get_cp_treasury_spread(date)
-        except Exception as e:
-            self._warn_once("cp_spread", f"CP spread unavailable for some dates")
+            indicators.cp_treasury_spread_bps = (
+                self.fred.get_cp_treasury_spread(date)
+            )
+        except Exception:
+            self._warn_once(
+                "cp_spread",
+                "CP spread unavailable",
+            )
 
         return indicators
 
-    def _fetch_valuation_indicators(self, date: datetime) -> ValuationIndicators:
+    def _fetch_valuation_indicators(
+        self, date: datetime,
+    ) -> ValuationIndicators:
         """Fetch valuation indicators for a date."""
         indicators = ValuationIndicators()
 
         try:
-            indicators.term_premium_10y_bps = self.fred.get_term_premium_10y(date)
-        except Exception as e:
-            self._warn_once("term_premium", f"Term premium unavailable for some dates")
+            indicators.term_premium_10y_bps = (
+                self.fred.get_term_premium_10y(date)
+            )
+        except Exception:
+            self._warn_once(
+                "term_premium",
+                "Term premium unavailable",
+            )
 
         try:
             indicators.ig_oas_bps = self.fred.get_ig_oas(date)
-        except Exception as e:
-            self._warn_once("ig_oas", f"IG OAS unavailable for some dates")
+        except Exception:
+            self._warn_once(
+                "ig_oas", "IG OAS unavailable",
+            )
 
         try:
             indicators.hy_oas_bps = self.fred.get_hy_oas(date)
-        except Exception as e:
-            self._warn_once("hy_oas", f"HY OAS unavailable for some dates")
+        except Exception:
+            self._warn_once(
+                "hy_oas", "HY OAS unavailable",
+            )
 
         return indicators
 
@@ -431,8 +482,10 @@ class BacktestRunner:
 
         try:
             indicators.vix_level = self.fred.get_vix(date)
-        except Exception as e:
-            self._warn_once("vix", f"VIX unavailable for some dates")
+        except Exception:
+            self._warn_once(
+                "vix", "VIX unavailable",
+            )
 
         return indicators
 
@@ -445,8 +498,11 @@ class BacktestRunner:
             fed_funds = self.fred.get_fed_funds(date)
             if fed_funds is not None:
                 indicators.policy_room_bps = fed_funds * 100
-        except Exception as e:
-            self._warn_once("fed_funds", f"Fed funds unavailable for some dates")
+        except Exception:
+            self._warn_once(
+                "fed_funds",
+                "Fed funds unavailable",
+            )
 
         # Balance sheet and inflation would require more complex date handling
         # For now, leave as None
@@ -479,7 +535,9 @@ class BacktestRunner:
 
         return indicators
 
-    def _fetch_private_credit_indicators(self, date: datetime) -> PrivateCreditIndicators:
+    def _fetch_private_credit_indicators(
+        self, date: datetime,
+    ) -> PrivateCreditIndicators:
         """
         Fetch private credit indicators for a date.
         
@@ -498,7 +556,9 @@ class BacktestRunner:
                 sloos.ci_standards_small = ci_small
             
             # Spreads to small firms
-            spreads_small = self.fred.get_value_for_date("DRISCFS", date, lookback_days=100)
+            spreads_small = self.fred.get_value_for_date(
+                "DRISCFS", date, lookback_days=100,
+            )
             if spreads_small is not None:
                 sloos.spreads_small = spreads_small
             
@@ -562,15 +622,24 @@ class BacktestRunner:
         non_crisis_dates = backtest_df[backtest_df["crisis_event"].isna()]
 
         # Calculate average MAC during vs. outside crises
-        avg_mac_crisis = crisis_dates["mac_score"].mean() if len(crisis_dates) > 0 else None
-        avg_mac_non_crisis = non_crisis_dates["mac_score"].mean() if len(non_crisis_dates) > 0 else None
+        avg_mac_crisis = (
+            crisis_dates["mac_score"].mean()
+            if len(crisis_dates) > 0 else None
+        )
+        avg_mac_non_crisis = (
+            non_crisis_dates["mac_score"].mean()
+            if len(non_crisis_dates) > 0 else None
+        )
 
         # Count warnings before crises (Fix F: level + momentum)
         warnings = 0
         total_crises = 0
 
         for crisis in CRISIS_EVENTS:
-            if crisis.start_date < backtest_df.index.min() or crisis.end_date > backtest_df.index.max():
+            if (
+                crisis.start_date < backtest_df.index.min()
+                or crisis.end_date > backtest_df.index.max()
+            ):
                 continue  # Crisis outside backtest range
 
             total_crises += 1
@@ -598,13 +667,27 @@ class BacktestRunner:
 
         # ── Per-era detection rates (v6 §15.2) ──────────────────────
         ERA_BOUNDARIES = [
-            ("Pre-Fed (1907–1913)", datetime(1907, 1, 1), datetime(1913, 12, 31)),
-            ("Early Fed / WWI (1913–1919)", datetime(1914, 1, 1), datetime(1919, 12, 31)),
-            ("Interwar / Depression (1920–1934)", datetime(1920, 1, 1), datetime(1934, 12, 31)),
-            ("New Deal / WWII (1934–1954)", datetime(1935, 1, 1), datetime(1954, 12, 31)),
-            ("Post-War / Bretton Woods (1954–1971)", datetime(1954, 1, 1), datetime(1971, 2, 4)),
-            ("Post-Bretton Woods (1971–1990)", datetime(1971, 2, 5), datetime(1990, 1, 1)),
-            ("Modern (1990–2025)", datetime(1990, 1, 2), datetime(2025, 12, 31)),
+            ("Pre-Fed (1907–1913)",
+             datetime(1907, 1, 1),
+             datetime(1913, 12, 31)),
+            ("Early Fed / WWI (1913–1919)",
+             datetime(1914, 1, 1),
+             datetime(1919, 12, 31)),
+            ("Interwar (1920–1934)",
+             datetime(1920, 1, 1),
+             datetime(1934, 12, 31)),
+            ("New Deal / WWII (1934–1954)",
+             datetime(1935, 1, 1),
+             datetime(1954, 12, 31)),
+            ("Bretton Woods (1954–1971)",
+             datetime(1954, 1, 1),
+             datetime(1971, 2, 4)),
+            ("Post-BW (1971–1990)",
+             datetime(1971, 2, 5),
+             datetime(1990, 1, 1)),
+            ("Modern (1990–2025)",
+             datetime(1990, 1, 2),
+             datetime(2025, 12, 31)),
         ]
 
         per_era_results = []
@@ -613,7 +696,12 @@ class BacktestRunner:
             era_detected = 0
             for crisis in CRISIS_EVENTS:
                 if era_start <= crisis.start_date <= era_end:
-                    if crisis.start_date < backtest_df.index.min() or crisis.end_date > backtest_df.index.max():
+                    if (
+                        crisis.start_date
+                        < backtest_df.index.min()
+                        or crisis.end_date
+                        > backtest_df.index.max()
+                    ):
                         continue
                     era_crises += 1
                     # Check for warning signal

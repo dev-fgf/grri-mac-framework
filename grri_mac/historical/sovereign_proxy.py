@@ -17,7 +17,7 @@ from ~1729, Bank Rate from 1694).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
@@ -314,7 +314,8 @@ def calibrate_coefficients(
 
     return QuadraticCoefficients(
         a=round(beta[0], 4),
-        b=round(beta[1], 4),  # design matrix already has -SS, so beta[1] = b directly
+        # design matrix already has -SS, so beta[1] = b
+        b=round(beta[1], 4),
         c=round(beta[2], 6),
         residual_se=round(residual_se, 4),
     )
@@ -380,13 +381,22 @@ def build_proxy_mac_series(
 
 PROXY_LIMITATIONS: List[Dict[str, str]] = [
     {
-        "limitation": "Single-indicator aggregation loses pillar decomposition",
+        "limitation": (
+            "Single-indicator aggregation loses "
+            "pillar decomposition"
+        ),
         "impact": "Cannot identify which buffer is depleted",
-        "mitigation": "Proxy MAC flagged as aggregate-only; no pillar attribution",
+        "mitigation": (
+            "Proxy MAC flagged as aggregate-only; "
+            "no pillar attribution"
+        ),
     },
     {
         "limitation": "Sovereign spreads include FX risk",
-        "impact": "Pre-euro European spreads conflate credit and currency risk",
+        "impact": (
+            "Pre-euro European spreads conflate "
+            "credit and currency risk"
+        ),
         "mitigation": "Separate calibration by FX regime era",
     },
     {
@@ -401,7 +411,10 @@ PROXY_LIMITATIONS: List[Dict[str, str]] = [
     },
     {
         "limitation": "War distortions",
-        "impact": "Capital controls, forced lending, yield caps distort signals",
+        "impact": (
+            "Capital controls, forced lending, "
+            "yield caps distort signals"
+        ),
         "mitigation": "Flag wartime periods with data quality warnings",
     },
     {
@@ -425,7 +438,7 @@ def format_proxy_mac_report(
     lines: List[str] = []
     lines.append("=" * 70)
     lines.append(f"  SOVEREIGN BOND PROXY MAC — {country_name.upper()}")
-    lines.append(f"  (v6 §16.2)")
+    lines.append("  (v6 s16.2)")
     lines.append("=" * 70)
     lines.append("")
 
@@ -434,16 +447,28 @@ def format_proxy_mac_report(
         return "\n".join(lines)
 
     lines.append(f"  Observations: {len(series)}")
-    lines.append(f"  Date range: {series[0].date.date()} to {series[-1].date.date()}")
+    lines.append(
+        f"  Date range: {series[0].date.date()}"
+        f" to {series[-1].date.date()}"
+    )
     lines.append(f"  Country: {series[0].country_code}")
     lines.append("")
 
     # Summary statistics
     macs = [s.mac_proxy for s in series]
-    lines.append(f"  MAC proxy: min={min(macs):.3f}  avg={sum(macs)/len(macs):.3f}"
-                 f"  max={max(macs):.3f}")
-    lines.append(f"  Avg CI width: "
-                 f"{sum(s.confidence_80_high - s.confidence_80_low for s in series)/len(series):.3f}")
+    avg_mac = sum(macs) / len(macs)
+    lines.append(
+        f"  MAC proxy: min={min(macs):.3f}"
+        f"  avg={avg_mac:.3f}"
+        f"  max={max(macs):.3f}"
+    )
+    avg_ci = (
+        sum(
+            s.confidence_80_high - s.confidence_80_low
+            for s in series
+        ) / len(series)
+    )
+    lines.append(f"  Avg CI width: {avg_ci:.3f}")
     lines.append("")
 
     # Stress episode validation
@@ -453,11 +478,14 @@ def format_proxy_mac_report(
         for ep in stress_episodes:
             # Find closest observation
             closest = min(series, key=lambda s: abs(s.date.year - ep.year))
-            in_range = ep.expected_mac_range[0] <= closest.mac_proxy <= ep.expected_mac_range[1]
+            lo = ep.expected_mac_range[0]
+            hi = ep.expected_mac_range[1]
+            in_range = lo <= closest.mac_proxy <= hi
             marker = "✓" if in_range else "✗"
             lines.append(
-                f"  {marker} {ep.name} ({ep.year}): proxy={closest.mac_proxy:.3f}"
-                f"  expected=[{ep.expected_mac_range[0]:.2f}, {ep.expected_mac_range[1]:.2f}]"
+                f"  {marker} {ep.name} ({ep.year}):"
+                f" proxy={closest.mac_proxy:.3f}"
+                f"  expected=[{lo:.2f}, {hi:.2f}]"
             )
         lines.append("")
 

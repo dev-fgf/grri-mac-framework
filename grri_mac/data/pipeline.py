@@ -16,7 +16,8 @@ Source Registry
 ---------------
 Each source entry defines:
 - ``client_factory`` — callable returning a client instance
-- ``fetch``          — callable(client, series_id) → raw data (bytes / dict / DataFrame)
+- ``fetch`` — callable(client, series_id) →
+  raw data (bytes / dict / DataFrame)
 - ``clean``          — callable(raw_data, series_id) → cleaned pd.DataFrame
 - ``series_ids``     — list of series identifiers this source provides
 - ``raw_ext``        — file extension for the raw tier (``.json``, ``.csv``, …)
@@ -25,15 +26,13 @@ Each source entry defines:
 from __future__ import annotations
 
 import io
-import json
 import logging
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
-import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 from .blob_store import BlobStore, DataTier, get_blob_store
 
@@ -183,7 +182,10 @@ def _clean_ohlcv(raw: pd.DataFrame, series_id: str) -> pd.DataFrame:
     df = raw.copy()
     # Normalise column names
     df.columns = [c.lower().strip() for c in df.columns]
-    keep = [c for c in ("open", "high", "low", "close", "volume") if c in df.columns]
+    ohlcv_cols = ("open", "high", "low", "close", "volume")
+    keep = [
+        c for c in ohlcv_cols if c in df.columns
+    ]
     df = df[keep]
     df.index.name = "date"
     return df.dropna(subset=["close"]) if "close" in df.columns else df
@@ -354,7 +356,10 @@ class DataPipeline:
             clean=_clean_ohlcv,
             client_factory=lambda: None,
             raw_ext=".csv",
-            description="yfinance ETFs — leveraged, volatility, credit, treasury",
+            description=(
+                "yfinance ETFs — leveraged,"
+                " volatility, credit, treasury"
+            ),
         ))
 
         # ── Crypto ────────────────────────────────────────────────────
@@ -398,7 +403,10 @@ class DataPipeline:
             clean=_clean_json_timeseries,
             client_factory=lambda: None,
             raw_ext=".json",
-            description="CFTC COT — speculative positioning (S&P, Treasuries, VIX)",
+            description=(
+                "CFTC COT — speculative positioning"
+                " (S&P, Treasuries, VIX)"
+            ),
         ))
 
         # ── Crypto Futures OI ─────────────────────────────────────────
@@ -420,7 +428,7 @@ class DataPipeline:
     def _fetch_fred(_client: Any, series_id: str) -> dict:
         """Fetch a FRED series via fredapi."""
         try:
-            from fredapi import Fred
+            from fredapi import Fred  # type: ignore
             import os
             api_key = os.environ.get("FRED_API_KEY")
             if not api_key:
@@ -428,8 +436,14 @@ class DataPipeline:
             fred = Fred(api_key=api_key)
             s = fred.get_series(series_id)
             dates = [d.strftime("%Y-%m-%d") for d in s.index]
-            values = [None if (v is None or (isinstance(v, float) and math.isnan(v)))
-                      else float(v) for v in s.values]
+            values = [
+                None if (
+                    v is None
+                    or (isinstance(v, float)
+                        and math.isnan(v))
+                )
+                else float(v) for v in s.values
+            ]
             return {"dates": dates, "values": values}
         except Exception as exc:
             logger.warning("FRED fetch %s failed: %s", series_id, exc)
@@ -463,7 +477,7 @@ class DataPipeline:
     @staticmethod
     def _fetch_cboe(_client: Any, series_id: str) -> bytes:
         """Fetch a CBOE volatility index CSV."""
-        import requests as _requests
+        import requests as _requests  # type: ignore
 
         cdn = "https://cdn.cboe.com/api/global/us_indices/daily_prices"
         urls = {
@@ -483,7 +497,10 @@ class DataPipeline:
         """Read a historical CSV from disk and return bytes."""
         from pathlib import Path
 
-        base = Path(__file__).resolve().parent.parent.parent / "data" / "historical"
+        base = (
+            Path(__file__).resolve().parent.parent.parent
+            / "data" / "historical"
+        )
         mapping = {
             "SCHWERT_VOL":       "schwert/schwert_volatility.csv",
             "BOE_GBPUSD":        "boe/boe_gbpusd.csv",
@@ -503,7 +520,7 @@ class DataPipeline:
     def _fetch_etf(_client: Any, series_id: str) -> pd.DataFrame:
         """Fetch 5 years of OHLCV via yfinance."""
         try:
-            import yfinance as yf
+            import yfinance as yf  # type: ignore
         except ImportError:
             raise ImportError("yfinance not installed")
         ticker = yf.Ticker(series_id)
@@ -513,7 +530,7 @@ class DataPipeline:
     def _fetch_crypto_prices(_client: Any, series_id: str) -> pd.DataFrame:
         """Fetch crypto daily OHLCV via yfinance."""
         try:
-            import yfinance as yf
+            import yfinance as yf  # type: ignore
         except ImportError:
             raise ImportError("yfinance not installed")
         ticker = yf.Ticker(series_id)
@@ -522,12 +539,15 @@ class DataPipeline:
     @staticmethod
     def _fetch_bis(_client: Any, series_id: str) -> dict:
         """Fetch BIS OTC derivatives data point."""
-        import sys, os
+        import sys
+        import os
         sys.path.insert(0, os.path.join(
             os.path.dirname(__file__), "..", "..", "api"
         ))
-        from api.shared.bis_client import fetch_bis_latest
-        val = fetch_bis_latest(series_id)
+        from api.shared.bis_client import (  # type: ignore
+            _fetch_bis_latest,
+        )
+        val = _fetch_bis_latest(series_id)
         return {
             "dates": [datetime.now(timezone.utc).strftime("%Y-%m-%d")],
             "values": [val],
@@ -536,7 +556,8 @@ class DataPipeline:
     @staticmethod
     def _fetch_ofr(_client: Any, series_id: str) -> dict:
         """Fetch OFR hedge fund leverage."""
-        import sys, os
+        import sys
+        import os
         sys.path.insert(0, os.path.join(
             os.path.dirname(__file__), "..", "..", "api"
         ))
@@ -560,7 +581,8 @@ class DataPipeline:
     @staticmethod
     def _fetch_crypto_oi(_client: Any, series_id: str) -> dict:
         """Fetch crypto futures OI."""
-        import sys, os
+        import sys
+        import os
         sys.path.insert(0, os.path.join(
             os.path.dirname(__file__), "..", "..", "api"
         ))
@@ -608,7 +630,10 @@ class DataPipeline:
         batch = BatchIngestResult(source=source)
 
         for sid in ids:
-            result = self._ingest_one(desc, sid, date_str, skip_existing, cleaned_fmt)
+            result = self._ingest_one(
+                desc, sid, date_str,
+                skip_existing, cleaned_fmt,
+            )
             batch.results.append(result)
 
         logger.info(batch.summary())

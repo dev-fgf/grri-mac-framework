@@ -4,7 +4,8 @@ Extracts the private-credit-specific stress signal by orthogonalising
 raw BDC/leveraged-loan returns against common equity/credit factors.
 
 Pipeline:
-  1. Rolling 252-day OLS: raw_return_t ~ β₁·SPX_t + β₂·ΔVIX_t + β₃·ΔHY_OAS_t + ε_t
+  1. Rolling 252-day OLS:
+     raw_return_t ~ B1*SPX_t + B2*dVIX_t + B3*dHY_OAS_t + e_t
   2. Residual ε_t is the orthogonal (private-credit-specific) signal
   3. Standardise: z_t = ε_t / σ(ε)_{rolling}
   4. 12-week EWMA smoothing (λ = 0.154)
@@ -48,7 +49,7 @@ class DecorrelationResult:
     z_score: Optional[float] = None             # Standardised residual
     ewma_z: Optional[float] = None              # EWMA-smoothed z-score
     decorrelated_score: Optional[float] = None  # Score on [0, 1]
-    data_quality: str = "insufficient"          # "good", "partial", "insufficient"
+    data_quality: str = "insufficient"  # good/partial/insufficient
     r_squared: Optional[float] = None           # OLS R² for diagnostics
     beta_spx: Optional[float] = None
     beta_vix: Optional[float] = None
@@ -60,10 +61,10 @@ class DecorrelationTimeSeries:
     """Holds the rolling arrays needed for the pipeline."""
 
     # Parallel arrays, same length, most recent last
-    bdc_returns: list = field(default_factory=list)   # Raw BDC composite daily returns
-    spx_returns: list = field(default_factory=list)   # S&P 500 daily returns
-    vix_changes: list = field(default_factory=list)    # ΔVIX daily changes
-    hy_oas_changes: list = field(default_factory=list) # ΔHY OAS daily changes
+    bdc_returns: list = field(default_factory=list)  # Raw BDC daily
+    spx_returns: list = field(default_factory=list)   # S&P 500 daily
+    vix_changes: list = field(default_factory=list)    # dVIX daily
+    hy_oas_changes: list = field(default_factory=list)  # dHY OAS daily
 
     # Cached EWMA state
     _ewma_z: Optional[float] = None
@@ -165,7 +166,10 @@ class PrivateCreditDecorrelator:
         # Back substitution: L'x = y
         x = [0.0] * n
         for i in range(n - 1, -1, -1):
-            x[i] = (y[i] - sum(L[j][i] * x[j] for j in range(i + 1, n))) / L[i][i]
+            s = sum(
+                L[j][i] * x[j] for j in range(i + 1, n)
+            )
+            x[i] = (y[i] - s) / L[i][i]
 
         return x
 
@@ -262,7 +266,10 @@ class PrivateCreditDecorrelator:
             return min(1.0, 0.8 + 0.2 * min(z, 1.0))
         elif z > THRESHOLD_NORMAL:
             # −0.5 to 0: transition from 0.7 to 0.8
-            return 0.7 + 0.1 * (z - THRESHOLD_NORMAL) / (0.0 - THRESHOLD_NORMAL)
+            return (
+                0.7 + 0.1 * (z - THRESHOLD_NORMAL)
+                / (0.0 - THRESHOLD_NORMAL)
+            )
         elif z > THRESHOLD_ELEVATED:
             # −1.5 to −0.5: transition from 0.3 to 0.7
             return 0.3 + 0.4 * (z - THRESHOLD_ELEVATED) / (

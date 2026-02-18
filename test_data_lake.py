@@ -6,19 +6,16 @@ Covers:
   - Cleaning helpers
 """
 
-import io
 import json
-import math
-import os
 import shutil
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: F401
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 from grri_mac.data.blob_store import (
     BlobStore,
@@ -95,7 +92,10 @@ class TestBlobStoreInit(_TempDirMixin, unittest.TestCase):
 
     def test_local_root_created(self):
         root = self._tmppath / "sub" / "lake"
-        store = BlobStore(connection_string=None, local_root=root)
+        _store = BlobStore(  # noqa: F841
+            connection_string=None,
+            local_root=root,
+        )
         self.assertTrue(root.exists())
 
 
@@ -122,22 +122,38 @@ class TestBlobStoreRawBytes(_TempDirMixin, unittest.TestCase):
     def test_round_trip_json(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
         payload = json.dumps({"hello": "world"}).encode()
-        ok = store.upload_raw_bytes("test", "s1", payload, ".json", date_str="2026-02-18")
+        ok = store.upload_raw_bytes(
+            "test", "s1", payload, ".json",
+            date_str="2026-02-18",
+        )
         self.assertTrue(ok)
 
-        got = store.download_raw_bytes("test", "s1", ".json", date_str="2026-02-18")
+        got = store.download_raw_bytes(
+            "test", "s1", ".json",
+            date_str="2026-02-18",
+        )
         self.assertEqual(got, payload)
 
     def test_round_trip_csv(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
         csv = b"date,value\n2020-01-01,1.5\n2020-01-08,2.0"
-        store.upload_raw_bytes("hist", "series1", csv, ".csv", date_str="2026-01-01")
-        got = store.download_raw_bytes("hist", "series1", ".csv", date_str="2026-01-01")
+        store.upload_raw_bytes(
+            "hist", "series1", csv, ".csv",
+            date_str="2026-01-01",
+        )
+        got = store.download_raw_bytes(
+            "hist", "series1", ".csv",
+            date_str="2026-01-01",
+        )
         self.assertEqual(got, csv)
 
     def test_missing_returns_none(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
-        self.assertIsNone(store.download_raw_bytes("x", "y", ".json", "2000-01-01"))
+        self.assertIsNone(
+            store.download_raw_bytes(
+                "x", "y", ".json", "2000-01-01",
+            )
+        )
 
 
 class TestBlobStoreRawJson(_TempDirMixin, unittest.TestCase):
@@ -160,25 +176,44 @@ class TestBlobStoreRawCsv(_TempDirMixin, unittest.TestCase):
         ok = store.upload_raw_csv("etf", "TLT", df, date_str="2026-02-18")
         self.assertTrue(ok)
         # Verify file exists on disk
-        self.assertTrue(store.exists("etf", "TLT", DataTier.RAW, ".csv", "2026-02-18"))
+        self.assertTrue(
+            store.exists(
+                "etf", "TLT",
+                DataTier.RAW, ".csv", "2026-02-18",
+            )
+        )
 
 
 class TestBlobStoreDataFrame(_TempDirMixin, unittest.TestCase):
-    """Cleaned tier: upload / download DataFrame (CSV format — no pyarrow needed)."""
+    """Cleaned tier: upload / download DataFrame.
+
+    CSV format — no pyarrow needed.
+    """
 
     def test_round_trip_csv_format(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
         df = _make_sample_df(20)
-        ok = store.upload_dataframe("fred", "VIX", df, fmt="csv", date_str="2026-02-18")
+        ok = store.upload_dataframe(
+            "fred", "VIX", df,
+            fmt="csv", date_str="2026-02-18",
+        )
         self.assertTrue(ok)
 
-        got = store.download_dataframe("fred", "VIX", fmt="csv", date_str="2026-02-18")
+        got = store.download_dataframe(
+            "fred", "VIX",
+            fmt="csv", date_str="2026-02-18",
+        )
         self.assertIsNotNone(got)
         self.assertEqual(len(got), 20)
 
     def test_missing_returns_none(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
-        self.assertIsNone(store.download_dataframe("x", "y", fmt="csv", date_str="1999-01-01"))
+        self.assertIsNone(
+            store.download_dataframe(
+                "x", "y",
+                fmt="csv", date_str="1999-01-01",
+            )
+        )
 
 
 class TestBlobStoreExists(_TempDirMixin, unittest.TestCase):
@@ -190,14 +225,33 @@ class TestBlobStoreExists(_TempDirMixin, unittest.TestCase):
 
     def test_exists_after_upload(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
-        store.upload_raw_json("fred", "VIXCLS", {"v": 1}, date_str="2026-02-18")
-        self.assertTrue(store.exists("fred", "VIXCLS", DataTier.RAW, ".json", "2026-02-18"))
+        store.upload_raw_json(
+            "fred", "VIXCLS", {"v": 1},
+            date_str="2026-02-18",
+        )
+        self.assertTrue(
+            store.exists(
+                "fred", "VIXCLS",
+                DataTier.RAW, ".json",
+                "2026-02-18",
+            )
+        )
 
     def test_delete(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
         store.upload_raw_json("x", "y", {"a": 1}, date_str="2026-02-18")
-        self.assertTrue(store.delete("x", "y", DataTier.RAW, ".json", "2026-02-18"))
-        self.assertFalse(store.exists("x", "y", DataTier.RAW, ".json", "2026-02-18"))
+        self.assertTrue(
+            store.delete(
+                "x", "y",
+                DataTier.RAW, ".json", "2026-02-18",
+            )
+        )
+        self.assertFalse(
+            store.exists(
+                "x", "y",
+                DataTier.RAW, ".json", "2026-02-18",
+            )
+        )
 
 
 class TestBlobStoreListBlobs(_TempDirMixin, unittest.TestCase):
@@ -214,9 +268,18 @@ class TestBlobStoreListBlobs(_TempDirMixin, unittest.TestCase):
 
     def test_source_manifest(self):
         store = BlobStore(connection_string=None, local_root=self._tmppath)
-        store.upload_dataframe("fred", "DFF", _make_sample_df(5), fmt="csv", date_str="2026-01-01")
-        store.upload_dataframe("fred", "DFF", _make_sample_df(5), fmt="csv", date_str="2026-01-02")
-        store.upload_dataframe("fred", "VIX", _make_sample_df(5), fmt="csv", date_str="2026-01-01")
+        store.upload_dataframe(
+            "fred", "DFF", _make_sample_df(5),
+            fmt="csv", date_str="2026-01-01",
+        )
+        store.upload_dataframe(
+            "fred", "DFF", _make_sample_df(5),
+            fmt="csv", date_str="2026-01-02",
+        )
+        store.upload_dataframe(
+            "fred", "VIX", _make_sample_df(5),
+            fmt="csv", date_str="2026-01-01",
+        )
         manifest = store.get_source_manifest("fred", tier=DataTier.CLEANED)
         self.assertIn("DFF", manifest)
         self.assertEqual(len(manifest["DFF"]), 2)
@@ -240,7 +303,11 @@ class TestCleanFredSeries(unittest.TestCase):
 
     def test_pandas_series_input(self):
         idx = pd.date_range("2020-01-01", periods=10, freq="ME")
-        raw = pd.Series([1.0, 2.0, None, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], index=idx)
+        raw = pd.Series(
+            [1.0, 2.0, None, 4.0, 5.0,
+             6.0, 7.0, 8.0, 9.0, 10.0],
+            index=idx,
+        )
         df = _clean_fred_series(raw, "X")
         self.assertEqual(len(df), 9)  # one NaN dropped
 
@@ -358,8 +425,16 @@ class TestPipelineRegistration(_TempDirMixin, unittest.TestCase):
     def test_builtins_registered(self):
         p = self._make_pipeline()
         names = p.list_sources()
-        for expected in ("fred", "nber", "cboe", "etf", "crypto", "bis", "ofr", "cftc", "crypto_oi", "historical"):
-            self.assertIn(expected, names, f"Missing built-in source: {expected}")
+        expected_sources = (
+            "fred", "nber", "cboe", "etf",
+            "crypto", "bis", "ofr", "cftc",
+            "crypto_oi", "historical",
+        )
+        for expected in expected_sources:
+            self.assertIn(
+                expected, names,
+                f"Missing built-in source: {expected}",
+            )
 
     def test_fred_series_list(self):
         p = self._make_pipeline()
@@ -429,7 +504,11 @@ class TestPipelineIngest(_TempDirMixin, unittest.TestCase):
 
     def test_ingest_single_series(self):
         p = self._make_pipeline_with_mock_source()
-        result = p.ingest("mock", series_ids=["S1"], date_str="2026-02-18", cleaned_fmt="csv")
+        result = p.ingest(
+            "mock", series_ids=["S1"],
+            date_str="2026-02-18",
+            cleaned_fmt="csv",
+        )
         self.assertEqual(result.total, 1)
         self.assertEqual(result.succeeded, 1)
         self.assertEqual(result.results[0].cleaned_rows, 3)

@@ -88,11 +88,25 @@ KNOWN_EVENTS = {
     "ltcm_crisis_1998": HistoricalScenario(
         name="LTCM Crisis",
         date=datetime(1998, 9, 23),
-        description="Long-Term Capital Management near-collapse, Fed-orchestrated bailout",
+        description=(
+            "Long-Term Capital Management near-collapse, Fed-orchestrated "
+            "bailout"
+        ),
+        # Contagion thin but not breaching
         expected_mac_range=(0.20, 0.40),
-        expected_breaches=["liquidity", "positioning", "volatility"],  # Contagion thin but not breaching
+        expected_breaches=[
+            "liquidity",
+            "positioning",
+            "volatility",
+        ],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.20, contagion=0.30, duration=0.40),
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.55,
+            policy_response=0.20,
+            contagion=0.30,
+            duration=0.40,
+        ),
         indicators={
             # Liquidity - TED spread 95bps (FRED verified)
             "sofr_iorb_spread_bps": 95,  # TED spread from FRED
@@ -120,18 +134,29 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 1200,
             "global_equity_corr": 0.78,
         },
-        context="LTCM had $125B assets on $4B equity. Russian default triggered unwind. "
-                "Fed coordinated private sector bailout. Treasuries rallied massively.",
+        context=(
+            "LTCM had $125B assets on $4B equity. "
+            "Russian default triggered unwind. "
+            "Fed coordinated private sector bailout. "
+            "Treasuries rallied massively."
+        ),
     ),
 
     "dotcom_peak_2000": HistoricalScenario(
         name="Dot-com Bubble Peak",
         date=datetime(2000, 3, 10),
         description="NASDAQ peaked at 5,048, maximum bubble conditions",
-        expected_mac_range=(0.55, 0.70),  # Adjusted - no breaches with real data
+        # Adjusted - no breaches with real data
+        expected_mac_range=(0.55, 0.70),
         expected_breaches=[],  # No breaches with verified data
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.90, policy_response=0.90, contagion=0.55, duration=0.60),
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.90,
+            policy_response=0.90,
+            contagion=0.55,
+            duration=0.60,
+        ),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": 44,  # TED spread from FRED
@@ -159,8 +184,12 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 700,  # Elevated but not crisis
             "global_equity_corr": 0.55,  # Normal correlation
         },
-        context="NASDAQ P/E ratios >100. Fed hiking rates. Credit tight but equities "
-                "massively overvalued. Classic bubble peak conditions.",
+        context=(
+            "NASDAQ P/E ratios >100. Fed hiking "
+            "rates. Credit tight but equities "
+            "massively overvalued. Classic bubble "
+            "peak conditions."
+        ),
     ),
 
     "sept11_2001": HistoricalScenario(
@@ -170,7 +199,13 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.25, 0.45),
         expected_breaches=["volatility", "liquidity"],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.55, mkt_dysfunction=0.25, policy_response=0.40, contagion=0.55, duration=0.60),
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.25,
+            policy_response=0.40,
+            contagion=0.55,
+            duration=0.60,
+        ),
         indicators={
             # Liquidity - Fed flooded system
             "sofr_iorb_spread_bps": 65,
@@ -198,18 +233,34 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 850,  # EM stress
             "global_equity_corr": 0.82,  # High contagion - global shock
         },
-        context="Exogenous shock. Markets closed 4 days. Fed injected $100B+ liquidity. "
-                "Classic flight to quality - Treasuries worked perfectly.",
+        context=(
+            "Exogenous shock. Markets closed 4 days. "
+            "Fed injected $100B+ liquidity. "
+            "Classic flight to quality - "
+            "Treasuries worked perfectly."
+        ),
     ),
 
     "dotcom_bottom_2002": HistoricalScenario(
         name="Dot-com Crash Bottom",
         date=datetime(2002, 10, 9),
-        description="S&P 500 hit cycle low, -49% from peak, Enron/WorldCom frauds",
+        description=(
+            "S&P 500 hit cycle low, -49% from peak, Enron/WorldCom frauds"
+        ),
+        # HY OAS at 1050 just above breach threshold
         expected_mac_range=(0.20, 0.40),
-        expected_breaches=["liquidity", "volatility"],  # HY OAS at 1050 just above breach threshold
+        expected_breaches=[
+            "liquidity",
+            "volatility",
+        ],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.25, mkt_dysfunction=0.55, policy_response=0.70, contagion=0.55, duration=0.20),
+        csr=CrisisSeverityScores(
+            drawdown=0.25,
+            mkt_dysfunction=0.55,
+            policy_response=0.70,
+            contagion=0.55,
+            duration=0.20,
+        ),
         indicators={
             # Liquidity - stressed
             "sofr_iorb_spread_bps": 40,
@@ -237,18 +288,34 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 750,  # EM stress
             "global_equity_corr": 0.68,  # Elevated correlation
         },
-        context="Final capitulation of dot-com bust. Corporate fraud scandals. "
-                "Fed at 1.25% providing massive accommodation. Treasuries rallied.",
+        context=(
+            "Final capitulation of dot-com bust. "
+            "Corporate fraud scandals. "
+            "Fed at 1.25% providing massive "
+            "accommodation. Treasuries rallied."
+        ),
     ),
 
     "bear_stearns_2008": HistoricalScenario(
         name="Bear Stearns Collapse",
         date=datetime(2008, 3, 16),
-        description="Bear Stearns sold to JPMorgan in emergency Fed-backed deal",
+        description=(
+            "Bear Stearns sold to JPMorgan in emergency Fed-backed deal"
+        ),
+        # VIX at 32, positioning not extreme yet
         expected_mac_range=(0.30, 0.50),
-        expected_breaches=["liquidity", "volatility"],  # VIX at 32, positioning not extreme yet
+        expected_breaches=[
+            "liquidity",
+            "volatility",
+        ],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.20, contagion=0.55, duration=0.40),
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.55,
+            policy_response=0.20,
+            contagion=0.55,
+            duration=0.40,
+        ),
         indicators={
             # Liquidity - severe stress (TED spread ~200bps)
             "sofr_iorb_spread_bps": 180,
@@ -266,7 +333,8 @@ KNOWN_EVENTS = {
             "vix_level": 32,
             "vix_term_structure": 0.88,
             "rv_iv_gap_pct": 40,
-            # Policy - cutting aggressively (fed_funds * 100 = distance from ELB)
+            # Policy - cutting aggressively (fed_funds * 100 = distance from
+            # ELB)
             "policy_room_bps": 299,  # FRED: 2.99% fed funds
             "fed_balance_sheet_gdp_pct": 6,
             "core_pce_vs_target_bps": 80,
@@ -277,18 +345,39 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 550,  # EM stress building
             "global_equity_corr": 0.78,  # High contagion
         },
-        context="First major GFC casualty. Fed opened discount window to investment banks. "
-                "Treasury flight to quality worked - yields dropped sharply.",
+        context=(
+            "First major GFC casualty. Fed opened "
+            "discount window to investment banks. "
+            "Treasury flight to quality worked - "
+            "yields dropped sharply."
+        ),
     ),
 
     "lehman_2008": HistoricalScenario(
         name="Lehman Brothers Collapse",
         date=datetime(2008, 9, 15),
-        description="Lehman filed bankruptcy, AIG rescue, global financial system seized",
-        expected_mac_range=(0.15, 0.30),  # Adjusted - filing date, crisis peaked later
-        expected_breaches=["liquidity", "valuation", "positioning", "volatility", "contagion"],
-        treasury_hedge_worked=True,  # Initially worked, though some dysfunction
-        csr=CrisisSeverityScores(drawdown=0.10, mkt_dysfunction=0.10, policy_response=0.10, contagion=0.10, duration=0.10),
+        description=(
+            "Lehman filed bankruptcy, AIG rescue, global financial system "
+            "seized"
+        ),
+        # Adjusted - filing date, crisis peaked later
+        expected_mac_range=(0.15, 0.30),
+        expected_breaches=[
+            "liquidity",
+            "valuation",
+            "positioning",
+            "volatility",
+            "contagion",
+        ],
+        # Initially worked, though some dysfunction
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.10,
+            mkt_dysfunction=0.10,
+            policy_response=0.10,
+            contagion=0.10,
+            duration=0.10,
+        ),
         indicators={
             # Liquidity - FRED verified (TED 179bps on filing date)
             "sofr_iorb_spread_bps": 179,  # FRED TED spread
@@ -317,18 +406,30 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 536,  # FRED BAMLEMCBPIOAS
             "global_equity_corr": 0.95,
         },
-        context="Lehman filing date. VIX was 31.7, peaked at 80.86 on Nov 20. "
-                "TED spread 179bps, peaked at 457bps on Oct 10. Markets seized after.",
+        context=(
+            "Lehman filing date. VIX was 31.7, "
+            "peaked at 80.86 on Nov 20. "
+            "TED spread 179bps, peaked at 457bps "
+            "on Oct 10. Markets seized after."
+        ),
     ),
 
     "flash_crash_2010": HistoricalScenario(
         name="Flash Crash",
         date=datetime(2010, 5, 6),
-        description="DJIA dropped 1,000 points in minutes, algorithmic cascade",
+        description=(
+            "DJIA dropped 1,000 points in minutes, algorithmic cascade"
+        ),
         expected_mac_range=(0.40, 0.60),
         expected_breaches=["volatility"],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.55, policy_response=0.90, contagion=0.85, duration=0.85),
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.55,
+            policy_response=0.90,
+            contagion=0.85,
+            duration=0.85,
+        ),
         indicators={
             # Liquidity - briefly stressed
             "sofr_iorb_spread_bps": 20,
@@ -356,18 +457,34 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 450,  # EM OK
             "global_equity_corr": 0.85,  # Spike in correlation during flash
         },
-        context="Algorithmic trading cascade, recovered same day. European debt concerns. "
-                "Brief dislocation but Treasuries worked as haven.",
+        context=(
+            "Algorithmic trading cascade, recovered "
+            "same day. European debt concerns. "
+            "Brief dislocation but Treasuries "
+            "worked as haven."
+        ),
     ),
 
     "us_downgrade_2011": HistoricalScenario(
         name="US Debt Downgrade",
         date=datetime(2011, 8, 8),
-        description="S&P downgraded US from AAA to AA+, European debt crisis peaked",
+        description=(
+            "S&P downgraded US from AAA to AA+, European debt crisis peaked"
+        ),
         expected_mac_range=(0.30, 0.50),
-        expected_breaches=["volatility", "contagion"],  # European bank CDS stress
+        # European bank CDS stress
+        expected_breaches=[
+            "volatility",
+            "contagion",
+        ],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.70, contagion=0.55, duration=0.40),
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.55,
+            policy_response=0.70,
+            contagion=0.55,
+            duration=0.40,
+        ),
         indicators={
             # Liquidity - European stress spilled over
             "sofr_iorb_spread_bps": 35,
@@ -396,8 +513,12 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 500,  # EM elevated
             "global_equity_corr": 0.80,  # High correlation
         },
-        context="Paradox: US downgrade triggered flight TO Treasuries, not away. "
-                "10Y yield dropped below 2%. Haven status reinforced.",
+        context=(
+            "Paradox: US downgrade triggered flight "
+            "TO Treasuries, not away. "
+            "10Y yield dropped below 2%. "
+            "Haven status reinforced."
+        ),
     ),
 
     # =========================================================================
@@ -407,11 +528,19 @@ KNOWN_EVENTS = {
     "volmageddon_2018": HistoricalScenario(
         name="Volmageddon",
         date=datetime(2018, 2, 5),
-        description="VIX spiked 116%, XIV collapsed, short-vol strategies wiped out",
+        description=(
+            "VIX spiked 116%, XIV collapsed, short-vol strategies wiped out"
+        ),
         expected_mac_range=(0.35, 0.55),  # Adjusted for 6-pillar framework
         expected_breaches=["volatility", "positioning"],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.55, policy_response=0.90, contagion=0.85, duration=0.60),
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.55,
+            policy_response=0.90,
+            contagion=0.85,
+            duration=0.60,
+        ),
         indicators={
             # Liquidity - stressed but not broken
             "sofr_iorb_spread_bps": 8,
@@ -446,11 +575,20 @@ KNOWN_EVENTS = {
     "repo_spike_2019": HistoricalScenario(
         name="Repo Market Spike",
         date=datetime(2019, 9, 17),
-        description="Overnight repo rates spiked to 10%, Fed intervened with liquidity",
-        expected_mac_range=(0.50, 0.70),  # Adjusted for 6-pillar - contagion adds buffer
+        description=(
+            "Overnight repo rates spiked to 10%, Fed intervened with liquidity"
+        ),
+        # Adjusted for 6-pillar - contagion adds buffer
+        expected_mac_range=(0.50, 0.70),
         expected_breaches=["liquidity"],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.90, mkt_dysfunction=0.25, policy_response=0.40, contagion=0.85, duration=0.60),
+        csr=CrisisSeverityScores(
+            drawdown=0.90,
+            mkt_dysfunction=0.25,
+            policy_response=0.40,
+            contagion=0.85,
+            duration=0.60,
+        ),
         indicators={
             # Liquidity - severely stressed
             "sofr_iorb_spread_bps": 300,  # Spiked to 300+ bps
@@ -478,19 +616,38 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 350,  # EM calm
             "global_equity_corr": 0.50,  # Normal
         },
-        context="Corporate tax payments + Treasury settlement drained reserves. "
-                "Fed launched repo operations. Treasuries held value.",
+        context=(
+            "Corporate tax payments + Treasury "
+            "settlement drained reserves. "
+            "Fed launched repo operations. "
+            "Treasuries held value."
+        ),
     ),
 
     "covid_crash_2020": HistoricalScenario(
         name="COVID-19 Market Crash",
         date=datetime(2020, 3, 16),
-        description="Global pandemic triggered fastest bear market in history, "
-                    "Treasury market dysfunction",
+        description=(
+            "Global pandemic triggered fastest bear "
+            "market in history, Treasury market "
+            "dysfunction"
+        ),
         expected_mac_range=(0.10, 0.25),
-        expected_breaches=["liquidity", "valuation", "positioning", "volatility", "contagion"],
+        expected_breaches=[
+            "liquidity",
+            "valuation",
+            "positioning",
+            "volatility",
+            "contagion",
+        ],
         treasury_hedge_worked=False,
-        csr=CrisisSeverityScores(drawdown=0.10, mkt_dysfunction=0.10, policy_response=0.10, contagion=0.10, duration=0.20),
+        csr=CrisisSeverityScores(
+            drawdown=0.10,
+            mkt_dysfunction=0.10,
+            policy_response=0.10,
+            contagion=0.10,
+            duration=0.20,
+        ),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": 16,  # FRED: SOFR 0.26% - IOER 0.10%
@@ -519,19 +676,32 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 481,  # FRED BAMLEMCBPIOAS
             "global_equity_corr": 0.92,
         },
-        context="Margin calls forced liquidation of everything including Treasuries. "
-                "Fed launched unlimited QE + standing repo. Treasury hedge FAILED - "
-                "sold off alongside equities due to basis trade unwind.",
+        context=(
+            "Margin calls forced liquidation of "
+            "everything including Treasuries. "
+            "Fed launched unlimited QE + standing "
+            "repo. Treasury hedge FAILED - sold "
+            "off alongside equities due to "
+            "basis trade unwind."
+        ),
     ),
 
     "ukraine_invasion_2022": HistoricalScenario(
         name="Russia-Ukraine Invasion",
         date=datetime(2022, 2, 24),
-        description="Russia invaded Ukraine, commodity shock, geopolitical crisis",
+        description=(
+            "Russia invaded Ukraine, commodity shock, geopolitical crisis"
+        ),
         expected_mac_range=(0.50, 0.70),
         expected_breaches=[],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.90, policy_response=0.90, contagion=0.55, duration=0.40),
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.90,
+            policy_response=0.90,
+            contagion=0.55,
+            duration=0.40,
+        ),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": -10,  # FRED: SOFR 0.05% - IORB 0.15%
@@ -559,8 +729,12 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 339,  # FRED BAMLEMCBPIOAS
             "global_equity_corr": 0.70,
         },
-        context="Classic geopolitical shock absorbed well. Flight to quality into "
-                "Treasuries worked. No pillar breaches despite VIX spike.",
+        context=(
+            "Classic geopolitical shock absorbed "
+            "well. Flight to quality into "
+            "Treasuries worked. No pillar "
+            "breaches despite VIX spike."
+        ),
     ),
 
     "svb_crisis_2023": HistoricalScenario(
@@ -570,7 +744,13 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.50, 0.65),  # Adjusted - contained crisis
         expected_breaches=["liquidity"],
         treasury_hedge_worked=True,
-        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.55, policy_response=0.40, contagion=0.55, duration=0.60),
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.55,
+            policy_response=0.40,
+            contagion=0.55,
+            duration=0.60,
+        ),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": -10,  # FRED: SOFR 4.55% - IORB 4.65%
@@ -598,18 +778,29 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 286,  # FRED BAMLEMCBPIOAS
             "global_equity_corr": 0.65,
         },
-        context="Bank run triggered by duration mismatch. Fed created BTFP facility. "
-                "Treasuries rallied sharply as flight to safety worked.",
+        context=(
+            "Bank run triggered by duration mismatch. "
+            "Fed created BTFP facility. "
+            "Treasuries rallied sharply as flight "
+            "to safety worked."
+        ),
     ),
 
     "april_tariffs_2025": HistoricalScenario(
         name="April Tariff Shock",
         date=datetime(2025, 4, 2),
         description="Major tariff announcements triggered positioning unwind",
-        expected_mac_range=(0.45, 0.60),  # Adjusted - positioning stress but contained
+        # Adjusted - positioning stress but contained
+        expected_mac_range=(0.45, 0.60),
         expected_breaches=["positioning"],
         treasury_hedge_worked=False,
-        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.70, contagion=0.30, duration=0.40),
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.55,
+            policy_response=0.70,
+            contagion=0.30,
+            duration=0.40,
+        ),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": -3,  # FRED: SOFR 4.37% - IORB 4.40%
@@ -637,9 +828,14 @@ KNOWN_EVENTS = {
             "embi_spread_bps": 182,  # FRED BAMLEMCBPIOAS
             "global_equity_corr": 0.78,
         },
-        context="Tariff shock combined with extreme Treasury long positioning. "
-                "Forced unwind caused Treasuries to sell off WITH equities. "
-                "Treasury hedge FAILED due to positioning crowding.",
+        context=(
+            "Tariff shock combined with extreme "
+            "Treasury long positioning. "
+            "Forced unwind caused Treasuries to "
+            "sell off WITH equities. "
+            "Treasury hedge FAILED due to "
+            "positioning crowding."
+        ),
     ),
 }
 

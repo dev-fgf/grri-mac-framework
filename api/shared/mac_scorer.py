@@ -19,7 +19,12 @@ THRESHOLDS = {
         "basis_trade": {"ample": 300, "thin": 550, "breach": 750},
     },
     "volatility": {
-        "vix": {"ample_low": 12, "ample_high": 18, "thin_high": 28, "breach_high": 40},
+        "vix": {
+            "ample_low": 12,
+            "ample_high": 18,
+            "thin_high": 28,
+            "breach_high": 40,
+        },
     },
     "policy": {
         # Policy room = distance from ELB - more room is better
@@ -182,15 +187,23 @@ def score_positioning(indicators: dict) -> tuple[float, str]:
     return score, status
 
 
-def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
+def score_positioning_with_details(
+    indicators: dict,
+) -> tuple[float, str, dict]:
     """Score positioning pillar and return CFTC metadata for transparency."""
     try:
         # Handle both Azure Functions context and standalone execution
         try:
-            from shared.cftc_client import get_cftc_client, COT_REPORTS_AVAILABLE
+            from shared.cftc_client import (  # type: ignore
+                get_cftc_client,
+                COT_REPORTS_AVAILABLE,
+            )
         except ImportError:
-            from api.shared.cftc_client import get_cftc_client, COT_REPORTS_AVAILABLE
-        
+            from api.shared.cftc_client import (
+                get_cftc_client,
+                COT_REPORTS_AVAILABLE,
+            )
+
         if not COT_REPORTS_AVAILABLE:
             # Use neutral positioning with explanation
             return 0.55, "THIN", {
@@ -198,12 +211,12 @@ def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
                 "reason": "cot_reports_not_installed",
                 "note": "CFTC COT data requires cot-reports package"
             }
-        
+
         client = get_cftc_client()
 
         # Get detailed positioning indicators
         positioning_data = client.get_positioning_indicators(lookback_weeks=52)
-        
+
         if not positioning_data:
             # Azure Functions may have network restrictions fetching from CFTC
             # Use neutral positioning with current VIX as hint
@@ -216,15 +229,21 @@ def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
                 score, status = 0.65, "ADEQUATE"
             else:
                 score, status = 0.55, "THIN"
-            
+
             return score, status, {
                 "source": "vix_proxy",
                 "reason": "cftc_fetch_failed",
-                "note": "Using VIX as positioning proxy. CFTC COT data unavailable in serverless environment.",
+                "note": (
+                    "Using VIX as positioning proxy."
+                    " CFTC COT data unavailable"
+                    " in serverless environment."
+                ),
                 "vix_level": vix
             }
-        
-        score, status = client.get_aggregate_positioning_score(lookback_weeks=52)
+
+        score, status = client.get_aggregate_positioning_score(
+            lookback_weeks=52,
+        )
 
         if status == "NO_DATA":
             logger.warning("No CFTC data available, using neutral positioning")
@@ -355,7 +374,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
     - Crypto futures OI (leveraged crypto derivatives positioning)
     """
     scores = []
-    
+
     # Cross-currency basis (if available)
     if "cross_currency_basis_bps" in indicators:
         t = THRESHOLDS["contagion"]["cross_currency_basis"]
@@ -364,7 +383,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
             t["ample"], t["thin"], t["breach"],
             lower_is_better=True,
         ))
-    
+
     # IG-HY spread ratio (credit contagion)
     if "ig_oas_bps" in indicators and "hy_oas_bps" in indicators:
         ig_oas = indicators["ig_oas_bps"]
@@ -386,7 +405,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
                 scores.append(0.5 - (position / range_size) * 0.5)
             else:
                 scores.append(0.0)
-    
+
     # Financial sector OAS (G-SIB stress proxy)
     if "financial_oas_bps" in indicators:
         t = THRESHOLDS["contagion"]["financial_oas"]
@@ -395,7 +414,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
             t["ample"], t["thin"], t["breach"],
             lower_is_better=True,
         ))
-    
+
     # BTC-SPY correlation (crypto-equity contagion channel)
     if "btc_spy_correlation" in indicators:
         corr = indicators["btc_spy_correlation"]
@@ -454,7 +473,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
 
     if not scores:
         return 0.5, "NO_DATA"
-    
+
     score = sum(scores) / len(scores)
     return score, get_status(score)
 
@@ -471,7 +490,7 @@ def score_private_credit(indicators: dict) -> tuple[float, str]:
     Higher tightening = more stress = lower score.
     """
     scores = []
-    
+
     # C&I Lending Standards (net % tightening)
     # DRTSCILM: Large/mid firms, DRTSCIS: Small firms
     # Positive = tightening, Negative = easing
@@ -486,7 +505,7 @@ def score_private_credit(indicators: dict) -> tuple[float, str]:
             scores.append(0.5 - ((tightening - 20) / 20) * 0.3)
         else:
             scores.append(max(0.0, 0.2 - ((tightening - 40) / 40) * 0.2))
-    
+
     # HY spread as leveraged loan proxy
     if "hy_oas_bps" in indicators:
         hy_oas = indicators["hy_oas_bps"]
@@ -502,7 +521,7 @@ def score_private_credit(indicators: dict) -> tuple[float, str]:
             scores.append(0.25)
         else:
             scores.append(0.0)
-    
+
     # IG-HY ratio as credit stress indicator
     if "ig_oas_bps" in indicators and "hy_oas_bps" in indicators:
         ig_oas = indicators["ig_oas_bps"]
@@ -572,7 +591,7 @@ def calculate_mac(indicators: dict) -> dict:
     }
 
     # Calculate composite (equal weighted across 7 pillars)
-    all_scores = [liq_score, val_score, pos_score, vol_score, 
+    all_scores = [liq_score, val_score, pos_score, vol_score,
                   pol_score, con_score, pc_score]
     mac_score = sum(all_scores) / 7
 

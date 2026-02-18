@@ -48,7 +48,8 @@ HOLDOUT_SETS: dict[str, dict] = {
     "B": {
         "theme": "Systemic Credit / Banking",
         "thesis": (
-            "α is stable when the major banking and credit crises are removed. "
+            "α is stable when the major banking "
+            "and credit crises are removed. "
             "Tests whether α requires GFC-type events to be accurate."
         ),
         "held_out": [
@@ -100,7 +101,11 @@ HOLDOUT_SETS: dict[str, dict] = {
 }
 
 # Scenarios that never appear in any holdout set — stability anchors
-ANCHOR_SCENARIOS = {"dotcom_bottom_2002", "us_downgrade_2011", "repo_spike_2019"}
+ANCHOR_SCENARIOS = {
+    "dotcom_bottom_2002",
+    "us_downgrade_2011",
+    "repo_spike_2019",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -174,10 +179,6 @@ def run_thematic_holdout_validation(
         cal = validator.derive_calibration_factor()
         full_alpha = cal.optimal_factor
 
-    all_scenarios = {
-        s.name: (key, s)
-        for key, s in KNOWN_EVENTS.items()
-    }
     # Also index by scenario key for holdout lookup
     scenarios_by_key: dict[str, HistoricalScenario] = dict(KNOWN_EVENTS)
 
@@ -308,7 +309,10 @@ def diagnose_holdout_failure(
         r for r in report.holdout_results.values() if not r.passed
     ]
     if not failed:
-        findings.append("All holdout sets passed.  No diagnostic action required.")
+        findings.append(
+            "All holdout sets passed.  "
+            "No diagnostic action required."
+        )
         return findings
 
     # Case 1: Single holdout failure
@@ -318,10 +322,15 @@ def diagnose_holdout_failure(
             f"Case 1 — Single holdout failure: Set {r.holdout_key} "
             f"({r.theme}).  Δα={r.delta_alpha:.3f}, OOS MAE={r.oos_mae:.3f}."
         )
-        worst = max(r.oos_errors, key=r.oos_errors.get)
+        worst = max(
+            r.oos_errors,
+            key=lambda k: r.oos_errors[k],
+        )
         findings.append(
-            f"  Largest OOS error: {worst} (error={r.oos_errors[worst]:.3f}).  "
-            "Investigate data quality or declare structural outlier (§17)."
+            f"  Largest OOS error: {worst} "
+            f"(error={r.oos_errors[worst]:.3f}).  "
+            "Investigate data quality or "
+            "declare structural outlier (§17)."
         )
 
     # Case 2: Multiple failures with consistent direction
@@ -444,8 +453,14 @@ def format_holdout_report(report: ThematicHoldoutReport) -> str:
         status = "PASS" if passed else "FAIL"
         lines.append(f"  [{status}] {criterion}")
     lines.append("")
-    lines.append(f"  α range: {report.alpha_range:.3f} (threshold < {MAX_ALPHA_RANGE})")
-    lines.append(f"  Mean OOS MAE: {report.mean_oos_mae:.4f} (threshold < {MAX_MEAN_OOS_MAE})")
+    lines.append(
+        f"  α range: {report.alpha_range:.3f} "
+        f"(threshold < {MAX_ALPHA_RANGE})"
+    )
+    lines.append(
+        f"  Mean OOS MAE: {report.mean_oos_mae:.4f} "
+        f"(threshold < {MAX_MEAN_OOS_MAE})"
+    )
     overall = "PASS" if report.all_passed else "FAIL"
     lines.append(f"  Overall: {overall}")
     lines.append("")

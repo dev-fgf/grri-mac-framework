@@ -37,11 +37,18 @@ CRISIS_EVENTS = [
         start_date=datetime(1907, 10, 14),
         end_date=datetime(1908, 2, 28),
         affected_countries=["USA", "GBR", "FRA", "DEU", "ITA"],
-        expected_pillars_in_breach=["liquidity", "volatility", "policy", "contagion"],
+        expected_pillars_in_breach=[
+            "liquidity", "volatility",
+            "policy", "contagion",
+        ],
         expected_mac_range=(0.15, 0.35),
         severity="extreme",
-        description="Trust company runs, stock market crash (-50%), J.P. Morgan private bailout. "
-                    "No central bank existed. Gold reserves strained by 1906 SF earthquake.",
+        description=(
+            "Trust company runs, stock market crash "
+            "(-50%), J.P. Morgan private bailout. "
+            "No central bank existed. Gold reserves "
+            "strained by 1906 SF earthquake."
+        ),
         key_indicators={
             "call_money_rate_pct": 125,  # Spiked to 125% intraday
             "schwert_vol_pct": 45,  # ~45% annualised
@@ -58,8 +65,13 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity"],
         expected_mac_range=(0.45, 0.60),
         severity="moderate",
-        description="Mild recession following antitrust actions against Standard Oil. "
-                    "Market declined ~15%. Led to creation of Pujo Committee investigating money trusts.",
+        description=(
+            "Mild recession following antitrust "
+            "actions against Standard Oil. "
+            "Market declined ~15%. Led to creation "
+            "of Pujo Committee investigating "
+            "money trusts."
+        ),
         key_indicators={
             "call_money_rate_pct": 6,
             "schwert_vol_pct": 18,
@@ -75,11 +87,18 @@ CRISIS_EVENTS = [
         start_date=datetime(1914, 7, 31),
         end_date=datetime(1914, 12, 12),
         affected_countries=["USA", "GBR", "FRA", "DEU", "AUT"],
-        expected_pillars_in_breach=["liquidity", "contagion", "policy"],
+        expected_pillars_in_breach=[
+            "liquidity", "contagion", "policy",
+        ],
         expected_mac_range=(0.20, 0.40),
         severity="extreme",
-        description="NYSE closed for 4.5 months (Jul 31 - Dec 12). European gold demands, "
-                    "transatlantic cable system disrupted. Fed opened Nov 16 during crisis.",
+        description=(
+            "NYSE closed for 4.5 months "
+            "(Jul 31 - Dec 12). European gold "
+            "demands, transatlantic cable system "
+            "disrupted. Fed opened Nov 16 "
+            "during crisis."
+        ),
         key_indicators={
             "exchange_closed_days": 137,
             "gold_outflows": "severe",
@@ -95,8 +114,13 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["policy", "valuation"],
         expected_mac_range=(0.30, 0.50),
         severity="high",
-        description="Sharpest deflation in US history (-18% CPI). Fed raised discount rate to 7%. "
-                    "DJIA fell 47%. Agricultural sector devastated. Quick V-shaped recovery.",
+        description=(
+            "Sharpest deflation in US history "
+            "(-18% CPI). Fed raised discount "
+            "rate to 7%. DJIA fell 47%. "
+            "Agricultural sector devastated. "
+            "Quick V-shaped recovery."
+        ),
         key_indicators={
             "fed_discount_rate_pct": 7.0,
             "cpi_change_pct": -18,
@@ -112,8 +136,12 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "positioning", "liquidity"],
         expected_mac_range=(0.15, 0.35),
         severity="extreme",
-        description="Black Thursday / Black Tuesday. DJIA fell 25% in 2 days. "
-                    "Extreme margin leverage. NYSE margin debt at record levels.",
+        description=(
+            "Black Thursday / Black Tuesday. "
+            "DJIA fell 25% in 2 days. "
+            "Extreme margin leverage. NYSE "
+            "margin debt at record levels."
+        ),
         key_indicators={
             "schwert_vol_pct": 40,
             "djia_decline_pct": -40,  # Through Nov
@@ -131,12 +159,19 @@ CRISIS_EVENTS = [
         start_date=datetime(1930, 10, 1),
         end_date=datetime(1931, 10, 31),
         affected_countries=["USA", "GBR", "DEU", "AUT"],
-        expected_pillars_in_breach=["liquidity", "contagion", "policy", "valuation"],
+        expected_pillars_in_breach=[
+            "liquidity", "contagion",
+            "policy", "valuation",
+        ],
         expected_mac_range=(0.10, 0.25),
         severity="extreme",
-        description="First wave of US bank failures. 1,352 banks failed in 1930. "
-                    "Austrian Creditanstalt collapse (May 1931) triggered European crisis. "
-                    "UK abandoned gold standard (Sep 1931).",
+        description=(
+            "First wave of US bank failures. "
+            "1,352 banks failed in 1930. "
+            "Austrian Creditanstalt collapse "
+            "(May 1931) triggered European crisis. "
+            "UK abandoned gold standard (Sep 1931)."
+        ),
         key_indicators={
             "bank_failures": 1352,
             "baa_aaa_spread_bps": 300,
@@ -152,9 +187,13 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "policy", "valuation"],
         expected_mac_range=(0.10, 0.25),
         severity="extreme",
-        description="National bank holiday declared March 6-13. Emergency Banking Act. "
-                    "US left gold standard. DJIA had fallen 89% from 1929 peak. "
-                    "Glass-Steagall Act passed June 1933.",
+        description=(
+            "National bank holiday declared "
+            "March 6-13. Emergency Banking Act. "
+            "US left gold standard. DJIA had "
+            "fallen 89% from 1929 peak. "
+            "Glass-Steagall Act passed June 1933."
+        ),
         key_indicators={
             "banks_closed": 4004,
             "djia_from_peak_pct": -89,
@@ -170,8 +209,12 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "policy"],
         expected_mac_range=(0.30, 0.50),
         severity="high",
-        description="DJIA fell 49%. Fed doubled reserve requirements (1936-37), "
-                    "fiscal tightening. Third worst recession in 20th century.",
+        description=(
+            "DJIA fell 49%. Fed doubled reserve "
+            "requirements (1936-37), fiscal "
+            "tightening. Third worst recession "
+            "in 20th century."
+        ),
         key_indicators={
             "schwert_vol_pct": 35,
             "djia_decline_pct": -49,
@@ -207,8 +250,12 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["policy"],
         expected_mac_range=(0.50, 0.65),
         severity="moderate",
-        description="Defense spending cuts post-Korea. Fed-Treasury Accord (1951) "
-                    "gave Fed independence. First post-Accord recession test.",
+        description=(
+            "Defense spending cuts post-Korea. "
+            "Fed-Treasury Accord (1951) "
+            "gave Fed independence. First "
+            "post-Accord recession test."
+        ),
         key_indicators={
             "sp500_decline_pct": -15,
             "fed_independent": True,
@@ -223,8 +270,12 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility"],
         expected_mac_range=(0.45, 0.60),
         severity="moderate",
-        description="Eisenhower recession. S&P fell 22%. Sputnik (Oct 57) added "
-                    "geopolitical anxiety. Fed cut rates from 3.5% to 1.75%.",
+        description=(
+            "Eisenhower recession. S&P fell 22%. "
+            "Sputnik (Oct 57) added geopolitical "
+            "anxiety. Fed cut rates from 3.5% "
+            "to 1.75%."
+        ),
         key_indicators={
             "sp500_decline_pct": -22,
             "fed_funds_pct": 3.5,
@@ -243,7 +294,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "positioning"],
         expected_mac_range=(0.40, 0.55),
         severity="moderate",
-        description="Fastest market decline since 1929, -22.5% in 3 months. Steel price confrontation with JFK.",
+        description=(
+            "Fastest market decline since 1929, "
+            "-22.5% in 3 months. Steel price "
+            "confrontation with JFK."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 74,
             "sp500_decline_pct": -22.5,
@@ -258,7 +313,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "policy"],
         expected_mac_range=(0.40, 0.55),
         severity="moderate",
-        description="Fed's first inflation fight since WWII. Severe disintermediation, savings outflows from thrifts.",
+        description=(
+            "Fed's first inflation fight since "
+            "WWII. Severe disintermediation, "
+            "savings outflows from thrifts."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 52,
             "fed_funds_pct": 5.75,
@@ -274,7 +333,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "contagion"],
         expected_mac_range=(0.40, 0.55),
         severity="high",
-        description="Largest US bankruptcy to date ($7B). Commercial paper market freezes. Fed opens discount window.",
+        description=(
+            "Largest US bankruptcy to date ($7B). "
+            "Commercial paper market freezes. "
+            "Fed opens discount window."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 77,
             "cp_market": "frozen",
@@ -294,7 +357,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["policy", "contagion"],
         expected_mac_range=(0.45, 0.60),
         severity="moderate",
-        description="End of gold convertibility, wage-price controls, 10% import surcharge. Bretton Woods collapses.",
+        description=(
+            "End of gold convertibility, "
+            "wage-price controls, 10% import "
+            "surcharge. Bretton Woods collapses."
+        ),
         key_indicators={
             "gold_price_move_pct": 8.5,
             "dollar_devaluation_pct": 7.9,
@@ -306,10 +373,17 @@ CRISIS_EVENTS = [
         start_date=datetime(1973, 10, 17),
         end_date=datetime(1974, 3, 18),
         affected_countries=["USA", "GBR", "DEU", "JPN", "FRA", "ITA", "CAN"],
-        expected_pillars_in_breach=["volatility", "contagion", "policy"],
+        expected_pillars_in_breach=[
+            "volatility", "contagion", "policy",
+        ],
         expected_mac_range=(0.35, 0.50),
         severity="high",
-        description="OPEC oil embargo quadruples prices. Stagflation begins. Market believes Fed cannot solve both inflation and recession.",
+        description=(
+            "OPEC oil embargo quadruples prices. "
+            "Stagflation begins. Market believes "
+            "Fed cannot solve both inflation "
+            "and recession."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 81,
             "oil_price_move_pct": 300,
@@ -322,10 +396,17 @@ CRISIS_EVENTS = [
         start_date=datetime(1974, 9, 1),
         end_date=datetime(1974, 12, 6),
         affected_countries=["USA", "GBR", "DEU"],
-        expected_pillars_in_breach=["volatility", "liquidity", "policy"],
+        expected_pillars_in_breach=[
+            "volatility", "liquidity", "policy",
+        ],
         expected_mac_range=(0.30, 0.45),
         severity="extreme",
-        description="S&P falls 48% from peak. Worst recession since Depression. Franklin National Bank fails. Faith in Fed at nadir.",
+        description=(
+            "S&P falls 48% from peak. Worst "
+            "recession since Depression. Franklin "
+            "National Bank fails. Faith in Fed "
+            "at nadir."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 174,  # Extreme credit stress
             "sp500_decline_pct": -48,
@@ -342,7 +423,12 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["policy", "liquidity"],
         expected_mac_range=(0.40, 0.55),
         severity="high",
-        description="Volcker raises Fed Funds to 20%. Intentional recession to break inflation. Markets question Fed resolve.",
+        description=(
+            "Volcker raises Fed Funds to 20%. "
+            "Intentional recession to break "
+            "inflation. Markets question "
+            "Fed resolve."
+        ),
         key_indicators={
             "fed_funds_pct": 20.0,
             "prime_rate_pct": 21.5,
@@ -355,10 +441,16 @@ CRISIS_EVENTS = [
         start_date=datetime(1981, 7, 1),
         end_date=datetime(1982, 11, 30),
         affected_countries=["USA", "CAN", "GBR", "DEU"],
-        expected_pillars_in_breach=["liquidity", "policy", "contagion"],
+        expected_pillars_in_breach=[
+            "liquidity", "policy", "contagion",
+        ],
         expected_mac_range=(0.35, 0.50),
         severity="high",
-        description="Worst unemployment since Depression (10.8%). Penn Square Bank fails. Continental Illinois crisis begins.",
+        description=(
+            "Worst unemployment since Depression "
+            "(10.8%). Penn Square Bank fails. "
+            "Continental Illinois crisis begins."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 150,
             "unemployment_pct": 10.8,
@@ -377,7 +469,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "contagion"],
         expected_mac_range=(0.45, 0.55),
         severity="moderate",
-        description="7th largest US bank fails. FDIC introduces TBTF doctrine. First modern systemic rescue.",
+        description=(
+            "7th largest US bank fails. FDIC "
+            "introduces TBTF doctrine. First "
+            "modern systemic rescue."
+        ),
         key_indicators={
             "baa_aaa_spread_bps": 120,
             "fdic_exposure_bn": 4.5,
@@ -389,10 +485,16 @@ CRISIS_EVENTS = [
         start_date=datetime(1987, 10, 19),
         end_date=datetime(1987, 12, 31),
         affected_countries=["USA", "GBR", "DEU", "JPN", "HKG", "AUS"],
-        expected_pillars_in_breach=["volatility", "liquidity", "positioning"],
+        expected_pillars_in_breach=[
+            "volatility", "liquidity", "positioning",
+        ],
         expected_mac_range=(0.30, 0.45),
         severity="extreme",
-        description="Largest one-day percentage decline in history (-22.6%). Greenspan provides immediate liquidity.",
+        description=(
+            "Largest one-day percentage decline "
+            "in history (-22.6%). Greenspan "
+            "provides immediate liquidity."
+        ),
         key_indicators={
             "sp500_one_day_pct": -22.6,
             "vxo": 150,  # Implied volatility spike
@@ -411,7 +513,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["contagion", "volatility"],
         expected_mac_range=(0.35, 0.55),
         severity="high",
-        description="Thai baht devaluation triggers Asian currency crisis, contagion to global EM",
+        description=(
+            "Thai baht devaluation triggers "
+            "Asian currency crisis, contagion "
+            "to global EM"
+        ),
         key_indicators={
             "vix": 38,  # Oct 1997 peak
             "ted_spread_bps": 50,
@@ -424,10 +530,17 @@ CRISIS_EVENTS = [
         start_date=datetime(1998, 8, 17),
         end_date=datetime(1998, 10, 31),
         affected_countries=["RUS", "USA", "GBR", "DEU"],
-        expected_pillars_in_breach=["liquidity", "volatility", "contagion", "positioning"],
+        expected_pillars_in_breach=[
+            "liquidity", "volatility",
+            "contagion", "positioning",
+        ],
         expected_mac_range=(0.25, 0.45),
         severity="extreme",
-        description="Russian debt default triggers LTCM near-collapse, Fed orchestrates bailout",
+        description=(
+            "Russian debt default triggers LTCM "
+            "near-collapse, Fed orchestrates "
+            "bailout"
+        ),
         key_indicators={
             "vix": 45,  # Oct 8, 1998 peak
             "ted_spread_bps": 120,  # Severe funding stress
@@ -459,7 +572,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "policy"],
         expected_mac_range=(0.35, 0.50),
         severity="high",
-        description="Terrorist attacks close markets, Fed provides massive liquidity",
+        description=(
+            "Terrorist attacks close markets, "
+            "Fed provides massive liquidity"
+        ),
         key_indicators={
             "vix": 43,  # Sep 21 peak after reopening
             "ted_spread_bps": 65,
@@ -475,7 +591,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["valuation", "volatility"],
         expected_mac_range=(0.35, 0.50),
         severity="high",
-        description="Enron and WorldCom bankruptcies, market reaches post-dot-com lows",
+        description=(
+            "Enron and WorldCom bankruptcies, "
+            "market reaches post-dot-com lows"
+        ),
         key_indicators={
             "vix": 45,  # July/Oct 2002 peaks
             "ig_oas": 280,
@@ -494,7 +613,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["valuation", "positioning"],
         expected_mac_range=(0.50, 0.70),
         severity="moderate",
-        description="Credit spreads compressed to historic lows, housing bubble peak",
+        description=(
+            "Credit spreads compressed to "
+            "historic lows, housing bubble peak"
+        ),
         key_indicators={
             "ig_oas": 60,  # Historic low in 2007
             "hy_oas": 250,  # Compressed
@@ -510,7 +632,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "valuation"],
         expected_mac_range=(0.40, 0.60),
         severity="high",
-        description="BNP Paribas freezes redemptions, subprime contagion begins",
+        description=(
+            "BNP Paribas freezes redemptions, "
+            "subprime contagion begins"
+        ),
         key_indicators={
             "libor_ois_spread": 80,  # Spiked from 10 bps
             "ig_oas": 120,  # Starting to widen
@@ -525,7 +650,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "valuation", "volatility"],
         expected_mac_range=(0.30, 0.50),
         severity="high",
-        description="Bear Stearns fails, Fed facilitates JPMorgan acquisition",
+        description=(
+            "Bear Stearns fails, Fed facilitates "
+            "JPMorgan acquisition"
+        ),
         key_indicators={
             "libor_ois_spread": 120,
             "vix": 32,
@@ -538,10 +666,17 @@ CRISIS_EVENTS = [
         start_date=datetime(2008, 9, 15),
         end_date=datetime(2009, 3, 9),
         affected_countries=["USA", "GBR", "DEU", "FRA", "ITA", "JPN", "CAN"],
-        expected_pillars_in_breach=["liquidity", "valuation", "positioning", "volatility", "contagion"],
+        expected_pillars_in_breach=[
+            "liquidity", "valuation",
+            "positioning", "volatility",
+            "contagion",
+        ],
         expected_mac_range=(0.10, 0.30),
         severity="extreme",
-        description="Lehman bankruptcy, systemic crisis, markets freeze globally",
+        description=(
+            "Lehman bankruptcy, systemic crisis, "
+            "markets freeze globally"
+        ),
         key_indicators={
             "libor_ois_spread": 364,  # Peak October 2008
             "vix": 89,  # All-time high
@@ -559,7 +694,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "positioning"],
         expected_mac_range=(0.45, 0.55),
         severity="moderate",
-        description="Intraday 9% S&P 500 decline, high-frequency trading breakdown",
+        description=(
+            "Intraday 9% S&P 500 decline, "
+            "high-frequency trading breakdown"
+        ),
         key_indicators={
             "vix": 40,  # Intraday spike
         }
@@ -573,7 +711,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["valuation", "contagion"],
         expected_mac_range=(0.35, 0.55),
         severity="high",
-        description="Periphery sovereign spreads spike, TARGET2 imbalances peak, Draghi 'whatever it takes'",
+        description=(
+            "Periphery sovereign spreads spike, "
+            "TARGET2 imbalances peak, Draghi "
+            "'whatever it takes'"
+        ),
         key_indicators={
             "target2_imbalances": 1000,  # EUR billions
             "italian_10y_spread": 550,  # vs Bunds
@@ -603,7 +745,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "contagion", "policy"],
         expected_mac_range=(0.45, 0.60),
         severity="moderate",
-        description="Fed signals QE tapering, EM capital flight, 'Fragile Five' under pressure",
+        description=(
+            "Fed signals QE tapering, EM capital "
+            "flight, 'Fragile Five' under pressure"
+        ),
         key_indicators={
             "em_currency_depreciation": 15,  # Percent
             "cross_border_outflows": -110,  # Billions
@@ -618,7 +763,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["volatility", "positioning"],
         expected_mac_range=(0.45, 0.60),
         severity="moderate",
-        description="PBOC devalues yuan, triggers global equity selloff, commodity rout",
+        description=(
+            "PBOC devalues yuan, triggers global "
+            "equity selloff, commodity rout"
+        ),
         key_indicators={
             "vix": 40,
             "cnh_depreciation": 3,  # Percent
@@ -633,7 +781,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["policy", "volatility", "positioning"],
         expected_mac_range=(0.40, 0.60),
         severity="moderate",
-        description="Fed tightening + QT, S&P 500 down 20%, Christmas Eve low, Powell pivots",
+        description=(
+            "Fed tightening + QT, S&P 500 down "
+            "20%, Christmas Eve low, Powell pivots"
+        ),
         key_indicators={
             "vix": 36,
             "fed_funds": 2.5,  # Peak tightening
@@ -659,11 +810,22 @@ CRISIS_EVENTS = [
         name="COVID-19 Pandemic",
         start_date=datetime(2020, 3, 9),
         end_date=datetime(2020, 3, 23),
-        affected_countries=["USA", "GBR", "DEU", "FRA", "ITA", "JPN", "CHN", "all G20"],
-        expected_pillars_in_breach=["liquidity", "valuation", "positioning", "volatility", "contagion"],
+        affected_countries=[
+            "USA", "GBR", "DEU", "FRA",
+            "ITA", "JPN", "CHN", "all G20",
+        ],
+        expected_pillars_in_breach=[
+            "liquidity", "valuation",
+            "positioning", "volatility",
+            "contagion",
+        ],
         expected_mac_range=(0.10, 0.25),
         severity="extreme",
-        description="Global pandemic, fastest bear market ever, all asset class selloff, Fed unlimited QE",
+        description=(
+            "Global pandemic, fastest bear market "
+            "ever, all asset class selloff, "
+            "Fed unlimited QE"
+        ),
         key_indicators={
             "vix": 82,  # Second-highest ever
             "cp_spread": 120,
@@ -680,7 +842,10 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["policy", "valuation", "volatility"],
         expected_mac_range=(0.35, 0.55),
         severity="high",
-        description="Mini-budget chaos, gilt yields spike, BoE intervenes, LDI crisis",
+        description=(
+            "Mini-budget chaos, gilt yields spike, "
+            "BoE intervenes, LDI crisis"
+        ),
         key_indicators={
             "uk_30y_gilt_yield": 5.1,  # Spike
             "gilt_yield_one_day_change": 100,  # Basis points
@@ -695,7 +860,11 @@ CRISIS_EVENTS = [
         expected_pillars_in_breach=["liquidity", "policy", "valuation"],
         expected_mac_range=(0.40, 0.55),
         severity="high",
-        description="Silicon Valley Bank fails, Signature Bank fails, Credit Suisse absorbed",
+        description=(
+            "Silicon Valley Bank fails, "
+            "Signature Bank fails, "
+            "Credit Suisse absorbed"
+        ),
         key_indicators={
             "bank_stock_decline": -30,  # Percent regional banks
             "2y_treasury": 3.8,  # Fell sharply on flight to quality
@@ -707,10 +876,17 @@ CRISIS_EVENTS = [
         start_date=datetime(2024, 8, 5),
         end_date=datetime(2024, 8, 12),
         affected_countries=["JPN", "USA", "global"],
-        expected_pillars_in_breach=["positioning", "volatility", "contagion"],
+        expected_pillars_in_breach=[
+            "positioning", "volatility",
+            "contagion",
+        ],
         expected_mac_range=(0.45, 0.60),
         severity="moderate",
-        description="BoJ hikes, yen surges 3% in days, unwinds global carry trades, Nikkei -12% single day",
+        description=(
+            "BoJ hikes, yen surges 3% in days, "
+            "unwinds global carry trades, "
+            "Nikkei -12% single day"
+        ),
         key_indicators={
             "vix": 65,  # Intraday spike
             "usdjpy": -3,  # Percent move
@@ -736,7 +912,10 @@ def get_crisis_for_date(date: datetime) -> Optional[CrisisEvent]:
     return None
 
 
-def get_crises_in_range(start_date: datetime, end_date: datetime) -> List[CrisisEvent]:
+def get_crises_in_range(
+    start_date: datetime,
+    end_date: datetime,
+) -> List[CrisisEvent]:
     """
     Get all crises that overlap with a date range.
 

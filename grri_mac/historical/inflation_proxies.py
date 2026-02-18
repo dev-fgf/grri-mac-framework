@@ -14,7 +14,6 @@ Reference: MAC Methodology v6.0 §4.5.3
 """
 
 import os
-import csv
 import logging
 from datetime import datetime
 from typing import Optional
@@ -211,8 +210,6 @@ def _get_yoy_from_index(
     Returns:
         YoY percentage change, or None if data unavailable
     """
-    from datetime import timedelta
-
     try:
         current = fred_client.get_series_value(series_id, date)
         year_ago_date = datetime(date.year - 1, date.month, date.day)

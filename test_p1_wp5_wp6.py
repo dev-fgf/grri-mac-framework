@@ -10,7 +10,6 @@ Covers:
 """
 
 import unittest
-import statistics
 from datetime import datetime
 
 # ---------------------------------------------------------------------------
@@ -24,7 +23,6 @@ from grri_mac.backtest.scenarios import (
 )
 from grri_mac.backtest.crisis_severity_rubric import (
     CSRInput,
-    CSRResult,
     MarketDysfunction,
     PolicyResponse,
     ContagionBreadth,
@@ -34,7 +32,6 @@ from grri_mac.backtest.crisis_severity_rubric import (
     score_market_dysfunction,
     score_policy_response,
     score_contagion_breadth,
-    SEVERITY_CSR_RANGES,
     validate_csr_independence,
 )
 from grri_mac.backtest.calibration import CalibrationValidator
@@ -43,10 +40,6 @@ from grri_mac.backtest.thematic_holdout import (
     ANCHOR_SCENARIOS,
     HoldoutResult,
     ThematicHoldoutReport,
-    MAX_DELTA_ALPHA,
-    MAX_OOS_MAE,
-    MAX_ALPHA_RANGE,
-    MAX_MEAN_OOS_MAE,
     run_thematic_holdout_validation,
     diagnose_holdout_failure,
     format_holdout_report,
@@ -78,10 +71,14 @@ class TestCSRDimensionScoring(unittest.TestCase):
 
     # -- Dimension 2: Market dysfunction --
     def test_dysfunction_none(self):
-        self.assertEqual(score_market_dysfunction(MarketDysfunction.NONE), 0.90)
+        val = score_market_dysfunction(MarketDysfunction.NONE)
+        self.assertEqual(val, 0.90)
 
     def test_dysfunction_extreme(self):
-        self.assertEqual(score_market_dysfunction(MarketDysfunction.EXTREME), 0.10)
+        val = score_market_dysfunction(
+            MarketDysfunction.EXTREME,
+        )
+        self.assertEqual(val, 0.10)
 
     # -- Dimension 3: Policy response --
     def test_policy_none(self):
@@ -92,10 +89,16 @@ class TestCSRDimensionScoring(unittest.TestCase):
 
     # -- Dimension 4: Contagion breadth --
     def test_contagion_single(self):
-        self.assertEqual(score_contagion_breadth(ContagionBreadth.SINGLE), 0.85)
+        val = score_contagion_breadth(
+            ContagionBreadth.SINGLE,
+        )
+        self.assertEqual(val, 0.85)
 
     def test_contagion_global(self):
-        self.assertEqual(score_contagion_breadth(ContagionBreadth.GLOBAL_SYSTEMIC), 0.10)
+        val = score_contagion_breadth(
+            ContagionBreadth.GLOBAL_SYSTEMIC,
+        )
+        self.assertEqual(val, 0.10)
 
     # -- Dimension 5: Duration --
     def test_duration_flash(self):
@@ -197,7 +200,11 @@ class TestCSRScenarioData(unittest.TestCase):
                 scenario.csr.composite,
                 expected_csr,
                 places=2,
-                msg=f"{key}: CSR composite {scenario.csr.composite:.3f} != {expected_csr}",
+                msg=(
+                    f"{key}: CSR composite "
+                    f"{scenario.csr.composite:.3f}"
+                    f" != {expected_csr}"
+                ),
             )
 
     def test_severity_labels_match_v6(self):
@@ -205,7 +212,10 @@ class TestCSRScenarioData(unittest.TestCase):
         extreme = ["ltcm_crisis_1998", "lehman_2008", "covid_crash_2020"]
         for key in extreme:
             csr = KNOWN_EVENTS[key].csr.composite
-            self.assertLess(csr, 0.40, f"{key} should be Extreme (CSR={csr:.2f})")
+            self.assertLess(
+                csr, 0.40,
+                f"{key} should be Extreme (CSR={csr:.2f})",
+            )
 
         moderate = [
             "dotcom_peak_2000", "flash_crash_2010", "volmageddon_2018",
@@ -213,7 +223,10 @@ class TestCSRScenarioData(unittest.TestCase):
         ]
         for key in moderate:
             csr = KNOWN_EVENTS[key].csr.composite
-            self.assertGreaterEqual(csr, 0.55, f"{key} should be Moderate (CSR={csr:.2f})")
+            self.assertGreaterEqual(
+                csr, 0.55,
+                f"{key} Moderate (CSR={csr:.2f})",
+            )
 
     def test_csr_dimension_range(self):
         """All CSR sub-scores should be in [0.10, 0.90]."""
@@ -233,7 +246,7 @@ class TestCalibrationCSRAnchoring(unittest.TestCase):
     """Test that calibration uses CSR targets correctly."""
 
     def test_target_score_uses_csr(self):
-        """_target_score should prefer CSR composite over expected_mac_range."""
+        """_target_score prefers CSR over expected_mac_range."""
         scenario = KNOWN_EVENTS["lehman_2008"]
         target = CalibrationValidator._target_score(scenario)
         self.assertAlmostEqual(target, 0.10, places=2)

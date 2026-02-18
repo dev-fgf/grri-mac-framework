@@ -8,21 +8,26 @@ Tests:
   WP-12: Inflation proxy chain
 """
 
-import math
 import sys
 import os
 from datetime import datetime
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 
-from grri_mac.pillars.policy import PolicyPillar, PolicyIndicators, PolicyScores
-from grri_mac.pillars.volatility import VolatilityPillar, VolatilityIndicators
-from grri_mac.pillars.private_credit_decorrelation import (
+from grri_mac.pillars.policy import (  # noqa: E402
+    PolicyPillar, PolicyIndicators,
+)
+from grri_mac.pillars.volatility import (  # noqa: E402
+    VolatilityPillar, VolatilityIndicators,
+)
+from grri_mac.pillars.private_credit_decorrelation import (  # noqa: E402
     PrivateCreditDecorrelator,
     DecorrelationTimeSeries,
     blend_decorrelated_with_sloos,
 )
-from grri_mac.historical.inflation_proxies import (
+from grri_mac.historical.inflation_proxies import (  # noqa: E402
     get_inflation_for_date,
     get_inflation_proxy_chain_name,
 )
@@ -52,9 +57,16 @@ class TestPolicyBindingConstraint:
         )
         scores = self.pillar.calculate(indicators)
         # Inflation score should be very low (~0.0), binding via min()
-        assert scores.composite_method == "min", f"Expected min, got {scores.composite_method}"
-        assert scores.composite < 0.2, f"Expected < 0.2, got {scores.composite:.3f}"
-        print(f"  [PASS] High dispersion → min() binds: composite={scores.composite:.3f}")
+        assert scores.composite_method == "min", (
+            f"Expected min, got {scores.composite_method}"
+        )
+        assert scores.composite < 0.2, (
+            f"Expected < 0.2, got {scores.composite:.3f}"
+        )
+        print(
+            "  [PASS] High dispersion -> min() binds: "
+            f"composite={scores.composite:.3f}"
+        )
 
     def test_weighted_avg_low_dispersion(self):
         """When all dimensions similarly tight, weighted average applies."""
@@ -69,15 +81,26 @@ class TestPolicyBindingConstraint:
         assert scores.composite_method == "weighted_avg", (
             f"Expected weighted_avg, got {scores.composite_method}"
         )
-        assert 0.4 < scores.composite < 0.8, f"Expected 0.4-0.8, got {scores.composite:.3f}"
-        print(f"  [PASS] Low dispersion → weighted avg: composite={scores.composite:.3f}")
+        assert 0.4 < scores.composite < 0.8, (
+            f"Expected 0.4-0.8, got {scores.composite:.3f}"
+        )
+        print(
+            "  [PASS] Low dispersion -> weighted avg: "
+            f"composite={scores.composite:.3f}"
+        )
 
     def test_asymmetric_inflation_above(self):
         """Above-target inflation should be penalised more heavily."""
         above = self.pillar.score_inflation(150)   # +150 bps above target
         below = self.pillar.score_inflation(-150)  # −150 bps below target
-        assert above < below, f"Above ({above:.3f}) should score worse than below ({below:.3f})"
-        print(f"  [PASS] Asymmetric inflation: above={above:.3f} < below={below:.3f}")
+        assert above < below, (
+            f"Above ({above:.3f}) should score worse "
+            f"than below ({below:.3f})"
+        )
+        print(
+            f"  [PASS] Asymmetric inflation: "
+            f"above={above:.3f} < below={below:.3f}"
+        )
 
     def test_era_cap_pre_fed(self):
         """Pre-Fed era should cap policy at 0.30."""
@@ -87,7 +110,9 @@ class TestPolicyBindingConstraint:
             observation_date=datetime(1910, 1, 1),
         )
         scores = self.pillar.calculate(indicators)
-        assert scores.composite <= 0.30 + 0.01, f"Pre-Fed cap: {scores.composite:.3f} > 0.30"
+        assert scores.composite <= 0.30 + 0.01, (
+            f"Pre-Fed cap: {scores.composite:.3f} > 0.30"
+        )
         assert scores.era_cap_applied == 0.30
         print(f"  [PASS] Pre-Fed era cap: composite={scores.composite:.3f}")
 
@@ -99,7 +124,9 @@ class TestPolicyBindingConstraint:
             observation_date=datetime(1925, 6, 1),
         )
         scores = self.pillar.calculate(indicators)
-        assert scores.composite <= 0.55 + 0.01, f"Early Fed cap: {scores.composite:.3f} > 0.55"
+        assert scores.composite <= 0.55 + 0.01, (
+            f"Early Fed cap: {scores.composite:.3f} > 0.55"
+        )
         print(f"  [PASS] Early Fed era cap: composite={scores.composite:.3f}")
 
     def test_era_cap_bretton_woods(self):
@@ -110,8 +137,13 @@ class TestPolicyBindingConstraint:
             observation_date=datetime(1960, 6, 1),
         )
         scores = self.pillar.calculate(indicators)
-        assert scores.composite <= 0.65 + 0.01, f"BW cap: {scores.composite:.3f} > 0.65"
-        print(f"  [PASS] Bretton Woods era cap: composite={scores.composite:.3f}")
+        assert scores.composite <= 0.65 + 0.01, (
+            f"BW cap: {scores.composite:.3f} > 0.65"
+        )
+        print(
+            "  [PASS] Bretton Woods era cap: "
+            f"composite={scores.composite:.3f}"
+        )
 
     def test_gold_constraint_severe(self):
         """Gold reserve ratio < 40% should severely constrain."""
@@ -122,8 +154,13 @@ class TestPolicyBindingConstraint:
             gold_reserve_ratio=0.35,
         )
         scores = self.pillar.calculate(indicators)
-        assert scores.composite <= 0.15 + 0.01, f"Gold constraint: {scores.composite:.3f}"
-        print(f"  [PASS] Gold constraint (severe): composite={scores.composite:.3f}")
+        assert scores.composite <= 0.15 + 0.01, (
+            f"Gold constraint: {scores.composite:.3f}"
+        )
+        print(
+            "  [PASS] Gold constraint (severe): "
+            f"composite={scores.composite:.3f}"
+        )
 
     def test_covid_2020_approximate(self):
         """COVID 2020: rate room ~0, huge B/S → should yield ~0.25."""
@@ -135,7 +172,9 @@ class TestPolicyBindingConstraint:
         )
         scores = self.pillar.calculate(indicators)
         # Expect in neighborhood of 0.25 (policy room ~0 should bind)
-        assert scores.composite < 0.35, f"COVID: expected < 0.35, got {scores.composite:.3f}"
+        assert scores.composite < 0.35, (
+            f"COVID: expected < 0.35, got {scores.composite:.3f}"
+        )
         print(f"  [PASS] COVID 2020 proxy: composite={scores.composite:.3f}")
 
     def test_svb_2023_approximate(self):
@@ -148,7 +187,9 @@ class TestPolicyBindingConstraint:
         )
         scores = self.pillar.calculate(indicators)
         # Inflation should bind → composite low
-        assert scores.composite < 0.30, f"SVB: expected < 0.30, got {scores.composite:.3f}"
+        assert scores.composite < 0.30, (
+            f"SVB: expected < 0.30, got {scores.composite:.3f}"
+        )
         print(f"  [PASS] SVB 2023 proxy: composite={scores.composite:.3f}")
 
     def run_all(self):
@@ -181,7 +222,9 @@ class TestVRPEstimation:
         random.seed(42)
         vix_hist = [18 + random.gauss(0, 0.5) for _ in range(252)]
         vrp = self.pillar.calculate_vrp(vix_hist)
-        assert vrp.vrp_multiplier < 1.15, f"Stable VRP too high: {vrp.vrp_multiplier:.3f}"
+        assert vrp.vrp_multiplier < 1.15, (
+            f"Stable VRP too high: {vrp.vrp_multiplier:.3f}"
+        )
         assert vrp.data_quality == "good"
         print(f"  [PASS] Stable regime VRP: {vrp.vrp_multiplier:.3f}")
 
@@ -192,8 +235,12 @@ class TestVRPEstimation:
         # Simulate volatile VIX with large daily swings
         vix_hist = [25 + random.gauss(0, 5.0) for _ in range(252)]
         vrp = self.pillar.calculate_vrp(vix_hist)
-        assert vrp.vrp_multiplier > 1.10, f"Volatile VRP too low: {vrp.vrp_multiplier:.3f}"
-        assert vrp.vrp_multiplier <= 1.55, f"VRP exceeded ceiling: {vrp.vrp_multiplier:.3f}"
+        assert vrp.vrp_multiplier > 1.10, (
+            f"Volatile VRP too low: {vrp.vrp_multiplier:.3f}"
+        )
+        assert vrp.vrp_multiplier <= 1.55, (
+            f"VRP exceeded ceiling: {vrp.vrp_multiplier:.3f}"
+        )
         print(f"  [PASS] Volatile regime VRP: {vrp.vrp_multiplier:.3f}")
 
     def test_vrp_floor_ceiling(self):
@@ -209,13 +256,17 @@ class TestVRPEstimation:
         vix_wild = [30 + random.gauss(0, 20.0) for _ in range(252)]
         vrp_high = self.pillar.calculate_vrp(vix_wild)
         assert vrp_high.vrp_multiplier <= 1.55
-        print(f"  [PASS] VRP bounds: [{vrp_low.vrp_multiplier:.3f}, {vrp_high.vrp_multiplier:.3f}]")
+        print(
+            "  [PASS] VRP bounds: "
+            f"[{vrp_low.vrp_multiplier:.3f}, "
+            f"{vrp_high.vrp_multiplier:.3f}]"
+        )
 
     def test_vrp_insufficient_data(self):
         """Too little data → insufficient quality."""
         vrp = self.pillar.calculate_vrp([18, 19, 20])
         assert vrp.data_quality == "insufficient"
-        print(f"  [PASS] Insufficient data handled correctly")
+        print("  [PASS] Insufficient data handled correctly")
 
     def test_dual_computation(self):
         """Calculate should produce both with- and without-VRP scores."""
@@ -228,10 +279,16 @@ class TestVRPEstimation:
         )
         scores = self.pillar.calculate(indicators, apply_vrp=True)
         assert scores.vrp is not None
-        assert scores.vrp.score_without_vrp != 0.5 or scores.vrp.score_with_vrp != 0.5
-        print(f"  [PASS] Dual computation: without={scores.vrp.score_without_vrp:.3f}, "
-              f"with={scores.vrp.score_with_vrp:.3f}, "
-              f"divergence={scores.vrp.divergence:.3f}")
+        assert (
+            scores.vrp.score_without_vrp != 0.5
+            or scores.vrp.score_with_vrp != 0.5
+        )
+        print(
+            "  [PASS] Dual computation: "
+            f"without={scores.vrp.score_without_vrp:.3f}, "
+            f"with={scores.vrp.score_with_vrp:.3f}, "
+            f"divergence={scores.vrp.divergence:.3f}"
+        )
 
     def run_all(self):
         self.setup()
@@ -288,22 +345,32 @@ class TestDecorrelation:
         assert result.decorrelated_score is not None
         # Should be roughly neutral (0.5-0.9)
         assert result.decorrelated_score > 0.3, (
-            f"False alarm: score {result.decorrelated_score:.3f} with no signal"
+            "False alarm: score "
+            f"{result.decorrelated_score:.3f} with no signal"
         )
-        print(f"  [PASS] No PC signal → neutral: score={result.decorrelated_score:.3f}, "
-              f"z={result.ewma_z:.3f}")
+        print(
+            "  [PASS] No PC signal -> neutral: "
+            f"score={result.decorrelated_score:.3f}, "
+            f"z={result.ewma_z:.3f}"
+        )
 
     def test_negative_pc_signal(self):
         """With PC-specific stress, decorrelated score should drop."""
         ts = self._make_synthetic_data(signal_strength=-3.0)
         result = self.decorrelator.decorrelate(ts)
         assert result.data_quality == "good"
-        assert result.ewma_z < -0.5, f"Expected z < -0.5, got {result.ewma_z:.3f}"
-        assert result.decorrelated_score < 0.5, (
-            f"Expected score < 0.5, got {result.decorrelated_score:.3f}"
+        assert result.ewma_z < -0.5, (
+            f"Expected z < -0.5, got {result.ewma_z:.3f}"
         )
-        print(f"  [PASS] Negative PC signal → stress: score={result.decorrelated_score:.3f}, "
-              f"z={result.ewma_z:.3f}")
+        assert result.decorrelated_score < 0.5, (
+            "Expected score < 0.5, got "
+            f"{result.decorrelated_score:.3f}"
+        )
+        print(
+            "  [PASS] Negative PC signal -> stress: "
+            f"score={result.decorrelated_score:.3f}, "
+            f"z={result.ewma_z:.3f}"
+        )
 
     def test_ols_recovers_betas(self):
         """OLS should approximately recover the true factor betas."""
@@ -311,10 +378,18 @@ class TestDecorrelation:
         result = self.decorrelator.decorrelate(ts)
         # True betas: SPX=0.6, VIX=-0.3, HY_OAS=0.2
         assert result.beta_spx is not None
-        assert abs(result.beta_spx - 0.6) < 0.15, f"SPX beta: {result.beta_spx:.3f}"
-        assert abs(result.beta_vix - (-0.3)) < 0.15, f"VIX beta: {result.beta_vix:.3f}"
-        print(f"  [PASS] OLS betas: SPX={result.beta_spx:.3f}, VIX={result.beta_vix:.3f}, "
-              f"HY={result.beta_hy_oas:.3f}")
+        assert abs(result.beta_spx - 0.6) < 0.15, (
+            f"SPX beta: {result.beta_spx:.3f}"
+        )
+        assert abs(result.beta_vix - (-0.3)) < 0.15, (
+            f"VIX beta: {result.beta_vix:.3f}"
+        )
+        print(
+            "  [PASS] OLS betas: "
+            f"SPX={result.beta_spx:.3f}, "
+            f"VIX={result.beta_vix:.3f}, "
+            f"HY={result.beta_hy_oas:.3f}"
+        )
 
     def test_insufficient_data(self):
         """Too little data → insufficient."""
@@ -326,7 +401,7 @@ class TestDecorrelation:
             ts.hy_oas_changes.append(0.0)
         result = self.decorrelator.decorrelate(ts)
         assert result.data_quality == "insufficient"
-        print(f"  [PASS] Insufficient data handled correctly")
+        print("  [PASS] Insufficient data handled correctly")
 
     def test_blend_with_sloos(self):
         """Blend should be 60/40 with good data, 100% SLOOS with bad."""
@@ -344,8 +419,12 @@ class TestDecorrelation:
         expected_partial = 0.40 * 0.3 + 0.60 * 0.7  # 0.54
         assert _approx(partial, expected_partial, 0.01)
 
-        print(f"  [PASS] Blend: good={blended:.3f}, insufficient={fallback:.3f}, "
-              f"partial={partial:.3f}")
+        print(
+            "  [PASS] Blend: "
+            f"good={blended:.3f}, "
+            f"insufficient={fallback:.3f}, "
+            f"partial={partial:.3f}"
+        )
 
     def run_all(self):
         self.setup()
@@ -371,7 +450,7 @@ class TestInflationProxyChain:
         assert "Rees" in get_inflation_proxy_chain_name(datetime(1900, 1, 1))
         assert "Warren-Pearson" in get_inflation_proxy_chain_name(datetime(1870, 1, 1))
         assert "No proxy" in get_inflation_proxy_chain_name(datetime(1840, 1, 1))
-        print(f"  [PASS] Proxy chain names correct across all eras")
+        print("  [PASS] Proxy chain names correct across all eras")
 
     def test_rees_data_available(self):
         """Rees cost of living should return data for 1890-1913."""
@@ -393,14 +472,16 @@ class TestInflationProxyChain:
         """1870s Long Deflation should show negative deviation."""
         val = get_inflation_for_date(datetime(1878, 1, 1))
         assert val is not None
-        assert val < -200, f"Expected strong deflation in 1878, got {val:.0f} bps"
+        assert val < -200, (
+            f"Expected strong deflation in 1878, got {val:.0f} bps"
+        )
         print(f"  [PASS] 1878 deflation: {val:.0f} bps")
 
     def test_no_data_before_1850(self):
         """Before 1850 should return None."""
         val = get_inflation_for_date(datetime(1840, 1, 1))
         assert val is None
-        print(f"  [PASS] No data before 1850")
+        print("  [PASS] No data before 1850")
 
     def run_all(self):
         print("\n=== WP-12: Inflation Proxy Chain ===")
@@ -429,16 +510,19 @@ class TestBreachPenaltyDerivation:
             assert _approx(derived[n_breach], penalty, 0.02), (
                 f"n={n_breach}: derived {derived[n_breach]:.4f} ≠ table {penalty}"
             )
-        print(f"  [PASS] Derived penalties match hardcoded table")
+        print("  [PASS] Derived penalties match hardcoded table")
 
     def test_sensitivity(self):
-        """Penalties should be robust to ±10% perturbation."""
-        from grri_mac.mac.composite import validate_breach_penalty_sensitivity
+        """Penalties should be robust to +/-10% perturbation."""
+        from grri_mac.mac.composite import (
+            validate_breach_penalty_sensitivity,
+        )
         result = validate_breach_penalty_sensitivity()
         assert result["all_within_tolerance"], (
-            f"Breach penalties not robust: {result['max_deviations']}"
+            "Breach penalties not robust: "
+            f"{result['max_deviations']}"
         )
-        print(f"  [PASS] Penalties robust to perturbation")
+        print("  [PASS] Penalties robust to perturbation")
 
     def run_all(self):
         print("\n=== WP-4: Breach Interaction Penalty Derivation ===")
@@ -469,7 +553,7 @@ if __name__ == "__main__":
 
     for suite in test_suites:
         try:
-            suite.run_all()
+            suite.run_all()  # type: ignore[attr-defined]
             passed += 1
         except AssertionError as e:
             failed += 1
@@ -480,7 +564,10 @@ if __name__ == "__main__":
 
     print("\n" + "=" * 60)
     if errors:
-        print(f"RESULTS: {len(test_suites) - len(errors)} suites passed, {len(errors)} failed")
+        print(
+            f"RESULTS: {len(test_suites) - len(errors)} "
+            f"suites passed, {len(errors)} failed"
+        )
         for err in errors:
             print(f"  FAIL: {err}")
     else:

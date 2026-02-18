@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import itertools
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -145,7 +145,7 @@ def _build_var_matrices(
     Y = data[lag_order:]  # (T-p) × K
     X_parts = []
     for lag in range(1, lag_order + 1):
-        X_parts.append(data[lag_order - lag : T - lag])  # (T-p) × K
+        X_parts.append(data[lag_order - lag : T - lag])  # noqa: E203
     X = np.hstack(X_parts)  # (T-p) × (K*p)
     # Add constant
     X = np.hstack([X, np.ones((T - lag_order, 1))])
@@ -192,7 +192,7 @@ def estimate_var(
 
 def select_lag_order(
     data: np.ndarray,
-    candidates: List[int] = None,
+    candidates: Optional[List[int]] = None,
 ) -> Tuple[int, float]:
     """Select optimal lag order by BIC.
 
@@ -225,7 +225,8 @@ def _extract_coefficient_matrices(
     """Extract A_1 … A_p from the stacked coefficient matrix B."""
     matrices = []
     for i in range(lag_order):
-        A_i = B[i * K : (i + 1) * K, :].T  # K × K  (note transpose: B is X cols × K)
+        # K x K (note transpose: B is X cols x K)
+        A_i = B[i * K : (i + 1) * K, :].T  # noqa: E203
         matrices.append(A_i)
     return matrices
 
@@ -363,7 +364,7 @@ def estimate_svar(
         lag_candidates = LAG_CANDIDATES
 
     K = len(pillar_names)
-    T = len(next(iter(pillar_series.values())))
+    _ = len(next(iter(pillar_series.values())))
 
     # Stack into T × K array
     raw = np.column_stack([np.array(pillar_series[p]) for p in pillar_names])
@@ -562,7 +563,7 @@ def granger_causality_tests(
             # Restricted model: y_t ~ c + Σ y_{t-k}
             Y_r = y[p:]
             X_r = np.column_stack(
-                [y[p - k : T - k] for k in range(1, p + 1)]
+                [y[p - k : T - k] for k in range(1, p + 1)]  # noqa: E203
                 + [np.ones(T - p)]
             )
             beta_r = np.linalg.lstsq(X_r, Y_r, rcond=None)[0]
@@ -570,8 +571,8 @@ def granger_causality_tests(
 
             # Unrestricted: y_t ~ c + Σ y_{t-k} + Σ x_{t-k}
             X_u = np.column_stack(
-                [y[p - k : T - k] for k in range(1, p + 1)]
-                + [x[p - k : T - k] for k in range(1, p + 1)]
+                [y[p - k : T - k] for k in range(1, p + 1)]  # noqa: E203
+                + [x[p - k : T - k] for k in range(1, p + 1)]  # noqa: E203
                 + [np.ones(T - p)]
             )
             beta_u = np.linalg.lstsq(X_u, Y_r, rcond=None)[0]
@@ -634,7 +635,8 @@ def transmission_matrix_to_dict(
 ) -> Dict[str, Dict[str, float]]:
     """Convert a K×K numpy transmission matrix to a nested dict.
 
-    The dict has the same structure as ``shock_propagation.INTERACTION_MATRIX``:
+    The dict has the same structure as
+    ``shock_propagation.INTERACTION_MATRIX``:
     ``{source: {target: coefficient}}``.
     """
     d: Dict[str, Dict[str, float]] = {}
@@ -703,8 +705,14 @@ def format_svar_report(report: CascadeVARReport) -> str:
     # Robustness summary
     if report.robustness:
         r = report.robustness
-        lines.append(f"  ROBUSTNESS: {r.n_permutations_tested} orderings tested")
-        lines.append("  Median CIRF and GIRF matrices available in report object.")
+        lines.append(
+            f"  ROBUSTNESS: {r.n_permutations_tested}"
+            " orderings tested"
+        )
+        lines.append(
+            "  Median CIRF and GIRF matrices"
+            " available in report object."
+        )
         lines.append("")
 
     # Acceleration factors
@@ -725,9 +733,16 @@ def format_svar_report(report: CascadeVARReport) -> str:
 
     # Granger causality
     sig_tests = [g for g in report.granger_tests if g.significant]
-    lines.append(f"  GRANGER CAUSALITY: {len(sig_tests)} significant pairs (p<0.05)")
+    lines.append(
+        f"  GRANGER CAUSALITY: {len(sig_tests)}"
+        " significant pairs (p<0.05)"
+    )
     for g in sig_tests:
-        lines.append(f"    {g.cause} → {g.effect}  F={g.f_statistic:.2f}  p={g.p_value:.4f}")
+        lines.append(
+            f"    {g.cause} -> {g.effect}"
+            f"  F={g.f_statistic:.2f}"
+            f"  p={g.p_value:.4f}"
+        )
     lines.append("")
 
     # OOS validation
@@ -735,7 +750,10 @@ def format_svar_report(report: CascadeVARReport) -> str:
         lines.append("  OUT-OF-SAMPLE VALIDATION")
         for v in report.oos_validations:
             lines.append(f"    {v.scenario_name}: MAE={v.mae:.4f}")
-        avg_mae = sum(v.mae for v in report.oos_validations) / len(report.oos_validations)
+        avg_mae = (
+            sum(v.mae for v in report.oos_validations)
+            / len(report.oos_validations)
+        )
         lines.append(f"    Average MAE: {avg_mae:.4f} (target < 0.10)")
         lines.append("")
 
@@ -791,7 +809,9 @@ def run_svar_pipeline(
     # Granger causality
     granger: List[GrangerResult] = []
     if run_granger:
-        granger = granger_causality_tests(pillar_series, lag_order=est.lag_order)
+        granger = granger_causality_tests(
+            pillar_series, lag_order=est.lag_order,
+        )
 
     # Build readable dict
     tx_dict = transmission_matrix_to_dict(

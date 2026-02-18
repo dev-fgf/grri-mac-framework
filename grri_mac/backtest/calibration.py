@@ -18,12 +18,11 @@ The grid search minimises MAE between α × MAC_raw and CSR composite:
 Result: α* = 0.78 (unchanged from prior version, now CSR-anchored).
 """
 
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
+from typing import Any
 import statistics
-from copy import deepcopy
 
-from .scenarios import KNOWN_EVENTS, HistoricalScenario, CrisisSeverityScores
+from .scenarios import KNOWN_EVENTS, HistoricalScenario
 from .calibrated_engine import CalibratedBacktestEngine
 from ..mac.composite import calculate_mac
 from ..pillars.calibrated import (
@@ -114,7 +113,8 @@ class CalibrationValidator:
         step: float = 0.01,
     ) -> CalibrationResult:
         """
-        Derive optimal calibration factor by minimizing error vs expected scores.
+        Derive optimal calibration factor by
+        minimizing error vs expected scores.
 
         The calibration factor adjusts raw MAC scores:
             calibrated_score = raw_score * factor
@@ -167,7 +167,9 @@ class CalibrationValidator:
             calibrated_scores.append(raw_result["mac_score"] * best_factor)
             expected_scores.append(self._target_score(scenario))
 
-        r_squared = self._calculate_r_squared(calibrated_scores, expected_scores)
+        r_squared = self._calculate_r_squared(
+            calibrated_scores, expected_scores,
+        )
 
         return CalibrationResult(
             optimal_factor=best_factor,
@@ -256,7 +258,8 @@ class CalibrationValidator:
         how stable the classifications are.
 
         Args:
-            perturbation_pct: Percentage to perturb thresholds (e.g., 10 for ±10%)
+            perturbation_pct: Percentage to perturb
+                thresholds (e.g., 10 for ±10%)
 
         Returns:
             SensitivityResult with stability metrics
@@ -265,8 +268,12 @@ class CalibrationValidator:
         baseline_results = {}
         for scenario in self.scenarios:
             result = self.engine.run_scenario(scenario)
-            # "passed" is the combination of all three validation criteria
-            passed = result.mac_in_range and result.breaches_match and result.hedge_prediction_correct
+            # All three validation criteria
+            passed = (
+                result.mac_in_range
+                and result.breaches_match
+                and result.hedge_prediction_correct
+            )
             baseline_results[scenario.name] = {
                 "mac_score": result.mac_score,
                 "breaches": result.breach_flags.copy(),
@@ -280,7 +287,11 @@ class CalibrationValidator:
         perturbed_results = {}
         for scenario in self.scenarios:
             result = perturbed_engine.run_scenario(scenario)
-            passed = result.mac_in_range and result.breaches_match and result.hedge_prediction_correct
+            passed = (
+                result.mac_in_range
+                and result.breaches_match
+                and result.hedge_prediction_correct
+            )
             perturbed_results[scenario.name] = {
                 "mac_score": result.mac_score,
                 "breaches": result.breach_flags.copy(),
@@ -415,28 +426,41 @@ class CalibrationValidator:
             "breach_flags": result.breach_flags,
         }
 
-    def _create_perturbed_engine(self, perturbation_pct: float) -> CalibratedBacktestEngine:
+    def _create_perturbed_engine(
+        self, perturbation_pct: float,
+    ) -> CalibratedBacktestEngine:
         """Create engine with perturbed thresholds."""
         engine = CalibratedBacktestEngine()
 
         # Perturb all numeric thresholds
         multiplier = 1 + (perturbation_pct / 100)
+        pt = self._perturb_thresholds
 
-        engine.liq = self._perturb_thresholds(LIQUIDITY_THRESHOLDS, multiplier)
-        engine.val = self._perturb_thresholds(VALUATION_THRESHOLDS, multiplier)
-        engine.pos = self._perturb_thresholds(POSITIONING_THRESHOLDS, multiplier)
-        engine.vol = self._perturb_thresholds(VOLATILITY_THRESHOLDS, multiplier)
-        engine.pol = self._perturb_thresholds(POLICY_THRESHOLDS, multiplier)
-        engine.con = self._perturb_thresholds(CONTAGION_THRESHOLDS, multiplier)
+        engine.liq = pt(LIQUIDITY_THRESHOLDS, multiplier)
+        engine.val = pt(VALUATION_THRESHOLDS, multiplier)
+        engine.pos = pt(
+            POSITIONING_THRESHOLDS, multiplier,
+        )
+        engine.vol = pt(
+            VOLATILITY_THRESHOLDS, multiplier,
+        )
+        engine.pol = pt(POLICY_THRESHOLDS, multiplier)
+        engine.con = pt(
+            CONTAGION_THRESHOLDS, multiplier,
+        )
 
         return engine
 
-    def _perturb_thresholds(self, thresholds: dict, multiplier: float) -> dict:
-        """Apply multiplier to all numeric values in threshold dict."""
-        result = {}
+    def _perturb_thresholds(
+        self, thresholds: dict, multiplier: float,
+    ) -> dict[str, Any]:
+        """Multiply all numeric values in threshold dict."""
+        result: dict[str, Any] = {}
         for key, value in thresholds.items():
             if isinstance(value, dict):
-                result[key] = self._perturb_thresholds(value, multiplier)
+                result[key] = self._perturb_thresholds(
+                    value, multiplier,
+                )
             elif isinstance(value, (int, float)):
                 result[key] = value * multiplier
             else:
@@ -469,25 +493,37 @@ class CalibrationValidator:
         recommendations = []
 
         # Calibration factor stability
+        ci_lo = cv.mean_factor - 1.96 * cv.std_factor
+        ci_hi = cv.mean_factor + 1.96 * cv.std_factor
         if cv.std_factor < 0.02:
             recommendations.append(
-                f"[OK] Calibration factor highly stable (std={cv.std_factor:.3f}). "
-                f"95% CI: [{cv.mean_factor - 1.96*cv.std_factor:.2f}, "
-                f"{cv.mean_factor + 1.96*cv.std_factor:.2f}]"
+                "[OK] Calibration factor highly "
+                "stable "
+                f"(std={cv.std_factor:.3f}). "
+                f"95% CI: [{ci_lo:.2f}, "
+                f"{ci_hi:.2f}]"
             )
         elif cv.std_factor < 0.05:
             recommendations.append(
-                f"[!!] Calibration factor moderately stable (std={cv.std_factor:.3f}). "
-                "Consider additional scenarios for validation."
+                "[!!] Calibration factor "
+                "moderately stable "
+                f"(std={cv.std_factor:.3f}). "
+                "Consider additional scenarios."
             )
         else:
             recommendations.append(
-                f"[!!] Calibration factor shows variability (std={cv.std_factor:.3f}). "
-                "Results may be sensitive to crisis type."
+                "[!!] Calibration factor shows "
+                "variability "
+                f"(std={cv.std_factor:.3f}). "
+                "Results may be sensitive to "
+                "crisis type."
             )
 
         # Sensitivity analysis
-        avg_stability = (sens_minus.stability_score + sens_plus.stability_score) / 2
+        avg_stability = (
+            sens_minus.stability_score
+            + sens_plus.stability_score
+        ) / 2
         if avg_stability > 0.9:
             recommendations.append(
                 f"[OK] Results robust to +/-10% threshold changes "
@@ -505,26 +541,38 @@ class CalibrationValidator:
             )
 
         # R-squared
-        if calibration.r_squared > 0.8:
+        r2 = calibration.r_squared
+        if r2 > 0.8:
             recommendations.append(
-                f"[OK] Strong fit to historical data (R^2={calibration.r_squared:.3f})"
+                "[OK] Strong fit to historical "
+                f"data (R^2={r2:.3f})"
             )
-        elif calibration.r_squared > 0.6:
+        elif r2 > 0.6:
             recommendations.append(
-                f"[!!] Moderate fit to historical data (R^2={calibration.r_squared:.3f})"
+                "[!!] Moderate fit to historical "
+                f"data (R^2={r2:.3f})"
             )
         else:
             recommendations.append(
-                f"[!!] Weak fit to historical data (R^2={calibration.r_squared:.3f}). "
-                "Consider threshold recalibration."
+                "[!!] Weak fit to historical "
+                f"data (R^2={r2:.3f}). "
+                "Consider threshold "
+                "recalibration."
             )
 
         # Specific outliers
-        worst_scenario = max(calibration.scenario_errors, key=calibration.scenario_errors.get)
-        worst_error = calibration.scenario_errors[worst_scenario]
+        worst_scenario = max(
+            calibration.scenario_errors,
+            key=lambda k: calibration.scenario_errors[k],
+        )
+        worst_error = calibration.scenario_errors[
+            worst_scenario
+        ]
         if worst_error > 0.15:
             recommendations.append(
-                f"Note: Largest error on {worst_scenario} (error={worst_error:.3f})"
+                "Note: Largest error on "
+                f"{worst_scenario} "
+                f"(error={worst_error:.3f})"
             )
 
         return recommendations
@@ -542,29 +590,55 @@ def format_robustness_report(report: RobustnessReport) -> str:
     # Calibration factor derivation
     lines.append("1. CALIBRATION FACTOR DERIVATION")
     lines.append("-" * 50)
-    lines.append(f"   Optimal Factor:     {report.calibration.optimal_factor:.3f}")
-    lines.append(f"   Mean Absolute Error: {report.calibration.mean_absolute_error:.4f}")
+    opt = report.calibration.optimal_factor
+    lines.append(
+        f"   Optimal Factor:     {opt:.3f}"
+    )
+    cal_mae = report.calibration.mean_absolute_error
+    lines.append(
+        f"   Mean Absolute Error: {cal_mae:.4f}"
+    )
     lines.append(f"   R-squared:          {report.calibration.r_squared:.3f}")
     lines.append("")
     lines.append("   Scenario Errors:")
-    for name, error in sorted(report.calibration.scenario_errors.items(), key=lambda x: -x[1]):
+    sorted_errs = sorted(
+        report.calibration.scenario_errors.items(),
+        key=lambda x: -x[1],
+    )
+    for name, error in sorted_errs:
         lines.append(f"      {name:30} {error:.4f}")
     lines.append("")
 
     # Cross-validation
     lines.append("2. LEAVE-ONE-OUT CROSS-VALIDATION")
     lines.append("-" * 50)
-    lines.append(f"   Mean Factor:        {report.cross_validation.mean_factor:.3f}")
-    lines.append(f"   Std Deviation:      {report.cross_validation.std_factor:.4f}")
-    lines.append(f"   Range:              [{report.cross_validation.min_factor:.3f}, "
-                 f"{report.cross_validation.max_factor:.3f}]")
-    lines.append(f"   95% Confidence:     [{report.confidence_interval_95[0]:.3f}, "
-                 f"{report.confidence_interval_95[1]:.3f}]")
-    lines.append(f"   Stability Score:    {report.cross_validation.stability_score:.1%}")
+    cv = report.cross_validation
+    ci = report.confidence_interval_95
+    lines.append(
+        f"   Mean Factor:        {cv.mean_factor:.3f}"
+    )
+    lines.append(
+        f"   Std Deviation:      {cv.std_factor:.4f}"
+    )
+    lines.append(
+        f"   Range:              "
+        f"[{cv.min_factor:.3f}, "
+        f"{cv.max_factor:.3f}]"
+    )
+    lines.append(
+        f"   95% Confidence:     "
+        f"[{ci[0]:.3f}, {ci[1]:.3f}]"
+    )
+    cv_stab = report.cross_validation.stability_score
+    lines.append(
+        f"   Stability Score:    {cv_stab:.1%}"
+    )
     lines.append("")
     lines.append("   Factor by Holdout Scenario:")
-    for name, factor in sorted(report.cross_validation.factor_by_holdout.items()):
-        mae = report.cross_validation.mae_by_holdout[name]
+    for name, factor in sorted(
+        cv.factor_by_holdout.items(),
+    ):
+        mae = cv.mae_by_holdout[name]
         lines.append(f"      {name:30} factor={factor:.3f}  MAE={mae:.4f}")
     lines.append("")
 
@@ -582,16 +656,22 @@ def format_robustness_report(report: RobustnessReport) -> str:
         lines.append(f"      Pass Rate:       {sens.pass_rate:.1%}")
         lines.append(f"      Stability Score: {sens.stability_score:.1%}")
         if sens.breach_changes:
-            lines.append(f"      Breach Changes:  {len(sens.breach_changes)} scenarios affected")
-            for name, changes in sens.breach_changes.items():
-                lines.append(f"         {name}: {', '.join(changes)}")
+            n_affected = len(sens.breach_changes)
+            lines.append(
+                "      Breach Changes:  "
+                f"{n_affected} scenarios affected"
+            )
+            for name, bc in sens.breach_changes.items():
+                lines.append(
+                    f"         {name}: {', '.join(bc)}"
+                )
         else:
             lines.append("      Breach Changes:  None")
 
         # MAC score changes summary
-        changes = list(sens.mac_changes.values())
-        avg_change = statistics.mean(changes)
-        max_change = max(abs(c) for c in changes)
+        mac_deltas = list(sens.mac_changes.values())
+        avg_change = statistics.mean(mac_deltas)
+        max_change = max(abs(c) for c in mac_deltas)
         lines.append(f"      Avg MAC Change:  {avg_change:+.4f}")
         lines.append(f"      Max MAC Change:  {max_change:.4f}")
         lines.append("")
@@ -600,9 +680,12 @@ def format_robustness_report(report: RobustnessReport) -> str:
     lines.append("4. SUMMARY")
     lines.append("-" * 50)
     lines.append(f"   Overall Stability:  {report.overall_stability:.1%}")
-    lines.append(f"   Calibration Factor: {report.calibration.optimal_factor:.2f} "
-                 f"(95% CI: {report.confidence_interval_95[0]:.2f}-"
-                 f"{report.confidence_interval_95[1]:.2f})")
+    cal_f = report.calibration.optimal_factor
+    ci95 = report.confidence_interval_95
+    lines.append(
+        f"   Calibration Factor: {cal_f:.2f} "
+        f"(95% CI: {ci95[0]:.2f}-{ci95[1]:.2f})"
+    )
     lines.append("")
 
     lines.append("5. RECOMMENDATIONS")

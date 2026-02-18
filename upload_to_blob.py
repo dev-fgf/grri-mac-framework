@@ -1,7 +1,10 @@
 """
-Upload all local data to Azure — Blob Storage (raw + cleaned) AND Table Storage.
+Upload all local data to Azure.
 
-This is the single entry point for seeding Azure with everything we have locally:
+Blob Storage (raw + cleaned) AND Table Storage.
+
+This is the single entry point for seeding Azure
+with everything we have locally:
 
   Blob Storage (mac-raw-data):
     Raw source files exactly as downloaded — CSVs, XLS/XLSX, JSON, pickle
@@ -15,8 +18,8 @@ This is the single entry point for seeding Azure with everything we have locally
 Usage:
     python upload_to_blob.py                          # Upload everything
     python upload_to_blob.py --raw-only               # Only raw files → Blob
-    python upload_to_blob.py --cleaned-only            # Only cleaned Parquet → Blob
-    python upload_to_blob.py --table-only              # Only Table Storage (same as upload_all_to_azure.py)
+    python upload_to_blob.py --cleaned-only   # Cleaned
+    python upload_to_blob.py --table-only      # Table Storage
     python upload_to_blob.py --dry-run                 # Preview only
     python upload_to_blob.py --verify                  # Check what's in Azure
 """
@@ -24,7 +27,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import io
 import json
 import logging
 import os
@@ -32,16 +34,18 @@ import pickle
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 from dotenv import load_dotenv
 
 load_dotenv()
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "api"))
 
-from grri_mac.data.blob_store import BlobStore, DataTier, RAW_CONTAINER, CLEANED_CONTAINER
+from grri_mac.data.blob_store import (  # noqa: E402
+    BlobStore, DataTier,
+)
 
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -87,29 +91,87 @@ NBER_SERIES: Dict[str, Tuple[str, str, str]] = {
     "m14076c": ("date", "value", "US Gold Stock Sub-series C"),
 }
 
-# Other historical CSVs: (source, series_id, rel_path, date_col, value_col, description)
+# Other historical CSVs:
+# (source, series_id, rel_path, date_col, value_col, desc)
 OTHER_HISTORICAL = [
-    ("schwert", "volatility", "schwert/schwert_volatility.csv", "date", "volatility", "Schwert Realized Volatility"),
-    ("boe", "gbpusd", "boe/boe_gbpusd.csv", "date", "rate", "GBP/USD Exchange Rate"),
-    ("boe", "bankrate", "boe/boe_bankrate.csv", "date", "rate", "BoE Official Bank Rate"),
-    ("measuringworth", "us_gdp", "measuringworth/us_gdp.csv", "year", "gdp", "US Nominal GDP"),
-    ("finra", "margin_debt", "finra/margin_debt.csv", "date", "margin_debt", "NYSE Margin Debt"),
+    (
+        "schwert", "volatility",
+        "schwert/schwert_volatility.csv",
+        "date", "volatility",
+        "Schwert Realized Volatility",
+    ),
+    (
+        "boe", "gbpusd",
+        "boe/boe_gbpusd.csv",
+        "date", "rate",
+        "GBP/USD Exchange Rate",
+    ),
+    (
+        "boe", "bankrate",
+        "boe/boe_bankrate.csv",
+        "date", "rate",
+        "BoE Official Bank Rate",
+    ),
+    (
+        "measuringworth", "us_gdp",
+        "measuringworth/us_gdp.csv",
+        "year", "gdp",
+        "US Nominal GDP",
+    ),
+    (
+        "finra", "margin_debt",
+        "finra/margin_debt.csv",
+        "date", "margin_debt",
+        "NYSE Margin Debt",
+    ),
 ]
 
 # Large raw-only files (not easily converted to clean time series)
 RAW_BINARY_FILES = [
-    ("boe", "millennium", "boe/boe_millennium.xlsx", ".xlsx", "BoE Millennium Dataset"),
-    ("shiller", "ie_data", "shiller/ie_data.xls", ".xls", "Shiller Irrational Exuberance"),
+    (
+        "boe", "millennium",
+        "boe/boe_millennium.xlsx",
+        ".xlsx", "BoE Millennium Dataset",
+    ),
+    (
+        "shiller", "ie_data",
+        "shiller/ie_data.xls",
+        ".xls", "Shiller Irrational Exuberance",
+    ),
 ]
 
 # Root-level data files
 ROOT_DATA_FILES = [
-    ("gpr", "gpr_data", "gpr_data.xls", ".xls", "Geopolitical Risk Index"),
-    ("reference", "competitor_indices", "competitor_indices.json", ".json", "Competitor Indices"),
-    ("reference", "grs_data_sources", "grs_data_sources.json", ".json", "GRS Data Sources"),
-    ("reference", "private_credit_analysis", "private_credit_analysis.json", ".json", "Private Credit Analysis"),
-    ("reference", "historical_indicators", "historical_indicators.json", ".json", "Historical Indicators"),
-    ("reference", "historical_mac_results", "historical_mac_results.json", ".json", "Historical MAC Results"),
+    (
+        "gpr", "gpr_data",
+        "gpr_data.xls", ".xls",
+        "Geopolitical Risk Index",
+    ),
+    (
+        "reference", "competitor_indices",
+        "competitor_indices.json", ".json",
+        "Competitor Indices",
+    ),
+    (
+        "reference", "grs_data_sources",
+        "grs_data_sources.json", ".json",
+        "GRS Data Sources",
+    ),
+    (
+        "reference", "private_credit_analysis",
+        "private_credit_analysis.json", ".json",
+        "Private Credit Analysis",
+    ),
+    (
+        "reference", "historical_indicators",
+        "historical_indicators.json", ".json",
+        "Historical Indicators",
+    ),
+    (
+        "reference", "historical_mac_results",
+        "historical_mac_results.json", ".json",
+        "Historical MAC Results",
+    ),
 ]
 
 
@@ -148,7 +210,9 @@ def _clean_series(dates, values) -> Optional[pd.DataFrame]:
         return None
 
 
-def _read_historical_csv(path: Path, date_col: str, val_col: str) -> Optional[pd.DataFrame]:
+def _read_historical_csv(
+    path: Path, date_col: str, val_col: str,
+) -> Optional[pd.DataFrame]:
     """Read a historical CSV into a clean DataFrame."""
     if not path.exists():
         return None
@@ -181,8 +245,20 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
             if not isinstance(data, pd.Series) or len(data) == 0:
                 continue
             obj = {
-                "dates": [d.strftime("%Y-%m-%d") if hasattr(d, "strftime") else str(d) for d in data.index],
-                "values": [None if (v is None or (isinstance(v, float) and np.isnan(v))) else float(v) for v in data.values],
+                "dates": [
+                    d.strftime("%Y-%m-%d")
+                    if hasattr(d, "strftime")
+                    else str(d)
+                    for d in data.index
+                ],
+                "values": [
+                    None if (
+                        v is None
+                        or (isinstance(v, float)
+                            and np.isnan(v))
+                    ) else float(v)
+                    for v in data.values
+                ],
             }
             if dry_run:
                 _dry(f"fred/{sid}: {len(data)} pts")
@@ -192,7 +268,11 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
             total += 1
         # Also upload the raw pickle itself
         if not dry_run:
-            ok = store.upload_raw_bytes("fred", "_cache_pickle", FRED_CACHE.read_bytes(), ".pkl", date_str=TODAY)
+            ok = store.upload_raw_bytes(
+                "fred", "_cache_pickle",
+                FRED_CACHE.read_bytes(),
+                ".pkl", date_str=TODAY,
+            )
             (_ok if ok else _fail)("fred/_cache_pickle (raw pickle)")
         else:
             _dry("fred/_cache_pickle (raw pickle)")
@@ -213,8 +293,15 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
         if dry_run:
             _dry(f"nber/{sid}: {len(raw_bytes)} bytes — {desc}")
         else:
-            ok = store.upload_raw_bytes("nber", sid, raw_bytes, ".csv", date_str=TODAY)
-            (_ok if ok else _fail)(f"nber/{sid}: {len(raw_bytes)} bytes — {desc}")
+            ok = store.upload_raw_bytes(
+                "nber", sid, raw_bytes,
+                ".csv", date_str=TODAY,
+            )
+            msg = (
+                f"nber/{sid}: {len(raw_bytes)}"
+                f" bytes — {desc}"
+            )
+            (_ok if ok else _fail)(msg)
         total += 1
 
     # ── 1c. Other historical CSVs ──
@@ -230,8 +317,15 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
         if dry_run:
             _dry(f"{source}/{sid}: {len(raw_bytes)} bytes — {desc}")
         else:
-            ok = store.upload_raw_bytes(source, sid, raw_bytes, ".csv", date_str=TODAY)
-            (_ok if ok else _fail)(f"{source}/{sid}: {len(raw_bytes)} bytes — {desc}")
+            ok = store.upload_raw_bytes(
+                source, sid, raw_bytes,
+                ".csv", date_str=TODAY,
+            )
+            msg = (
+                f"{source}/{sid}: "
+                f"{len(raw_bytes)} bytes — {desc}"
+            )
+            (_ok if ok else _fail)(msg)
         total += 1
 
     # ── 1d. Large binary files (xlsx, xls) from historical/ ──
@@ -248,8 +342,15 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
         if dry_run:
             _dry(f"{source}/{sid}: {sz_mb:.1f} MB — {desc}")
         else:
-            ok = store.upload_raw_bytes(source, sid, file_bytes, ext, date_str=TODAY)
-            (_ok if ok else _fail)(f"{source}/{sid}: {sz_mb:.1f} MB — {desc}")
+            ok = store.upload_raw_bytes(
+                source, sid, file_bytes,
+                ext, date_str=TODAY,
+            )
+            msg = (
+                f"{source}/{sid}: "
+                f"{sz_mb:.1f} MB — {desc}"
+            )
+            (_ok if ok else _fail)(msg)
         total += 1
 
     # ── 1e. Root-level data files ──
@@ -266,8 +367,15 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
         if dry_run:
             _dry(f"{source}/{sid}: {sz_kb:.1f} KB — {desc}")
         else:
-            ok = store.upload_raw_bytes(source, sid, file_bytes, ext, date_str=TODAY)
-            (_ok if ok else _fail)(f"{source}/{sid}: {sz_kb:.1f} KB — {desc}")
+            ok = store.upload_raw_bytes(
+                source, sid, file_bytes,
+                ext, date_str=TODAY,
+            )
+            msg = (
+                f"{source}/{sid}: "
+                f"{sz_kb:.1f} KB — {desc}"
+            )
+            (_ok if ok else _fail)(msg)
         total += 1
 
     # ── 1f. Backtest results ──
@@ -275,17 +383,20 @@ def upload_raw(store: BlobStore, dry_run: bool = False) -> int:
     print("RAW TIER: Backtest results")
     print(f"{'=' * 60}")
     if BACKTEST_DIR.exists():
-        for f in sorted(BACKTEST_DIR.iterdir()):
-            if not f.is_file():
+        for fp in sorted(BACKTEST_DIR.iterdir()):
+            if not fp.is_file():
                 continue
-            ext = f.suffix
-            sid = f.stem
-            file_bytes = f.read_bytes()
+            ext = fp.suffix
+            sid = fp.stem
+            file_bytes = fp.read_bytes()
             sz_kb = len(file_bytes) / 1024
             if dry_run:
                 _dry(f"backtest/{sid}: {sz_kb:.1f} KB")
             else:
-                ok = store.upload_raw_bytes("backtest", sid, file_bytes, ext, date_str=TODAY)
+                ok = store.upload_raw_bytes(
+                    "backtest", sid, file_bytes,
+                    ext, date_str=TODAY,
+                )
                 (_ok if ok else _fail)(f"backtest/{sid}: {sz_kb:.1f} KB")
             total += 1
     else:
@@ -313,14 +424,33 @@ def upload_cleaned(store: BlobStore, dry_run: bool = False) -> int:
             if not isinstance(data, pd.Series) or len(data) == 0:
                 continue
             df = _clean_series(
-                [d.strftime("%Y-%m-%d") if hasattr(d, "strftime") else str(d) for d in data.index],
-                [None if (v is None or (isinstance(v, float) and np.isnan(v))) else float(v) for v in data.values],
+                [
+                    d.strftime("%Y-%m-%d")
+                    if hasattr(d, "strftime")
+                    else str(d)
+                    for d in data.index
+                ],
+                [
+                    None if (
+                        v is None
+                        or (isinstance(v, float)
+                            and np.isnan(v))
+                    ) else float(v)
+                    for v in data.values
+                ],
             )
             if df is None or df.empty:
                 _skip(f"fred/{sid}: no valid data after cleaning")
                 continue
             if dry_run:
-                _dry(f"fred/{sid}: {len(df)} rows ({df.index.min().date()} → {df.index.max().date()})")
+                rng = (
+                    f"{df.index.min().date()}"
+                    f" \u2192 {df.index.max().date()}"
+                )
+                _dry(
+                    f"fred/{sid}: {len(df)}"
+                    f" rows ({rng})"
+                )
             else:
                 ok = store.upload_dataframe("fred", sid, df, date_str=TODAY)
                 rng = f"({df.index.min().date()} → {df.index.max().date()})"
@@ -380,7 +510,10 @@ def upload_cleaned(store: BlobStore, dry_run: bool = False) -> int:
         if dry_run:
             _dry(f"backtest/{csv_name}: {len(df)} rows")
         else:
-            ok = store.upload_dataframe("backtest", csv_name, df, date_str=TODAY)
+            ok = store.upload_dataframe(
+                "backtest", csv_name, df,
+                date_str=TODAY,
+            )
             (_ok if ok else _fail)(f"backtest/{csv_name}: {len(df)} rows")
         total += 1
 
@@ -393,18 +526,30 @@ def upload_cleaned(store: BlobStore, dry_run: bool = False) -> int:
         import sqlite3
         conn = sqlite3.connect(str(db_path))
         df = pd.read_sql_query(
-            "SELECT timestamp, indicator_name, value, source, series_id FROM indicator_values ORDER BY timestamp",
+            "SELECT timestamp, indicator_name,"
+            " value, source, series_id"
+            " FROM indicator_values"
+            " ORDER BY timestamp",
             conn,
         )
         conn.close()
         if not df.empty:
             df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-            df = df.dropna(subset=["timestamp"]).set_index("timestamp").sort_index()
+            df = df.dropna(
+                subset=["timestamp"]
+            ).set_index("timestamp").sort_index()
             if dry_run:
                 _dry(f"sqlite/indicator_values: {len(df)} rows")
             else:
-                ok = store.upload_dataframe("sqlite", "indicator_values", df, date_str=TODAY)
-                (_ok if ok else _fail)(f"sqlite/indicator_values: {len(df)} rows")
+                ok = store.upload_dataframe(
+                    "sqlite", "indicator_values",
+                    df, date_str=TODAY,
+                )
+                msg = (
+                    "sqlite/indicator_values:"
+                    f" {len(df)} rows"
+                )
+                (_ok if ok else _fail)(msg)
             total += 1
         else:
             _skip("sqlite/indicator_values: empty table")
@@ -424,7 +569,7 @@ def upload_table_storage(dry_run: bool = False) -> int:
     Covers everything the original upload_all_to_azure.py did, plus
     the NBER series it was missing.
     """
-    from shared.database import get_database
+    from shared.database import get_database  # type: ignore
 
     db = get_database()
     if not db.connected and not dry_run:
@@ -436,9 +581,20 @@ def upload_table_storage(dry_run: bool = False) -> int:
     def _series_to_upload(dates, values):
         clean_d, clean_v = [], []
         for d, v in zip(dates, values):
-            d_str = d.strftime("%Y-%m-%d") if hasattr(d, "strftime") else str(d)
+            d_str = (
+                d.strftime("%Y-%m-%d")
+                if hasattr(d, "strftime")
+                else str(d)
+            )
             clean_d.append(d_str)
-            clean_v.append(None if (v is None or (isinstance(v, float) and np.isnan(v))) else float(v))
+            is_nan = (
+                v is None
+                or (isinstance(v, float)
+                    and np.isnan(v))
+            )
+            clean_v.append(
+                None if is_nan else float(v)
+            )
         return {"dates": clean_d, "values": clean_v}
 
     # ── 3a. FRED series ──
@@ -487,11 +643,31 @@ def upload_table_storage(dry_run: bool = False) -> int:
 
     # Other historical
     TABLE_HISTORICAL = {
-        "SCHWERT_VOL": ("schwert/schwert_volatility.csv", "date", "volatility", "Schwert Realized Volatility"),
-        "BOE_GBPUSD": ("boe/boe_gbpusd.csv", "date", "rate", "GBP/USD Exchange Rate"),
-        "BOE_BANKRATE": ("boe/boe_bankrate.csv", "date", "rate", "BoE Official Bank Rate"),
-        "MW_GDP": ("measuringworth/us_gdp.csv", "year", "gdp", "US Nominal GDP"),
-        "FINRA_MARGIN_DEBT": ("finra/margin_debt.csv", "date", "margin_debt", "NYSE Margin Debt"),
+        "SCHWERT_VOL": (
+            "schwert/schwert_volatility.csv",
+            "date", "volatility",
+            "Schwert Realized Volatility",
+        ),
+        "BOE_GBPUSD": (
+            "boe/boe_gbpusd.csv",
+            "date", "rate",
+            "GBP/USD Exchange Rate",
+        ),
+        "BOE_BANKRATE": (
+            "boe/boe_bankrate.csv",
+            "date", "rate",
+            "BoE Official Bank Rate",
+        ),
+        "MW_GDP": (
+            "measuringworth/us_gdp.csv",
+            "year", "gdp",
+            "US Nominal GDP",
+        ),
+        "FINRA_MARGIN_DEBT": (
+            "finra/margin_debt.csv",
+            "date", "margin_debt",
+            "NYSE Margin Debt",
+        ),
     }
     for series_key, (rel_path, date_col, val_col, desc) in TABLE_HISTORICAL.items():
         csv_path = HISTORICAL_DIR / rel_path
@@ -522,7 +698,14 @@ def upload_table_storage(dry_run: bool = False) -> int:
     if backtest_csv.exists():
         df = pd.read_csv(backtest_csv)
         if dry_run:
-            _dry(f"backtest: {len(df)} records ({df['date'].min()} → {df['date'].max()})")
+            rng = (
+                f"{df['date'].min()}"
+                f" \u2192 {df['date'].max()}"
+            )
+            _dry(
+                f"backtest: {len(df)}"
+                f" records ({rng})"
+            )
             total += len(df)
         else:
             results = df.to_dict("records")
@@ -625,7 +808,7 @@ def verify_blob(store: BlobStore) -> None:
 
 def verify_table() -> None:
     """Report what's in Table Storage."""
-    from shared.database import get_database
+    from shared.database import get_database  # type: ignore
     db = get_database()
 
     print(f"\n{'=' * 60}")
@@ -640,7 +823,15 @@ def verify_table() -> None:
     if fred_count > 0:
         series_list = db.list_fred_series()
         for s in series_list[:10]:
-            print(f"    {s['series_id']:25s} {s['total_points']:>6d} pts  ({s['start_date']} → {s['end_date']})")
+            sid = s['series_id']
+            pts = s['total_points']
+            start = s['start_date']
+            end = s['end_date']
+            print(
+                f"    {sid:25s}"
+                f" {pts:>6d} pts"
+                f"  ({start} \u2192 {end})"
+            )
         if len(series_list) > 10:
             print(f"    ... and {len(series_list) - 10} more")
 
@@ -656,11 +847,26 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Upload all local data to Azure (Blob Storage + Table Storage)"
     )
-    parser.add_argument("--raw-only", action="store_true", help="Only raw files → Blob Storage")
-    parser.add_argument("--cleaned-only", action="store_true", help="Only cleaned Parquet → Blob Storage")
-    parser.add_argument("--table-only", action="store_true", help="Only Table Storage (series + backtest)")
-    parser.add_argument("--dry-run", action="store_true", help="Preview only, no uploads")
-    parser.add_argument("--verify", action="store_true", help="Report current Azure contents")
+    parser.add_argument(
+        "--raw-only", action="store_true",
+        help="Only raw files -> Blob Storage",
+    )
+    parser.add_argument(
+        "--cleaned-only", action="store_true",
+        help="Only cleaned Parquet -> Blob Storage",
+    )
+    parser.add_argument(
+        "--table-only", action="store_true",
+        help="Only Table Storage (series + backtest)",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Preview only, no uploads",
+    )
+    parser.add_argument(
+        "--verify", action="store_true",
+        help="Report current Azure contents",
+    )
     args = parser.parse_args()
 
     conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")

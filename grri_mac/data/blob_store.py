@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,6 @@ logger = logging.getLogger(__name__)
 try:
     from azure.storage.blob import (
         BlobServiceClient,
-        ContainerClient,
         ContentSettings,
     )
     BLOB_AVAILABLE = True
@@ -60,7 +59,10 @@ CONTENT_TYPES = {
     ".csv": "text/csv",
     ".parquet": "application/octet-stream",
     ".pkl": "application/octet-stream",
-    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".xlsx": (
+        "application/vnd.openxmlformats-"
+        "officedocument.spreadsheetml.sheet"
+    ),
     ".xls": "application/vnd.ms-excel",
     ".txt": "text/plain",
     ".dat": "text/plain",
@@ -105,10 +107,14 @@ class BlobStore:
         self._conn_str = connection_string or os.environ.get(
             "AZURE_STORAGE_CONNECTION_STRING"
         )
-        self._local_root = Path(
+        _root = (
             local_root
-            or os.environ.get("MAC_DATALAKE_LOCAL_ROOT", str(_DEFAULT_LOCAL_ROOT))
+            or os.environ.get(
+                "MAC_DATALAKE_LOCAL_ROOT",
+                str(_DEFAULT_LOCAL_ROOT),
+            )
         )
+        self._local_root = Path(str(_root))
         self._service: Optional[Any] = None  # BlobServiceClient
         self._containers: Dict[str, Any] = {}
         self.connected = False
@@ -122,11 +128,17 @@ class BlobStore:
                 self.connected = True
                 logger.info("BlobStore connected to Azure")
             except Exception as exc:
-                logger.warning("Azure Blob connection failed: %s — using local", exc)
+                logger.warning(
+                    "Azure Blob connection failed: "
+                    "%s - using local", exc,
+                )
 
         if not self.connected:
             self._local_root.mkdir(parents=True, exist_ok=True)
-            logger.info("BlobStore using local filesystem: %s", self._local_root)
+            logger.info(
+                "BlobStore using local filesystem: %s",
+                self._local_root,
+            )
 
     # ------------------------------------------------------------------
     # Container management
@@ -136,11 +148,16 @@ class BlobStore:
         """Create raw + cleaned containers if they don't exist."""
         for name in (RAW_CONTAINER, CLEANED_CONTAINER):
             try:
-                self._service.create_container(name)
+                self._service.create_container(  # type: ignore[union-attr]
+                    name,
+                )
                 logger.info("Created blob container: %s", name)
             except Exception:
                 pass  # already exists
-            self._containers[name] = self._service.get_container_client(name)
+            self._containers[name] = (
+                self._service  # type: ignore[union-attr]
+                .get_container_client(name)
+            )
 
     def _container(self, tier: str) -> Any:
         """Return the ContainerClient for a tier."""
@@ -411,7 +428,10 @@ class BlobStore:
         )
 
         if self.connected:
-            return self._upload_azure(DataTier.CLEANED, blob_name, raw_bytes, ct, meta)
+            return self._upload_azure(
+                DataTier.CLEANED, blob_name,
+                raw_bytes, ct, meta,
+            )
         return self._upload_local(DataTier.CLEANED, blob_name, raw_bytes, meta)
 
     def download_dataframe(
@@ -597,7 +617,11 @@ class BlobStore:
         return manifest
 
     def __repr__(self) -> str:
-        backend = "Azure Blob Storage" if self.connected else f"Local ({self._local_root})"
+        backend = (
+            "Azure Blob Storage"
+            if self.connected
+            else f"Local ({self._local_root})"
+        )
         return f"BlobStore(backend={backend!r})"
 
 
