@@ -13,6 +13,8 @@ try:
     from shared.mac_scorer import calculate_mac
     from shared.database import get_database
     from shared.crypto_client import get_btc_spy_correlation
+    from shared.crypto_oi_client import get_crypto_futures_oi
+    from shared.cboe_client import get_gamma_indicators
     IMPORTS_OK = True
     IMPORT_ERROR = None
 except Exception as e:
@@ -32,6 +34,10 @@ DEMO_INDICATORS = {
     "fed_balance_sheet_gdp_pct": 28,
     "core_pce_vs_target_bps": 65,
     "btc_spy_correlation": 0.42,
+    "crypto_futures_oi_billions": 28.5,
+    "vvix": 88.0,
+    "gamma_ratio": 0.95,
+    "term_slope": 0.92,
 }
 
 
@@ -87,14 +93,30 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             indicators = DEMO_INDICATORS.copy()
             data_source = "Demo Data"
 
-        # Enrich with BTC-SPY correlation (non-FRED indicator)
+        # Enrich with non-FRED indicators (all non-critical)
         if "btc_spy_correlation" not in indicators:
             try:
                 corr = get_btc_spy_correlation()
                 if corr is not None:
                     indicators["btc_spy_correlation"] = corr
             except Exception:
-                pass  # Non-critical — contagion scores still work without it
+                pass
+
+        if "crypto_futures_oi_billions" not in indicators:
+            try:
+                oi = get_crypto_futures_oi()
+                if oi is not None:
+                    indicators["crypto_futures_oi_billions"] = oi
+            except Exception:
+                pass
+
+        if "vvix" not in indicators:
+            try:
+                vix_level = indicators.get("vix_level")
+                gamma = get_gamma_indicators(vix_level=vix_level)
+                indicators.update(gamma)
+            except Exception:
+                pass
 
         # Calculate MAC score
         result = calculate_mac(indicators)

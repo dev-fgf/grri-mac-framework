@@ -337,6 +337,8 @@ const PILLAR_SUB_INDICATORS = {
     ],
     volatility: [
         ['vix_level', 'VIX', v => v.toFixed(1)],
+        ['vvix', 'VVIX', v => v.toFixed(1)],
+        ['term_slope', 'VIX/VIX3M', v => v.toFixed(2)],
     ],
     policy: [
         ['policy_room_bps', 'Policy Room', v => `${v.toFixed(0)} bps`],
@@ -346,6 +348,7 @@ const PILLAR_SUB_INDICATORS = {
         ['cross_currency_basis_bps', 'XCcy Basis', v => `${Math.abs(v).toFixed(0)} bps`],
         ['financial_oas_bps', 'Fin OAS', v => `${v.toFixed(0)} bps`],
         ['btc_spy_correlation', 'BTC-SPY Corr', v => v.toFixed(2)],
+        ['crypto_futures_oi_billions', 'Crypto OI', v => `$${v.toFixed(0)}B`],
     ],
     private_credit: [
         ['ci_lending_standards', 'SLOOS Tight', v => `${v.toFixed(0)}%`],

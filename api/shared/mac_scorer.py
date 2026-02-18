@@ -256,17 +256,51 @@ def score_positioning_with_details(indicators: dict) -> tuple[float, str, dict]:
 
 
 def score_volatility(indicators: dict) -> tuple[float, str]:
-    """Score volatility pillar from indicators."""
+    """Score volatility pillar from indicators.
+
+    Combines VIX level with gamma/term-structure proxies for 0DTE risk.
+    """
+    scores = []
+
     if "vix_level" in indicators:
         t = THRESHOLDS["volatility"]["vix"]
-        score = score_indicator_range(
+        scores.append(score_indicator_range(
             indicators["vix_level"],
             t["ample_low"], t["ample_high"],
             t["thin_high"], t["breach_high"],
-        )
-        return score, get_status(score)
+        ))
 
-    return 0.5, "NO_DATA"
+    # VVIX (vol-of-vol) — high VVIX means dealers hedging gamma aggressively
+    if "vvix" in indicators:
+        vvix = indicators["vvix"]
+        # Thresholds: <85 calm, 85-100 elevated, 100-120 stressed, >120 extreme
+        if vvix <= 85:
+            scores.append(1.0)
+        elif vvix <= 100:
+            scores.append(1.0 - (vvix - 85) / 15 * 0.5)
+        elif vvix <= 120:
+            scores.append(0.5 - (vvix - 100) / 20 * 0.3)
+        else:
+            scores.append(0.2)
+
+    # Term structure slope (VIX/VIX3M) — backwardation = near-term stress
+    if "term_slope" in indicators:
+        slope = indicators["term_slope"]
+        # Contango (<1.0) is normal; backwardation (>1.0) is stress
+        if slope <= 0.85:
+            scores.append(1.0)
+        elif slope <= 1.0:
+            scores.append(1.0 - (slope - 0.85) / 0.15 * 0.25)
+        elif slope <= 1.15:
+            scores.append(0.75 - (slope - 1.0) / 0.15 * 0.4)
+        else:
+            scores.append(0.2)
+
+    if not scores:
+        return 0.5, "NO_DATA"
+
+    score = sum(scores) / len(scores)
+    return score, get_status(score)
 
 
 def score_policy(indicators: dict) -> tuple[float, str]:
@@ -311,11 +345,13 @@ def score_policy(indicators: dict) -> tuple[float, str]:
 
 def score_contagion(indicators: dict) -> tuple[float, str]:
     """Score contagion pillar from cross-border stress indicators.
-    
+
     Uses:
     - Cross-currency basis (EUR/USD, JPY/USD funding stress)
     - IG-HY spread ratio (credit contagion risk)
     - Financial sector stress (G-SIB proxy)
+    - BTC-SPY correlation (crypto-equity contagion channel)
+    - Crypto futures OI (leveraged crypto derivatives positioning)
     """
     scores = []
     
@@ -369,6 +405,19 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
             scores.append(1.0 - (corr - 0.3) / 0.2 * 0.5)
         elif corr <= 0.7:
             scores.append(0.5 - (corr - 0.5) / 0.2 * 0.3)
+        else:
+            scores.append(0.2)
+
+    # Crypto futures OI (leveraged positioning in crypto derivatives)
+    if "crypto_futures_oi_billions" in indicators:
+        oi = indicators["crypto_futures_oi_billions"]
+        # Thresholds: <$20B normal, $20-35B elevated, $35-50B crowded, >$50B extreme
+        if oi <= 20:
+            scores.append(1.0)
+        elif oi <= 35:
+            scores.append(1.0 - (oi - 20) / 15 * 0.5)
+        elif oi <= 50:
+            scores.append(0.5 - (oi - 35) / 15 * 0.3)
         else:
             scores.append(0.2)
 

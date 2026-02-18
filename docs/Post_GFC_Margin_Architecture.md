@@ -10,14 +10,16 @@ The current positioning pillar tracks **Treasury basis trades**, **CFTC speculat
 
 ## Leverage Channel Taxonomy
 
-### Tier 1 — Currently Tracked (Data Available)
+### Tier 1 — Currently Tracked (Live)
 
 | Channel | Indicator | Pillar | Data Source | Status |
 |---------|-----------|--------|-------------|--------|
 | Treasury basis trade | Estimated $B from CFTC futures | Positioning | CFTC COT | Live |
 | Speculator concentration | Treasury spec net %ile | Positioning | CFTC COT | Live |
 | Short-vol exposure | SVXY AUM | Positioning | ETF providers | Live |
-| Crypto-equity contagion | BTC-SPY 60d correlation | Contagion | Yahoo Finance | **New** |
+| Crypto-equity contagion | BTC-SPY 60d correlation | Contagion | Yahoo Finance | Live |
+| Crypto futures OI | BTC+ETH perp futures OI (est. total mkt) | Contagion | Binance API | **Live** |
+| 0DTE gamma proxy | VVIX, VIX9D/VIX, VIX/VIX3M ratios | Volatility | CBOE CDN | **Live** |
 | Private credit stress | C&I lending standards (SLOOS) | Private Credit | FRED | Live |
 | HY spread (leveraged loan proxy) | HY OAS | Private Credit | FRED | Live |
 
@@ -35,10 +37,9 @@ The current positioning pillar tracks **Treasury basis trades**, **CFTC speculat
 | Channel | Proposed Indicator | Source | Lag |
 |---------|-------------------|--------|-----|
 | Prime brokerage leverage | HF gross/net leverage | Fed SHF survey | Quarterly |
-| 0DTE options gamma | Net dealer gamma exposure (GEX) | CBOE / OptionMetrics | Daily (paid) |
+| 0DTE exact volume | SPX 0DTE % of total options volume | CBOE DataShop (paid) | Daily |
 | CLO issuance rate | BSL CLO new issuance | LCD / PitchBook | Monthly |
 | Total return swap (TRS) | Equity TRS notional | OFR | Quarterly |
-| Crypto futures OI | BTC/ETH perpetual futures OI | CoinGlass / Coinalyze | Daily |
 
 ---
 
@@ -53,20 +54,20 @@ The current positioning pillar tracks **Treasury basis trades**, **CFTC speculat
         ┌──────┬───────┬───┴───┬───────┬──────────┬──────────┐
         │      │       │       │       │          │          │
    Liquidity  Val  Positioning Vol  Policy  Contagion  Priv Credit
-        │             │                      │          │
-   ┌────┴────┐  ┌─────┴──────┐         ┌────┴────┐  ┌──┴──┐
-   │ SOFR-   │  │ Basis trade│         │ XCcy    │  │SLOOS│
-   │ IORB    │  │ Spec net   │         │ basis   │  │ HY  │
-   │ CP-Tsy  │  │ SVXY AUM   │         │ IG-HY   │  │ OAS │
-   │ ON RRP* │  │ Margin     │         │ Fin OAS │  │     │
-   │         │  │ debt*      │         │ BTC-SPY │  │     │
-   │         │  │ 0DTE GEX** │         │ corr    │  │     │
-   │         │  │ Lev ETF*   │         │ Crypto  │  │     │
-   │         │  │ PB lev**   │         │ OI**    │  │     │
-   └─────────┘  └────────────┘         └─────────┘  └─────┘
+        │             │        │              │          │
+   ┌────┴────┐  ┌─────┴────┐ ┌┴────────┐ ┌───┴─────┐ ┌──┴──┐
+   │ SOFR-   │  │ Basis    │ │ VIX     │ │ XCcy    │ │SLOOS│
+   │ IORB    │  │ trade    │ │ VVIX    │ │ basis   │ │ HY  │
+   │ CP-Tsy  │  │ Spec net │ │ VIX/    │ │ IG-HY   │ │ OAS │
+   │ ON RRP* │  │ SVXY AUM │ │ VIX3M   │ │ Fin OAS │ │     │
+   │         │  │ Margin   │ │ VIX9D/  │ │ BTC-SPY │ │     │
+   │         │  │ debt*    │ │ VIX     │ │ corr    │ │     │
+   │         │  │ Lev ETF* │ │ 0DTE**  │ │ Crypto  │ │     │
+   │         │  │ PB lev***│ │         │ │ Fut OI  │ │     │
+   └─────────┘  └──────────┘ └─────────┘ └─────────┘ └─────┘
 
-   * = Tier 2 (next to implement)
-  ** = Tier 3 (aspirational, proprietary data)
+   Bold = Live (Tier 1)    * = Tier 2    ** = Tier 2 (exact)
+  *** = Tier 3 (proprietary)
 ```
 
 ---
@@ -120,6 +121,49 @@ The BTC-SPY 60-day rolling correlation is now computed in the API as a **contagi
 | 0.3–0.5 | 0.75–0.50 | Moderate — some shared factor exposure |
 | 0.5–0.7 | 0.50–0.20 | Elevated — crypto acts as risk asset |
 | > 0.7 | 0.20 | High — contagion channel active |
+
+---
+
+## Crypto Futures OI: Implementation Details
+
+Aggregate BTC + ETH perpetual futures open interest is fetched from **Binance's public Futures API** (no key required). Binance is the largest crypto derivatives exchange (~35% of global OI), so we scale up by 1/0.35 to estimate total market OI.
+
+**Client**: `api/shared/crypto_oi_client.py`
+**Endpoints**:
+- `GET https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT`
+- `GET https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT`
+- (Same for ETHUSDT)
+
+**Scoring thresholds** (contagion pillar):
+| Total Market OI | Score | Interpretation |
+|----------------|-------|----------------|
+| < $20B | 1.0 | Normal — manageable leverage |
+| $20–35B | 0.75–0.50 | Elevated — crowding building |
+| $35–50B | 0.50–0.20 | Crowded — liquidation cascade risk |
+| > $50B | 0.20 | Extreme — systemic contagion risk |
+
+---
+
+## 0DTE / Gamma Proxy: Implementation Details
+
+Since exact 0DTE options volume requires paid CBOE DataShop access, we proxy gamma concentration risk using the **VIX term structure** from CBOE's free CDN:
+
+**Client**: `api/shared/cboe_client.py`
+**Sources**:
+- `https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX9D_History.csv` (9-day VIX)
+- `https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX3M_History.csv` (3-month VIX)
+- `https://cdn.cboe.com/api/global/us_indices/daily_prices/VVIX_History.csv` (vol-of-vol)
+
+**Derived metrics**:
+| Metric | Formula | Stress Signal |
+|--------|---------|---------------|
+| Gamma ratio | VIX9D / VIX | > 1.0 → near-term gamma elevated |
+| Term slope | VIX / VIX3M | > 1.0 → backwardation (stress) |
+| VVIX level | Direct | > 100 → intense dealer hedging |
+
+**Scoring** (volatility pillar, averaged with VIX):
+- **VVIX**: <85 calm (1.0), 85–100 elevated (0.75–0.50), >120 extreme (0.20)
+- **Term slope**: <0.85 contango (1.0), 0.85–1.0 normal (0.75), >1.15 deep backwardation (0.20)
 
 ---
 
