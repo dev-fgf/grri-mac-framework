@@ -317,6 +317,9 @@ function updateDashboard(data) {
     if (data.breach_flags && data.breach_flags.length > 0) {
         showAlert(`Warning: ${data.breach_flags.join(', ')} showing elevated stress`);
     }
+
+    // Data source health banner
+    checkDataHealth(data.data_health);
 }
 
 // Sub-indicator definitions per pillar
@@ -1012,6 +1015,37 @@ function showAlert(message) {
     const text = document.getElementById('alertText');
     text.textContent = message;
     section.style.display = 'block';
+}
+
+function checkDataHealth(health) {
+    const banner = document.getElementById('dataHealthBanner');
+    const text = document.getElementById('dataHealthText');
+    if (!banner || !text || !health) return;
+
+    if (health.status === 'healthy' || health.status === 'unknown') {
+        banner.style.display = 'none';
+        return;
+    }
+
+    const issues = [];
+    if (health.degraded_sources && health.degraded_sources.length) {
+        issues.push(health.degraded_sources.join(', ') + ' (degraded)');
+    }
+    if (health.stale_sources && health.stale_sources.length) {
+        issues.push(health.stale_sources.join(', ') + ' (stale)');
+    }
+    if (health.down_sources && health.down_sources.length) {
+        issues.push(health.down_sources.join(', ') + ' (down)');
+    }
+
+    if (issues.length) {
+        text.textContent =
+            'Data quality: ' + issues.join('; ') +
+            '. Some indicators may use cached values.';
+        banner.style.display = 'flex';
+    } else {
+        banner.style.display = 'none';
+    }
 }
 
 // ============================================

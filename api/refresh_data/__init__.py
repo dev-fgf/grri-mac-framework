@@ -3,6 +3,7 @@
 import json
 import sys
 import os
+import time
 from datetime import datetime, timedelta
 import azure.functions as func
 
@@ -10,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared.fred_client import FREDClient
 from shared.database import get_database
+from shared.health_registry import validate_source, make_down_report, record_health
 
 # Key FRED series to keep updated in Azure Tables
 FRED_SERIES_TO_CACHE = [
@@ -30,7 +32,7 @@ FRED_SERIES_TO_CACHE = [
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """
     Fetch latest market data from FRED and store in Azure Table.
-    
+
     This endpoint should be called periodically (e.g., weekly via Actions)
     to keep the indicator cache fresh. The main MAC endpoint then reads from
     the cache instead of fetching live data.
@@ -41,12 +43,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "sources": {},
         "success": True,
     }
-    
+
     # === FRED Data ===
+    _t = time.time()
     try:
         client = FREDClient()
         indicators = client.get_all_indicators()
-        
+
         if indicators:
             saved = db.save_indicators(indicators, source="FRED")
             results["sources"]["FRED"] = {
@@ -54,23 +57,33 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "indicator_count": len(indicators),
                 "indicators": indicators,
             }
+            report = validate_source("FRED", indicators)
         else:
             results["sources"]["FRED"] = {
                 "status": "no_data",
                 "error": "FRED API returned no data (check API key)",
             }
             results["success"] = False
+            report = validate_source("FRED", {})
+
+        report["latency_ms"] = int((time.time() - _t) * 1000)
+        record_health(db, "FRED", report)
     except Exception as e:
         results["sources"]["FRED"] = {
             "status": "error",
             "error": str(e),
         }
         results["success"] = False
-    
+        try:
+            record_health(db, "FRED", make_down_report("FRED", str(e)))
+        except Exception:
+            pass
+
     # === CFTC Data ===
+    _t = time.time()
     try:
         from shared.cftc_client import get_cftc_client, COT_REPORTS_AVAILABLE
-        
+
         if COT_REPORTS_AVAILABLE:
             cftc_client = get_cftc_client()
             positioning_data = cftc_client.get_positioning_indicators(
@@ -85,14 +98,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     cftc_indicators[f"{key}_percentile"] = data.get("percentile")
                     cftc_indicators[f"{key}_signal"] = data.get("signal")
                     cftc_indicators[f"{key}_net_position"] = data.get("net_position")
-                
+
                 # Get aggregate score
                 score, status = cftc_client.get_aggregate_positioning_score(
                     lookback_weeks=52
                 )
                 cftc_indicators["positioning_score"] = score
                 cftc_indicators["positioning_status"] = status
-                
+
                 saved = db.save_indicators(cftc_indicators, source="CFTC")
                 results["sources"]["CFTC"] = {
                     "status": "success" if saved else "save_failed",
@@ -101,11 +114,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     "aggregate_score": score,
                     "aggregate_status": status,
                 }
+                report = validate_source("CFTC", {"positioning_score": score})
             else:
                 results["sources"]["CFTC"] = {
                     "status": "no_data",
                     "error": "CFTC fetch returned no data",
                 }
+                report = validate_source("CFTC", {})
+
+            report["latency_ms"] = int((time.time() - _t) * 1000)
+            record_health(db, "CFTC", report)
         else:
             results["sources"]["CFTC"] = {
                 "status": "unavailable",
@@ -116,10 +134,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "status": "error",
             "error": str(e),
         }
-    
+        try:
+            record_health(db, "CFTC", make_down_report("CFTC", str(e)))
+        except Exception:
+            pass
+
     # Summary
     results["db_connected"] = db.connected
-    
+
     # === Update FRED Series Cache (incremental - last 30 days) ===
     fred_status = results["sources"].get("FRED", {}).get("status")
     if db.connected and fred_status == "success":
@@ -134,9 +156,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "status": "error",
                 "error": str(e),
             }
-    
+
     status_code = 200 if results["success"] else 207  # 207 = partial success
-    
+
     return func.HttpResponse(
         json.dumps(results, indent=2),
         status_code=status_code,
@@ -147,22 +169,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 def update_fred_series_cache(client: FREDClient, db) -> int:
     """
     Update FRED series in Azure Tables with recent data.
-    
+
     Fetches the last 30 days of data for key series and appends
     to existing cached series. This keeps the Azure Tables current
     without re-fetching the entire historical dataset.
-    
+
     Returns count of series updated.
     """
     updated = 0
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=30)
-    
+
     for series_id in FRED_SERIES_TO_CACHE:
         try:
             # Get existing series from Azure
             existing = db.get_fred_series(series_id)
-            
+
             # Fetch recent data from FRED
             observations = client.get_series(
                 series_id,
@@ -170,10 +192,10 @@ def update_fred_series_cache(client: FREDClient, db) -> int:
                 end_date=end_date,
                 limit=100
             )
-            
+
             if not observations:
                 continue
-            
+
             # Convert to lists
             new_dates = []
             new_values = []
@@ -184,16 +206,16 @@ def update_fred_series_cache(client: FREDClient, db) -> int:
                         new_values.append(float(obs["value"]))
                     except ValueError:
                         continue
-            
+
             if not new_dates:
                 continue
-            
+
             # Merge with existing data
             if existing:
                 # Combine existing + new, remove duplicates
                 all_dates = existing.get("dates", []) + new_dates
                 all_values = existing.get("values", []) + new_values
-                
+
                 # Deduplicate by date (keep first occurrence = existing data)
                 seen = set()
                 merged_dates = []
@@ -203,7 +225,7 @@ def update_fred_series_cache(client: FREDClient, db) -> int:
                         seen.add(d)
                         merged_dates.append(d)
                         merged_values.append(v)
-                
+
                 # Sort by date
                 sorted_pairs = sorted(zip(merged_dates, merged_values))
                 merged_dates = [p[0] for p in sorted_pairs]
@@ -211,17 +233,17 @@ def update_fred_series_cache(client: FREDClient, db) -> int:
             else:
                 merged_dates = new_dates
                 merged_values = new_values
-            
+
             # Save back to Azure
             success = db.save_fred_series(series_id, {
                 "dates": merged_dates,
                 "values": merged_values,
             })
-            
+
             if success:
                 updated += 1
-                
+
         except Exception:
             continue
-    
+
     return updated

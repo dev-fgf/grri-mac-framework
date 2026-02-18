@@ -26,6 +26,13 @@
     </nav>
 
     <main class="main-content">
+        <!-- Data Source Health Banner (admin) -->
+        <div class="data-health-banner" id="dataHealthBanner" style="display: none;">
+            <span class="health-icon">&#9888;</span>
+            <span class="health-text" id="dataHealthText"></span>
+            <button class="health-dismiss" onclick="this.parentElement.style.display='none'">&times;</button>
+        </div>
+
         <!-- Dashboard Section -->
         <section id="dashboard" class="section active">
             <!-- Hero: Current Stress Level -->

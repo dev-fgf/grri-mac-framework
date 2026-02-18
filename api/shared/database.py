@@ -27,6 +27,7 @@ class MACDatabase:
     GRRI_TABLE_NAME = "grridata"
     INDICATORS_TABLE_NAME = "macindicators"  # Raw market data cache
     FRED_SERIES_TABLE_NAME = "fredseries"  # Raw FRED time series data
+    HEALTH_TABLE_NAME = "sourcehealth"  # Data source health monitoring
 
     def __init__(self):
         self.connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
@@ -174,6 +175,114 @@ class MACDatabase:
         
         age_seconds = cached.get("age_seconds", float("inf"))
         return age_seconds < (max_age_hours * 3600)
+
+    # ==================== SOURCE HEALTH MONITORING ====================
+
+    def _get_health_table(self):
+        """Get or create the source health table client."""
+        if not self.connected or not self.connection_string:
+            return None
+
+        try:
+            service_client = TableServiceClient.from_connection_string(
+                self.connection_string
+            )
+            try:
+                service_client.create_table(self.HEALTH_TABLE_NAME)
+            except ResourceExistsError:
+                pass
+            return service_client.get_table_client(self.HEALTH_TABLE_NAME)
+        except Exception as e:
+            logger.error(f"Failed to get health table: {e}")
+            return None
+
+    def save_health_report(self, source_name: str, report: dict) -> bool:
+        """Save a data source health report.
+
+        Args:
+            source_name: Source key (e.g. "FRED", "CBOE")
+            report: Health report dict from health_registry.validate_source()
+
+        Returns:
+            True if saved successfully
+        """
+        table = self._get_health_table()
+        if not table:
+            # Fallback: store in memory
+            if not hasattr(self, "_health_cache"):
+                self._health_cache = {}
+            self._health_cache[source_name] = report
+            return True
+
+        try:
+            entity = {
+                "PartitionKey": "CURRENT",
+                "RowKey": source_name,
+                "status": report.get("status", "unknown"),
+                "last_success": report.get("last_success", ""),
+                "last_attempt": report.get("last_attempt", ""),
+                "error": report.get("error", ""),
+                "missing_indicators": json.dumps(
+                    report.get("missing_indicators", [])
+                ),
+                "range_violations": json.dumps(
+                    report.get("range_violations", [])
+                ),
+                "indicators_returned": json.dumps(
+                    report.get("indicators_returned", [])
+                ),
+                "indicators_expected": json.dumps(
+                    report.get("indicators_expected", [])
+                ),
+                "latency_ms": report.get("latency_ms", 0),
+            }
+            table.upsert_entity(entity, mode="replace")
+            return True
+        except Exception as e:
+            logger.debug(f"Failed to save health report for {source_name}: {e}")
+            return False
+
+    def get_all_health_reports(self) -> dict:
+        """Get all source health reports.
+
+        Returns:
+            Dict of source_name -> health report dict
+        """
+        table = self._get_health_table()
+        if not table:
+            return getattr(self, "_health_cache", {})
+
+        try:
+            entities = table.query_entities(
+                query_filter="PartitionKey eq 'CURRENT'"
+            )
+            reports = {}
+            for entity in entities:
+                source = entity["RowKey"]
+                reports[source] = {
+                    "source": source,
+                    "status": entity.get("status", "unknown"),
+                    "last_success": entity.get("last_success") or None,
+                    "last_attempt": entity.get("last_attempt") or None,
+                    "error": entity.get("error") or None,
+                    "missing_indicators": json.loads(
+                        entity.get("missing_indicators", "[]")
+                    ),
+                    "range_violations": json.loads(
+                        entity.get("range_violations", "[]")
+                    ),
+                    "indicators_returned": json.loads(
+                        entity.get("indicators_returned", "[]")
+                    ),
+                    "indicators_expected": json.loads(
+                        entity.get("indicators_expected", "[]")
+                    ),
+                    "latency_ms": entity.get("latency_ms"),
+                }
+            return reports
+        except Exception as e:
+            logger.debug(f"Failed to read health reports: {e}")
+            return getattr(self, "_health_cache", {})
 
     # ==================== EXISTING MAC HISTORY METHODS ====================
 
