@@ -24,6 +24,23 @@ from .shock_propagation import (
     PropagationResult,
     CascadeAnalysis,
 )
+from .cascade_var import (
+    SVAREstimate,
+    RobustnessResult,
+    AccelerationFactors,
+    GrangerResult,
+    CascadeVARReport,
+    estimate_svar,
+    run_svar_pipeline,
+    robustness_all_orderings,
+    estimate_acceleration_factors,
+    granger_causality_tests,
+    transmission_matrix_to_dict,
+    update_interaction_matrix,
+    format_svar_report,
+    CHOLESKY_ORDERING,
+    CRITICAL_THRESHOLDS,
+)
 
 __all__ = [
     # Monte Carlo
@@ -40,4 +57,20 @@ __all__ = [
     "ShockPropagationModel",
     "PropagationResult",
     "CascadeAnalysis",
+    # SVAR cascade estimation (v6 §10.2)
+    "SVAREstimate",
+    "RobustnessResult",
+    "AccelerationFactors",
+    "GrangerResult",
+    "CascadeVARReport",
+    "estimate_svar",
+    "run_svar_pipeline",
+    "robustness_all_orderings",
+    "estimate_acceleration_factors",
+    "granger_causality_tests",
+    "transmission_matrix_to_dict",
+    "update_interaction_matrix",
+    "format_svar_report",
+    "CHOLESKY_ORDERING",
+    "CRITICAL_THRESHOLDS",
 ]

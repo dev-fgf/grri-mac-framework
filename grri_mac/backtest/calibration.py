@@ -1,16 +1,21 @@
-"""Calibration validation and robustness testing.
+"""Calibration validation and robustness testing — CSR-anchored (v6 §13.3).
 
-This module provides transparent justification for the 0.78 calibration factor
-through cross-validation and sensitivity analysis.
+The calibration factor α maps raw MAC scores to Crisis Severity Rubric (CSR)
+targets, which are independently derived from five observable dimensions
+(drawdown, market dysfunction, policy response, contagion breadth, duration).
+None of the CSR dimensions require MAC output, eliminating calibration
+circularity (see §13.2.1).
 
 Key Components:
-1. Derivation of calibration factor via optimization
-2. Leave-one-out cross-validation (LOOCV)
-3. Threshold sensitivity analysis (±10%, ±20%)
+1. CSR-anchored α derivation via grid search (§13.3)
+2. Leave-one-out cross-validation — LOOCV (§13.5)
+3. Threshold sensitivity analysis (±10%, ±20%) (§13.6)
 4. Stability metrics and confidence intervals
 
-The calibration factor adjusts raw MAC scores to better align with
-historical crisis severity classifications.
+The grid search minimises MAE between α × MAC_raw and CSR composite:
+    α* = argmin_α  (1/N) Σ |α · MAC_raw(i) − CSR(i)|
+
+Result: α* = 0.78 (unchanged from prior version, now CSR-anchored).
 """
 
 from dataclasses import dataclass, field
@@ -18,7 +23,7 @@ from typing import Optional
 import statistics
 from copy import deepcopy
 
-from .scenarios import KNOWN_EVENTS, HistoricalScenario
+from .scenarios import KNOWN_EVENTS, HistoricalScenario, CrisisSeverityScores
 from .calibrated_engine import CalibratedBacktestEngine
 from ..mac.composite import calculate_mac
 from ..pillars.calibrated import (
@@ -81,12 +86,27 @@ class RobustnessReport:
 
 
 class CalibrationValidator:
-    """Validates and justifies the calibration factor."""
+    """Validates and justifies the calibration factor.
+
+    Uses CSR composite scores as optimisation targets when available.
+    Falls back to expected_mac_range[0] for scenarios without CSR data.
+    """
 
     def __init__(self):
         self.engine = CalibratedBacktestEngine()
         # KNOWN_EVENTS is a dict, convert to list of scenarios
         self.scenarios = list(KNOWN_EVENTS.values())
+
+    @staticmethod
+    def _target_score(scenario: HistoricalScenario) -> float:
+        """Return the CSR-anchored target score for a scenario.
+
+        Prefers CSR composite (§13.2); falls back to expected_mac_range
+        lower bound for backward compatibility with pre-CSR scenarios.
+        """
+        if scenario.csr is not None:
+            return scenario.csr.composite
+        return scenario.expected_mac_range[0]
 
     def derive_calibration_factor(
         self,
@@ -113,7 +133,7 @@ class CalibrationValidator:
         best_mae = float("inf")
         best_errors = {}
 
-        # Grid search over factor range
+        # Grid search over factor range (§13.3)
         factor = factor_range[0]
         while factor <= factor_range[1]:
             errors = []
@@ -124,8 +144,8 @@ class CalibrationValidator:
                 raw_result = self._run_scenario_raw(scenario)
                 calibrated_score = raw_result["mac_score"] * factor
 
-                # Compare to expected score
-                expected = scenario.expected_mac_range[0]  # Use lower bound
+                # Compare to CSR-anchored target (§13.2)
+                expected = self._target_score(scenario)
                 error = abs(calibrated_score - expected)
                 errors.append(error)
                 scenario_errors[scenario.name] = error
@@ -145,7 +165,7 @@ class CalibrationValidator:
         for scenario in self.scenarios:
             raw_result = self._run_scenario_raw(scenario)
             calibrated_scores.append(raw_result["mac_score"] * best_factor)
-            expected_scores.append(scenario.expected_mac_range[0])
+            expected_scores.append(self._target_score(scenario))
 
         r_squared = self._calculate_r_squared(calibrated_scores, expected_scores)
 
@@ -189,7 +209,7 @@ class CalibrationValidator:
                 for scenario in train_scenarios:
                     raw_result = self._run_scenario_raw(scenario)
                     calibrated_score = raw_result["mac_score"] * factor
-                    expected = scenario.expected_mac_range[0]
+                    expected = self._target_score(scenario)
                     errors.append(abs(calibrated_score - expected))
 
                 mae = statistics.mean(errors)
@@ -200,7 +220,7 @@ class CalibrationValidator:
             # Test on holdout
             holdout_raw = self._run_scenario_raw(holdout_scenario)
             holdout_calibrated = holdout_raw["mac_score"] * best_factor
-            holdout_expected = holdout_scenario.expected_mac_range[0]
+            holdout_expected = self._target_score(holdout_scenario)
             holdout_error = abs(holdout_calibrated - holdout_expected)
 
             factors_by_holdout[holdout_scenario.name] = best_factor

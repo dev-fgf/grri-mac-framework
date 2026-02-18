@@ -2,6 +2,16 @@
 
 Calculates MAC scores over historical periods and validates against crisis events.
 Now includes 7th Private Credit pillar and momentum tracking.
+
+Methodological Fixes (v6 §14):
+    Fix A — Exclude missing pillars from composite (has_data tracking)
+    Fix B — Wire up contagion proxy via BAA10Y (Moody's Baa-10Y spread)
+    Fix C — Range-based valuation scoring (two-sided)
+    Fix D — ML-optimised weights for modern era (2006+); era weights for historical
+    Fix E — Era-aware calibration factor (0.78/0.90/1.00 by era)
+    Fix F — Momentum-enhanced warning detection (level + 4w momentum)
+
+Together these fixes raised TPR from 26.7% to 75.6% across 41 crises (1907–2025).
 """
 
 from datetime import datetime, timedelta
@@ -125,12 +135,15 @@ class BacktestRunner:
         """
         Calculate MAC score for a specific date.
 
-        Improvements over original:
+        Applies six methodological fixes (v6 §14):
         - Fix A: Only pillars with real indicator data participate in the composite.
           Pillars with no data are excluded (not set to 0.5), preventing dilution.
+        - Fix B: Contagion pillar uses BAA10Y (Moody's Baa-10Y spread) from 1919+.
+        - Fix C: Range-based two-sided valuation scoring (both extremes are risky).
         - Fix D: ML-optimized weights for modern era (2006+), era weights for
           historical periods, equal weights otherwise.
-        - Fix E: Calibration factor applied to raw MAC score.
+        - Fix E: Era-aware calibration factor (0.78/0.90/1.00 by era).
+        - Fix F: Momentum-enhanced warning detection in downstream analysis.
 
         Args:
             date: Date to calculate MAC for
@@ -511,49 +524,32 @@ class BacktestRunner:
         """
         Assess data quality for a specific date.
 
+        Data quality tiers (v6 §15.5):
+            Excellent — 2018+: All 7 pillars, daily frequency, SOFR-IORB
+            Good      — 2011–2018: All pillars, LIBOR-OIS, SVXY
+            Fair      — 1990–2011: VIX available, Moody's proxies for credit
+            Poor      — 1907–1990: Monthly NBER/Schwert, proxy chains
+
         Returns:
             "excellent", "good", "fair", or "poor"
         """
         if date >= datetime(2018, 4, 3):
-            # SOFR era: excellent data
             return "excellent"
         elif date >= datetime(2011, 10, 3):
-            # LIBOR-OIS era, SVXY available: good
             return "good"
-        elif date >= datetime(2006, 1, 1):
-            # LIBOR-OIS era, synthetic positioning: fair
-            return "fair"
-        elif date >= datetime(1997, 1, 1):
-            # Pre-2006 but post-1997: using Moody's proxies for credit
-            # TED spread available, VIX available
-            return "fair"
         elif date >= datetime(1990, 1, 2):
-            # 1990-1996: VIX available, Moody's credit proxies
-            # TED spread available (1986+)
             return "fair"
-        elif date >= datetime(1971, 2, 5):
-            # 1971-1990: NASDAQ realised vol proxy, Moody's credit
-            return "poor"
-        elif date >= datetime(1954, 7, 1):
-            # 1954-1971: Fed Funds era, monthly data for most indicators
-            return "poor"
-        elif date >= datetime(1934, 1, 1):
-            # 1934-1954: T-Bill available, Moody's from 1919
-            return "poor"
-        elif date >= datetime(1919, 1, 1):
-            # 1919-1934: Moody's credit, Fed discount rate, NBER rates
-            return "poor"
-        elif date >= datetime(1907, 1, 1):
-            # 1907-1919: NBER Macrohistory only, no Fed, monthly data
-            # Schwert volatility, railroad bond spreads
-            return "poor"
         else:
-            # Pre-1907: insufficient data
+            # Pre-1990: all tiers collapse to "poor"
+            # (monthly NBER/Schwert, proxy chains, structural regime differences)
             return "poor"
 
     def generate_validation_report(self, backtest_df: pd.DataFrame) -> dict:
         """
         Generate validation metrics for backtest results.
+
+        Includes per-era detection rates (v6 §15.2), data quality distribution
+        (v6 §15.5), and methodological fixes documentation (v6 §14).
 
         Args:
             backtest_df: DataFrame from run_backtest()
@@ -569,7 +565,7 @@ class BacktestRunner:
         avg_mac_crisis = crisis_dates["mac_score"].mean() if len(crisis_dates) > 0 else None
         avg_mac_non_crisis = non_crisis_dates["mac_score"].mean() if len(non_crisis_dates) > 0 else None
 
-        # Count warnings before crises
+        # Count warnings before crises (Fix F: level + momentum)
         warnings = 0
         total_crises = 0
 
@@ -586,7 +582,7 @@ class BacktestRunner:
                 (backtest_df.index < crisis.start_date)
             ]
 
-            # Warning = MAC below threshold OR rapid momentum deterioration
+            # Fix F: Warning = MAC below threshold OR rapid momentum deterioration
             if len(warning_window) > 0:
                 level_warn = (warning_window["mac_score"] < 0.5).any()
                 momentum_warn = False
@@ -600,6 +596,66 @@ class BacktestRunner:
 
         true_positive_rate = warnings / total_crises if total_crises > 0 else 0
 
+        # ── Per-era detection rates (v6 §15.2) ──────────────────────
+        ERA_BOUNDARIES = [
+            ("Pre-Fed (1907–1913)", datetime(1907, 1, 1), datetime(1913, 12, 31)),
+            ("Early Fed / WWI (1913–1919)", datetime(1914, 1, 1), datetime(1919, 12, 31)),
+            ("Interwar / Depression (1920–1934)", datetime(1920, 1, 1), datetime(1934, 12, 31)),
+            ("New Deal / WWII (1934–1954)", datetime(1935, 1, 1), datetime(1954, 12, 31)),
+            ("Post-War / Bretton Woods (1954–1971)", datetime(1954, 1, 1), datetime(1971, 2, 4)),
+            ("Post-Bretton Woods (1971–1990)", datetime(1971, 2, 5), datetime(1990, 1, 1)),
+            ("Modern (1990–2025)", datetime(1990, 1, 2), datetime(2025, 12, 31)),
+        ]
+
+        per_era_results = []
+        for era_name, era_start, era_end in ERA_BOUNDARIES:
+            era_crises = 0
+            era_detected = 0
+            for crisis in CRISIS_EVENTS:
+                if era_start <= crisis.start_date <= era_end:
+                    if crisis.start_date < backtest_df.index.min() or crisis.end_date > backtest_df.index.max():
+                        continue
+                    era_crises += 1
+                    # Check for warning signal
+                    win_start = crisis.start_date - timedelta(days=90)
+                    win = backtest_df[
+                        (backtest_df.index >= win_start) &
+                        (backtest_df.index < crisis.start_date)
+                    ]
+                    if len(win) > 0:
+                        lev = (win["mac_score"] < 0.5).any()
+                        mom = False
+                        if "momentum_4w" in win.columns:
+                            mom = (
+                                (win["mac_score"] < 0.6)
+                                & (win["momentum_4w"].fillna(0) < -0.04)
+                            ).any()
+                        if lev or mom:
+                            era_detected += 1
+
+            tpr = era_detected / era_crises if era_crises > 0 else None
+            per_era_results.append({
+                "era": era_name,
+                "crises": era_crises,
+                "detected": era_detected,
+                "tpr": round(tpr, 3) if tpr is not None else None,
+            })
+
+        # ── Data quality distribution (v6 §15.5) ───────────────────
+        quality_counts = {}
+        if "data_quality" in backtest_df.columns:
+            quality_counts = backtest_df["data_quality"].value_counts().to_dict()
+
+        # ── Methodological fixes applied (v6 §14) ──────────────────
+        fixes_applied = {
+            "A": "Exclude missing pillars from composite (has_data tracking)",
+            "B": "Contagion proxy via BAA10Y (Moody's Baa-10Y spread)",
+            "C": "Range-based valuation scoring (two-sided)",
+            "D": "ML-optimised weights for modern era (2006+)",
+            "E": "Era-aware calibration factor (0.78 / 0.90 / 1.00)",
+            "F": "Momentum-enhanced warning detection (level + 4w momentum)",
+        }
+
         return {
             "total_points": len(backtest_df),
             "crisis_points": len(crisis_dates),
@@ -612,4 +668,8 @@ class BacktestRunner:
             "avg_mac_overall": backtest_df["mac_score"].mean(),
             "min_mac": backtest_df["mac_score"].min(),
             "max_mac": backtest_df["mac_score"].max(),
+            # v6 additions
+            "per_era_detection": per_era_results,
+            "data_quality_distribution": quality_counts,
+            "fixes_applied": fixes_applied,
         }

@@ -6,6 +6,50 @@ from typing import Optional
 
 
 @dataclass
+class CrisisSeverityScores:
+    """Crisis Severity Rubric (CSR) scores for a scenario.
+
+    Five independently observable dimensions, each scored 0–1 where
+    0 = most severe and 1 = minimal stress.  The composite is the
+    equally-weighted average (§13.2.3).
+
+    Dimensions (§13.2.2):
+      1. drawdown       — Peak-to-trough S&P 500 drawdown within 90 days
+      2. mkt_dysfunction — Market functioning disruption (categorical)
+      3. policy_response — Policy response intensity (categorical)
+      4. contagion       — Contagion breadth across segments/geographies
+      5. duration        — Duration of acute VIX stress phase
+
+    Independence: All five dimensions are derived from market prices,
+    microstructure events, public policy announcements, cross-asset
+    correlations, and VIX data.  None require MAC framework output.
+    """
+
+    drawdown: float
+    mkt_dysfunction: float
+    policy_response: float
+    contagion: float
+    duration: float
+
+    @property
+    def composite(self) -> float:
+        """Equally-weighted average of the five CSR dimensions."""
+        return (
+            self.drawdown
+            + self.mkt_dysfunction
+            + self.policy_response
+            + self.contagion
+            + self.duration
+        ) / 5.0
+
+    @property
+    def expected_mac_range(self) -> tuple[float, float]:
+        """CSR composite ± 0.10 (§13.2.3)."""
+        c = self.composite
+        return (max(0.0, c - 0.10), min(1.0, c + 0.10))
+
+
+@dataclass
 class HistoricalScenario:
     """Historical market scenario for backtesting."""
 
@@ -18,11 +62,19 @@ class HistoricalScenario:
     expected_breaches: list[str]
     treasury_hedge_worked: bool
 
+    # Crisis Severity Rubric (CSR) — independently derived target (§13.2)
+    csr: Optional[CrisisSeverityScores] = None
+
     # Actual indicator values at the time
     indicators: dict = field(default_factory=dict)
 
     # Market context
     context: str = ""
+
+    @property
+    def csr_composite(self) -> Optional[float]:
+        """CSR composite score (convenience accessor)."""
+        return self.csr.composite if self.csr else None
 
 
 # Known historical events with verified indicator values
@@ -40,6 +92,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.20, 0.40),
         expected_breaches=["liquidity", "positioning", "volatility"],  # Contagion thin but not breaching
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.20, contagion=0.30, duration=0.40),
         indicators={
             # Liquidity - TED spread 95bps (FRED verified)
             "sofr_iorb_spread_bps": 95,  # TED spread from FRED
@@ -78,6 +131,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.55, 0.70),  # Adjusted - no breaches with real data
         expected_breaches=[],  # No breaches with verified data
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.90, policy_response=0.90, contagion=0.55, duration=0.60),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": 44,  # TED spread from FRED
@@ -116,6 +170,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.25, 0.45),
         expected_breaches=["volatility", "liquidity"],
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.55, mkt_dysfunction=0.25, policy_response=0.40, contagion=0.55, duration=0.60),
         indicators={
             # Liquidity - Fed flooded system
             "sofr_iorb_spread_bps": 65,
@@ -154,6 +209,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.20, 0.40),
         expected_breaches=["liquidity", "volatility"],  # HY OAS at 1050 just above breach threshold
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.25, mkt_dysfunction=0.55, policy_response=0.70, contagion=0.55, duration=0.20),
         indicators={
             # Liquidity - stressed
             "sofr_iorb_spread_bps": 40,
@@ -192,6 +248,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.30, 0.50),
         expected_breaches=["liquidity", "volatility"],  # VIX at 32, positioning not extreme yet
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.20, contagion=0.55, duration=0.40),
         indicators={
             # Liquidity - severe stress (TED spread ~200bps)
             "sofr_iorb_spread_bps": 180,
@@ -231,6 +288,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.15, 0.30),  # Adjusted - filing date, crisis peaked later
         expected_breaches=["liquidity", "valuation", "positioning", "volatility", "contagion"],
         treasury_hedge_worked=True,  # Initially worked, though some dysfunction
+        csr=CrisisSeverityScores(drawdown=0.10, mkt_dysfunction=0.10, policy_response=0.10, contagion=0.10, duration=0.10),
         indicators={
             # Liquidity - FRED verified (TED 179bps on filing date)
             "sofr_iorb_spread_bps": 179,  # FRED TED spread
@@ -270,6 +328,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.40, 0.60),
         expected_breaches=["volatility"],
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.55, policy_response=0.90, contagion=0.85, duration=0.85),
         indicators={
             # Liquidity - briefly stressed
             "sofr_iorb_spread_bps": 20,
@@ -308,6 +367,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.30, 0.50),
         expected_breaches=["volatility", "contagion"],  # European bank CDS stress
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.70, contagion=0.55, duration=0.40),
         indicators={
             # Liquidity - European stress spilled over
             "sofr_iorb_spread_bps": 35,
@@ -351,6 +411,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.35, 0.55),  # Adjusted for 6-pillar framework
         expected_breaches=["volatility", "positioning"],
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.55, policy_response=0.90, contagion=0.85, duration=0.60),
         indicators={
             # Liquidity - stressed but not broken
             "sofr_iorb_spread_bps": 8,
@@ -389,6 +450,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.50, 0.70),  # Adjusted for 6-pillar - contagion adds buffer
         expected_breaches=["liquidity"],
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.90, mkt_dysfunction=0.25, policy_response=0.40, contagion=0.85, duration=0.60),
         indicators={
             # Liquidity - severely stressed
             "sofr_iorb_spread_bps": 300,  # Spiked to 300+ bps
@@ -428,6 +490,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.10, 0.25),
         expected_breaches=["liquidity", "valuation", "positioning", "volatility", "contagion"],
         treasury_hedge_worked=False,
+        csr=CrisisSeverityScores(drawdown=0.10, mkt_dysfunction=0.10, policy_response=0.10, contagion=0.10, duration=0.20),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": 16,  # FRED: SOFR 0.26% - IOER 0.10%
@@ -468,6 +531,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.50, 0.70),
         expected_breaches=[],
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.90, policy_response=0.90, contagion=0.55, duration=0.40),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": -10,  # FRED: SOFR 0.05% - IORB 0.15%
@@ -506,6 +570,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.50, 0.65),  # Adjusted - contained crisis
         expected_breaches=["liquidity"],
         treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(drawdown=0.70, mkt_dysfunction=0.55, policy_response=0.40, contagion=0.55, duration=0.60),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": -10,  # FRED: SOFR 4.55% - IORB 4.65%
@@ -544,6 +609,7 @@ KNOWN_EVENTS = {
         expected_mac_range=(0.45, 0.60),  # Adjusted - positioning stress but contained
         expected_breaches=["positioning"],
         treasury_hedge_worked=False,
+        csr=CrisisSeverityScores(drawdown=0.45, mkt_dysfunction=0.55, policy_response=0.70, contagion=0.30, duration=0.40),
         indicators={
             # Liquidity - FRED verified
             "sofr_iorb_spread_bps": -3,  # FRED: SOFR 4.37% - IORB 4.40%

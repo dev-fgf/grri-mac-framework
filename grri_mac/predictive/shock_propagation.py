@@ -8,13 +8,14 @@ Key features:
 - Pillar interaction effects (amplification/dampening)
 - Threshold effects (cascades accelerate below critical levels)
 - Policy intervention modeling
+- SVAR-estimated coefficients (v6 §10.2) replace hardcoded matrix when available
 
 This addresses the critique that static models miss the dynamic
 nature of crisis propagation.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Dict
 from enum import Enum
 import math
 
@@ -123,23 +124,45 @@ class ShockPropagationModel:
     Captures how an initial shock in one pillar cascades to others
     over multiple time periods, with non-linear amplification when
     pillars breach critical thresholds.
+
+    Supports two coefficient sources (v6 §10.2.7):
+    - ``INTERACTION_MATRIX`` (hardcoded prior assumptions — default/fallback)
+    - SVAR-estimated coefficients from ``cascade_var.run_svar_pipeline()``
+
+    When SVAR estimates are available, they supersede the hardcoded matrix.
     """
 
     def __init__(
         self,
         decay_rate: float = 0.1,
         intervention_strength: float = 0.3,
+        svar_transmission: Optional[Dict[str, Dict[str, float]]] = None,
+        svar_acceleration: Optional["AccelerationFactors"] = None,
     ):
         """Initialize propagation model.
 
         Args:
             decay_rate: Natural stress decay per period (mean reversion)
             intervention_strength: Effectiveness of policy intervention
+            svar_transmission: SVAR-derived transmission dict (drop-in
+                replacement for ``INTERACTION_MATRIX``).  If None, falls
+                back to the hardcoded prior.
+            svar_acceleration: Regime-dependent acceleration factors from
+                ``cascade_var.estimate_acceleration_factors()``.
         """
         self.decay_rate = decay_rate
         self.intervention_strength = intervention_strength
-        self.interaction_matrix = INTERACTION_MATRIX
+
+        # v6 §10.2.7: SVAR overrides hardcoded matrix when available
+        if svar_transmission is not None:
+            self.interaction_matrix = svar_transmission
+            self._using_svar = True
+        else:
+            self.interaction_matrix = INTERACTION_MATRIX
+            self._using_svar = False
+
         self.threshold_effects = THRESHOLD_EFFECTS
+        self._svar_acceleration = svar_acceleration
 
     def propagate(
         self,
