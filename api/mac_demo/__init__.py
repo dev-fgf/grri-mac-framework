@@ -15,6 +15,8 @@ try:
     from shared.crypto_client import get_btc_spy_correlation
     from shared.crypto_oi_client import get_crypto_futures_oi
     from shared.cboe_client import get_gamma_indicators
+    from shared.ofr_client import get_hf_leverage_ratio
+    from shared.bis_client import get_otc_derivatives_indicators
     IMPORTS_OK = True
     IMPORT_ERROR = None
 except Exception as e:
@@ -38,6 +40,9 @@ DEMO_INDICATORS = {
     "vvix": 88.0,
     "gamma_ratio": 0.95,
     "term_slope": 0.92,
+    "hf_leverage_ratio": 17.5,
+    "credit_deriv_notional_trillions": 0.5,
+    "equity_deriv_notional_trillions": 9.0,
 }
 
 
@@ -115,6 +120,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 vix_level = indicators.get("vix_level")
                 gamma = get_gamma_indicators(vix_level=vix_level)
                 indicators.update(gamma)
+            except Exception:
+                pass
+
+        if "hf_leverage_ratio" not in indicators:
+            try:
+                lev = get_hf_leverage_ratio()
+                if lev is not None:
+                    indicators["hf_leverage_ratio"] = lev
+            except Exception:
+                pass
+
+        if "credit_deriv_notional_trillions" not in indicators:
+            try:
+                bis = get_otc_derivatives_indicators()
+                indicators.update(bis)
             except Exception:
                 pass
 

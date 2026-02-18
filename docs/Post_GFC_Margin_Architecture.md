@@ -18,10 +18,13 @@ The current positioning pillar tracks **Treasury basis trades**, **CFTC speculat
 | Speculator concentration | Treasury spec net %ile | Positioning | CFTC COT | Live |
 | Short-vol exposure | SVXY AUM | Positioning | ETF providers | Live |
 | Crypto-equity contagion | BTC-SPY 60d correlation | Contagion | Yahoo Finance | Live |
-| Crypto futures OI | BTC+ETH perp futures OI (est. total mkt) | Contagion | Binance API | **Live** |
-| 0DTE gamma proxy | VVIX, VIX9D/VIX, VIX/VIX3M ratios | Volatility | CBOE CDN | **Live** |
+| Crypto futures OI | BTC+ETH perp futures OI (est. total mkt) | Contagion | Binance API | Live |
+| Equity derivatives notional | OTC equity deriv notional (TRS proxy) | Contagion | BIS API | **Live** |
+| 0DTE gamma proxy | VVIX, VIX9D/VIX, VIX/VIX3M ratios | Volatility | CBOE CDN | Live |
 | Private credit stress | C&I lending standards (SLOOS) | Private Credit | FRED | Live |
 | HY spread (leveraged loan proxy) | HY OAS | Private Credit | FRED | Live |
+| Credit derivatives notional | OTC credit deriv notional (CLO proxy) | Private Credit | BIS API | **Live** |
+| Prime brokerage leverage | HF aggregate leverage ratio (Form PF) | Private Credit | OFR HFM API | **Live** |
 
 ### Tier 2 — Actionable Next (Free/Public Data)
 
@@ -32,14 +35,11 @@ The current positioning pillar tracks **Treasury basis trades**, **CFTC speculat
 | Leveraged ETF AUM | Total 2x/3x ETF assets | Positioning | ETF providers | Manual |
 | Crypto exchange reserves | BTC held on exchanges | Contagion | Glassnode (free tier) | N/A |
 
-### Tier 3 — Aspirational (Proprietary/Delayed Data)
+### Tier 3 — Remaining (Paid Data Only)
 
 | Channel | Proposed Indicator | Source | Lag |
 |---------|-------------------|--------|-----|
-| Prime brokerage leverage | HF gross/net leverage | Fed SHF survey | Quarterly |
 | 0DTE exact volume | SPX 0DTE % of total options volume | CBOE DataShop (paid) | Daily |
-| CLO issuance rate | BSL CLO new issuance | LCD / PitchBook | Monthly |
-| Total return swap (TRS) | Equity TRS notional | OFR | Quarterly |
 
 ---
 
@@ -78,7 +78,6 @@ graph TD
         P3["SVXY AUM"]
         P4["Margin debt *"]
         P5["Leveraged ETF AUM *"]
-        P6["PB leverage ***"]
     end
     POS --> pos_ind
 
@@ -97,12 +96,15 @@ graph TD
         C3["Financial OAS"]
         C4["BTC-SPY correlation"]
         C5["Crypto futures OI"]
+        C6["Equity deriv notional"]
     end
     CON --> con_ind
 
     subgraph pc_ind [" "]
         PC1["SLOOS C&I tightening"]
         PC2["HY OAS"]
+        PC3["Credit deriv notional"]
+        PC4["HF leverage ratio"]
     end
     PC --> pc_ind
 
@@ -114,7 +116,6 @@ graph TD
     style P3 fill:#10b981,color:#fff
     style P4 fill:#f59e0b,color:#000
     style P5 fill:#f59e0b,color:#000
-    style P6 fill:#ef4444,color:#fff
     style V1 fill:#10b981,color:#fff
     style V2 fill:#10b981,color:#fff
     style V3 fill:#10b981,color:#fff
@@ -125,11 +126,14 @@ graph TD
     style C3 fill:#10b981,color:#fff
     style C4 fill:#10b981,color:#fff
     style C5 fill:#10b981,color:#fff
+    style C6 fill:#10b981,color:#fff
     style PC1 fill:#10b981,color:#fff
     style PC2 fill:#10b981,color:#fff
+    style PC3 fill:#10b981,color:#fff
+    style PC4 fill:#10b981,color:#fff
 ```
 
-> Green = Tier 1 (live) | Amber = Tier 2 (next) | Red = Tier 3 (proprietary)
+> Green = Tier 1 (live) | Amber = Tier 2 (next)
 
 ---
 
@@ -225,6 +229,52 @@ Since exact 0DTE options volume requires paid CBOE DataShop access, we proxy gam
 **Scoring** (volatility pillar, averaged with VIX):
 - **VVIX**: <85 calm (1.0), 85–100 elevated (0.75–0.50), >120 extreme (0.20)
 - **Term slope**: <0.85 contango (1.0), 0.85–1.0 normal (0.75), >1.15 deep backwardation (0.20)
+
+---
+
+## Prime Brokerage Leverage (OFR): Implementation Details
+
+Aggregate qualifying hedge fund (QHF) leverage ratios are sourced from the **Office of Financial Research Hedge Fund Monitor**, which publishes SEC Form PF aggregate data via a free JSON API (no key required).
+
+**Client**: `api/shared/ofr_client.py`
+**Endpoint**: `GET https://data.financialresearch.gov/hf/v1/series/timeseries/?mnemonic=FPF-ALLQHF_GAVN10_LEVERAGERATIO_AVERAGE`
+- Returns JSON array of `[date_str, value]` pairs
+- GAV-weighted mean leverage ratio for large QHFs (>$500M NAV)
+- Quarterly, ~3-month lag. Latest values typically 15–20x.
+
+**Scoring thresholds** (private credit pillar):
+| HF Leverage | Score | Interpretation |
+|------------|-------|----------------|
+| < 12x | 1.0 | Normal — conservative leverage |
+| 12–18x | 0.75–0.50 | Elevated — building concentration |
+| 18–25x | 0.50–0.20 | Stretched — margin call risk rising |
+| > 25x | 0.20 | Extreme — systemic PB exposure |
+
+---
+
+## OTC Derivatives Notional (BIS): Implementation Details
+
+Credit and equity-linked OTC derivatives notional outstanding are sourced from the **Bank for International Settlements** public data portal. No API key required. Semi-annual data with ~6-month lag.
+
+- **Credit derivatives notional** → CLO/structured credit proxy (private credit pillar, display only)
+- **Equity derivatives notional** → Total return swap (TRS) proxy (contagion pillar, scored)
+
+**Client**: `api/shared/bis_client.py`
+**Endpoints** (SDMX CSV format):
+- Credit: `GET https://data.bis.org/topics/OTC_DER/BIS,WS_OTC_DERIV2,1.0/H.A.A.U.5J.A.5J.A.TO1.TO1.A.A.3.C`
+- Equity: `GET https://data.bis.org/topics/OTC_DER/BIS,WS_OTC_DERIV2,1.0/H.A.A.E.5J.A.5J.A.TO1.TO1.A.A.3.C`
+- Params: `?file_format=csv&format=long`
+- Returns CSV with metadata header rows; data rows start with `"BIS,WS_OTC_DERIV2"`. OBS_VALUE (last field) is in millions USD.
+
+**Scoring thresholds** (equity derivatives — contagion pillar):
+| Eq Deriv Notional | Score | Interpretation |
+|------------------|-------|----------------|
+| < $8T | 1.0 | Normal — manageable TRS exposure |
+| $8–12T | 0.75–0.50 | Elevated — hidden leverage growing |
+| $12–15T | 0.50–0.20 | Crowded — Archegos-type risk |
+| > $15T | 0.20 | Extreme — systemic hidden leverage |
+
+**Credit derivatives**: Displayed as a context indicator ($T) in the private credit pillar. Semi-annual frequency is too slow for real-time scoring, but the level provides useful context for CLO/structured credit market sizing.
 
 ---
 

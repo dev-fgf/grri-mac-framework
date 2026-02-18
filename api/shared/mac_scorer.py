@@ -351,6 +351,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
     - IG-HY spread ratio (credit contagion risk)
     - Financial sector stress (G-SIB proxy)
     - BTC-SPY correlation (crypto-equity contagion channel)
+    - Equity derivatives notional (BIS — TRS/hidden leverage proxy)
     - Crypto futures OI (leveraged crypto derivatives positioning)
     """
     scores = []
@@ -408,6 +409,19 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
         else:
             scores.append(0.2)
 
+    # Equity derivatives notional (BIS — TRS/hidden leverage proxy)
+    if "equity_deriv_notional_trillions" in indicators:
+        eq_deriv = indicators["equity_deriv_notional_trillions"]
+        # Thresholds: <$8T normal, $8-12T elevated, $12-15T crowded, >$15T extreme
+        if eq_deriv <= 8:
+            scores.append(1.0)
+        elif eq_deriv <= 12:
+            scores.append(1.0 - (eq_deriv - 8) / 4 * 0.5)
+        elif eq_deriv <= 15:
+            scores.append(0.5 - (eq_deriv - 12) / 3 * 0.3)
+        else:
+            scores.append(0.2)
+
     # Crypto futures OI (leveraged positioning in crypto derivatives)
     if "crypto_futures_oi_billions" in indicators:
         oi = indicators["crypto_futures_oi_billions"]
@@ -447,12 +461,13 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
 
 def score_private_credit(indicators: dict) -> tuple[float, str]:
     """Score private credit pillar from lending conditions.
-    
+
     Private credit stress is proxied by:
     - C&I lending standards (SLOOS data - DRTSCILM, DRTSCIS)
     - HY-IG spread differential (leveraged loan stress)
     - Credit conditions tightening
-    
+    - HF leverage ratio (OFR Form PF — prime brokerage channel)
+
     Higher tightening = more stress = lower score.
     """
     scores = []
@@ -503,10 +518,23 @@ def score_private_credit(indicators: dict) -> tuple[float, str]:
                 scores.append(0.3)
             else:
                 scores.append(0.0)
-    
+
+    # HF leverage ratio (OFR Form PF — prime brokerage channel)
+    if "hf_leverage_ratio" in indicators:
+        lev = indicators["hf_leverage_ratio"]
+        # Thresholds: <12x ample, 12-18x thin, 18-25x stretched, >25x breach
+        if lev <= 12:
+            scores.append(1.0)
+        elif lev <= 18:
+            scores.append(1.0 - (lev - 12) / 6 * 0.5)
+        elif lev <= 25:
+            scores.append(0.5 - (lev - 18) / 7 * 0.3)
+        else:
+            scores.append(0.2)
+
     if not scores:
         return 0.5, "NO_DATA"
-    
+
     score = sum(scores) / len(scores)
     return score, get_status(score)
 

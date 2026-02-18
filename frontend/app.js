@@ -334,6 +334,7 @@ const PILLAR_SUB_INDICATORS = {
     positioning: [
         ['basis_trade_size_billions', 'Basis Trade', v => `$${v.toFixed(0)}B`],
         ['treasury_spec_net_pctl', 'Spec Net %ile', v => `${v.toFixed(0)}th`],
+        ['hf_leverage_ratio', 'HF Leverage', v => `${v.toFixed(1)}x`],
     ],
     volatility: [
         ['vix_level', 'VIX', v => v.toFixed(1)],
@@ -349,9 +350,11 @@ const PILLAR_SUB_INDICATORS = {
         ['financial_oas_bps', 'Fin OAS', v => `${v.toFixed(0)} bps`],
         ['btc_spy_correlation', 'BTC-SPY Corr', v => v.toFixed(2)],
         ['crypto_futures_oi_billions', 'Crypto OI', v => `$${v.toFixed(0)}B`],
+        ['equity_deriv_notional_trillions', 'Eq Deriv', v => `$${v.toFixed(1)}T`],
     ],
     private_credit: [
         ['ci_lending_standards', 'SLOOS Tight', v => `${v.toFixed(0)}%`],
+        ['credit_deriv_notional_trillions', 'Cred Deriv', v => `$${v.toFixed(1)}T`],
     ],
 };
 
