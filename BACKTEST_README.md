@@ -1,6 +1,6 @@
 # Running the MAC Framework Backtest
 
-This guide explains how to run the **54-year historical backtest (1971-2025)** to generate empirical results for the academic paper.
+This guide explains how to run the **117-year extended historical backtest (1907-2025)** to generate empirical results for the academic paper.
 
 ## Prerequisites
 
@@ -31,350 +31,154 @@ This guide explains how to run the **54-year historical backtest (1971-2025)** t
 Before running a backtest, validate your cached data:
 
 ```bash
-python run_backtest.py --validate --start 1971-01-01 --end 2025-01-01
+python run_backtest.py --validate
 ```
 
-**Expected output:**
-```
-🔍 VALIDATING CACHED DATA INTEGRITY
-
-Cache file: data/fred_cache/fred_series_cache.pkl
-Loaded 24 cached series from disk
-
-Cached series: 24
----------------------------------------------------------------------------
-SERIES               | DATE RANGE                |    OBS | NULLS | STATUS
----------------------------------------------------------------------------
-AAA                  | 1970-12-01 to 2025-01-01 |    650 |     0 | ✓ Full coverage
-BAA                  | 1970-12-01 to 2025-01-01 |    650 |     0 | ✓ Full coverage
-VIXCLS               | 1990-01-02 to 2025-01-31 |   9154 |   298 | ◐ Has proxy
-   └─ Proxy: NASDAQCOM realized vol (1971+) with 1.2x VRP
-...
-
-📋 DATA INTEGRITY SUMMARY:
-   Core series (1970+):    9
-   Series with proxies:    6
-   Limited coverage:       9
-
-✅ Cache validated successfully - safe to run backtest
-```
-
-### Run Full 54-Year Backtest
+### Run Standard Backtest (1971-2025)
 
 ```bash
-python run_backtest.py --start 1971-03-01 --end 2025-01-31 --frequency weekly
+python run_backtest.py --frequency weekly
 ```
 
-**Expected output:**
+### Run Extended Backtest (1907-2025)
+
+```bash
+python run_backtest.py --extended --era-weights --frequency weekly --output backtest_extended.csv
 ```
-MAC FRAMEWORK 54-YEAR BACKTEST
-======================================================================
-Period: 1971-03-01 to 2025-01-31
-Frequency: weekly
-Output: backtest_results.csv
-======================================================================
 
-Loaded 24 cached series from disk
-No API calls needed - all 21 series already cached
-
-✓ 1971-03-01: MAC=0.64 COMFORTABLE - Markets can absorb moderate shocks
-✓ 1971-03-08: MAC=0.66 COMFORTABLE - Markets can absorb moderate shocks
-...
-✓ 1973-10-22: MAC=0.44 STRETCHED - 1973 Oil Crisis / OPEC Embargo
-...
-✓ 2020-03-16: MAC=0.24 STRETCHED - COVID-19 Market Crash
-...
-
-======================================================================
-BACKTEST COMPLETE
-======================================================================
-Total data points: 2,814
-Date range: 1971-03-01 to 2025-01-31
-
-VALIDATION METRICS:
-----------------------------------------------------------------------
-Total points analyzed:     2,814
-Crisis points:             312
-Non-crisis points:         2,502
-
-Average MAC (overall):     0.556
-Average MAC (crisis):      0.412
-Average MAC (non-crisis):  0.574
-
-Crises evaluated:          27
-Crises with warning:       22
-True positive rate:        81.5%
-
-Min MAC score:             0.26
-Max MAC score:             0.79
-----------------------------------------------------------------------
-```
+The `--extended` flag sets the start date to 1907-01-01 and activates historical proxy chains (NBER, Schwert, Shiller, BoE, FINRA). The `--era-weights` flag uses era-specific pillar weights instead of equal weights for pre-1971 periods.
 
 ## Command Line Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--start DATE` | Start date (YYYY-MM-DD) | 2004-01-01 |
+| `--start DATE` | Start date (YYYY-MM-DD) | 1971-02-05 |
 | `--end DATE` | End date (YYYY-MM-DD) | 2024-12-31 |
+| `--extended` | Run from 1907 with historical proxies | off |
+| `--era-weights` | Use era-specific pillar weights (pre-1971) | off |
 | `--frequency` | daily, weekly, or monthly | weekly |
 | `--output FILE` | Output CSV filename | backtest_results.csv |
 | `--validate` | Validate cached data and exit | - |
 | `--fresh` | Clear cache and fetch fresh data | - |
 
-### Data Integrity Options
+## Backtest Modes
 
-**`--validate`**: Check cached data without running backtest
-```bash
-python run_backtest.py --validate --start 1971-01-01 --end 2025-01-01
-```
-
-**`--fresh`**: Clear cache and fetch all data fresh from FRED
-```bash
-python run_backtest.py --fresh --start 1971-03-01 --end 2025-01-31
-```
+| Mode | Period | Crises | Data Sources |
+|------|--------|--------|--------------|
+| Standard | 1971-2025 | ~27 | FRED only |
+| Historical | 1962-2025 | ~32 | FRED + Moody's proxies |
+| Extended | 1907-2025 | 41 | FRED + NBER + Schwert + Shiller + BoE + FINRA |
 
 ### Specific Period Backtests
 
 ```bash
-# 1970s Oil Crisis era
-python run_backtest.py --start 1971-03-01 --end 1975-12-31 --output backtest_1970s.csv
+# Panic of 1907 and Pre-Fed era
+python run_backtest.py --start 1907-01-01 --end 1914-12-31 --era-weights
 
-# LTCM Crisis
-python run_backtest.py --start 1998-08-01 --end 1998-11-30 --output backtest_ltcm.csv
+# Great Depression
+python run_backtest.py --start 1929-01-01 --end 1934-12-31 --era-weights
 
 # Global Financial Crisis
-python run_backtest.py --start 2007-01-01 --end 2009-12-31 --output backtest_gfc.csv
+python run_backtest.py --start 2007-01-01 --end 2009-12-31
 
 # COVID-19 period
-python run_backtest.py --start 2020-01-01 --end 2020-06-30 --output backtest_covid.csv
+python run_backtest.py --start 2020-01-01 --end 2020-06-30
 ```
 
-## Historical Proxy Methodology
+## Methodology Summary
 
-The framework uses historical proxy series to extend coverage to 1971:
+### Seven Pillars
 
-| Modern Series | Historical Proxy | Coverage |
-|---------------|------------------|----------|
-| VIX (1990+) | Realized vol from NASDAQ × 1.2 VRP | 1971+ |
-| HY OAS (1997+) | Moody's (Baa-Aaa) × 4.5 | 1919+ |
-| IG OAS (1997+) | Moody's Baa - Treasury - 40bps | 1919+ |
-| TED Rate (1986+) | Fed Funds - T-Bill | 1954+ |
-| SOFR-IORB (2018+) | TED Spread (scaled) | 1986+ |
+| Pillar | Indicators | Data Source |
+|--------|-----------|-------------|
+| Liquidity | SOFR-IORB spread, CP-Treasury spread | FRED |
+| Valuation | Term premium, IG OAS, HY OAS (range-based) | FRED |
+| Volatility | VIX / VXO / NASDAQ realised vol / Schwert vol | FRED |
+| Policy | Policy room (distance from ELB) | FRED |
+| Positioning | Basis trade size, spec net percentile, SVXY AUM | CFTC, yfinance |
+| Contagion | BAA10Y spread (financial stress proxy) | FRED |
+| Private Credit | SLOOS lending standards, BDC data | FRED, yfinance |
 
-## Estimated Runtime
+### Weight Selection
 
-| Frequency | Data Points | Runtime |
-|-----------|-------------|---------|
-| Daily (54 years) | ~14,000 | ~6-8 hours |
-| **Weekly (54 years)** | **~2,800** | **~50-60 min** |
-| Monthly (54 years) | ~650 | ~10-15 min |
+| Era | Weights | Method |
+|-----|---------|--------|
+| 2006-present | ML-optimized | Gradient boosting on 14 scenarios |
+| Pre-1971 (with `--era-weights`) | Era-specific | Custom per-era overrides |
+| Default | Equal (1/N) | Uniform across active pillars |
 
-*Note: First run fetches data from FRED API (rate limited to 120 requests/min). Subsequent runs use cached data and complete in seconds.*
-Date range: 2004-01-05 to 2024-12-30
+### Calibration Factor (Era-Aware)
 
-VALIDATION METRICS:
-----------------------------------------------------------------------
-Total points analyzed:     1045
-Crisis points:             125
-Non-crisis points:         920
+| Era | Factor | Rationale |
+|-----|--------|-----------|
+| 2006+ | 0.78 | Calibrated on modern scenarios |
+| 1971-2006 | 0.90 | Milder; proxy data already compressed |
+| Pre-1971 | 1.00 | Structural differences sufficient |
 
-Average MAC (overall):     0.623
-Average MAC (crisis):      0.412
-Average MAC (non-crisis):  0.653
+### Scoring
 
-Crises evaluated:          15
-Crises with warning:       14
-True positive rate:        93.3%
-
-Min MAC score:             0.152
-Max MAC score:             0.821
-----------------------------------------------------------------------
-
-✓ Backtest complete! Results saved successfully.
-```
+- **One-sided** (`score_indicator_simple`): Liquidity, volatility, positioning
+- **Two-sided** (`score_indicator_range`): Valuation (both compressed AND wide spreads = bad)
 
 ## Output Files
 
-### backtest_results.csv
+All results are saved to `data/backtest_results/`.
 
-Contains the full backtest results with columns:
-- `date`: Date of calculation
-- `mac_score`: Composite MAC score (0-1)
-- `liquidity`: Liquidity pillar score
-- `valuation`: Valuation pillar score
-- `positioning`: Positioning pillar score
-- `volatility`: Volatility pillar score
-- `policy`: Policy pillar score
-- `contagion`: Contagion pillar score (6th pillar)
-- `interpretation`: Human-readable status
-- `crisis_event`: Name of crisis if date falls in crisis period
-- `data_quality`: Data quality assessment
+### CSV Columns
 
-### Example Analysis in Python
+| Column | Description |
+|--------|-------------|
+| `date` | Date of calculation |
+| `mac_score` | Composite MAC score (0-1, calibrated) |
+| `liquidity` through `private_credit` | Individual pillar scores |
+| `interpretation` | Human-readable status |
+| `crisis_event` | Crisis name if date falls in crisis period |
+| `data_quality` | excellent / good / fair / poor |
+| `momentum_1w`, `momentum_4w` | Rate of change over 1 and 4 weeks |
+| `trend_direction` | improving / stable / declining / rapidly_declining |
+| `mac_status` | COMFORTABLE / CAUTIOUS / DETERIORATING / STRETCHED / CRITICAL |
+| `is_deteriorating` | Boolean flag for rapid decline |
 
-```python
-import pandas as pd
-import matplotlib.pyplot as plt
+## Estimated Runtime
 
-# Load results
-df = pd.read_csv('backtest_results.csv', index_col='date', parse_dates=True)
+| Mode | Data Points | Runtime |
+|------|-------------|---------|
+| Weekly (1971-2025) | ~2,800 | ~1 min (cached) |
+| Weekly (1907-2025) | ~6,200 | ~2 min (cached) |
+| Daily (1971-2025) | ~14,000 | ~6-8 hours (first run) |
 
-# Plot MAC score over time
-plt.figure(figsize=(14, 6))
-plt.plot(df.index, df['mac_score'], label='MAC Score', linewidth=1)
-
-# Highlight crisis periods
-crisis_dates = df[df['crisis_event'].notna()]
-plt.scatter(crisis_dates.index, crisis_dates['mac_score'],
-           color='red', s=20, label='Crisis Events', zorder=5)
-
-# Add threshold lines
-plt.axhline(0.8, color='green', linestyle='--', alpha=0.3, label='Ample (0.8)')
-plt.axhline(0.6, color='yellow', linestyle='--', alpha=0.3, label='Comfortable (0.6)')
-plt.axhline(0.4, color='orange', linestyle='--', alpha=0.3, label='Thin (0.4)')
-plt.axhline(0.2, color='red', linestyle='--', alpha=0.3, label='Stretched (0.2)')
-
-plt.title('MAC Score Over Time (2004-2024)')
-plt.xlabel('Date')
-plt.ylabel('MAC Score')
-plt.legend()
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('mac_history.png', dpi=300)
-plt.show()
-```
-
-## Using Results for Academic Paper
-
-The backtest results provide empirical validation for Section 5 of the academic paper:
-
-### Table 1: Crisis Prediction Results
-Extract from validation metrics:
-- True positive rate
-- Average lead time (days of warning before crisis)
-- MAC scores during crisis vs. normal periods
-
-### Figure 1: MAC Score Time Series
-Plot MAC score with crisis annotations (see Python example above)
-
-### Figure 2: Pillar Decomposition During GFC
-```python
-# Focus on 2008-2009 period
-gfc_period = df.loc['2008-01-01':'2009-12-31']
-
-# Plot pillar scores
-fig, ax = plt.subplots(figsize=(12, 6))
-pillars = ['liquidity', 'valuation', 'positioning', 'volatility', 'policy', 'contagion']
-
-for pillar in pillars:
-    ax.plot(gfc_period.index, gfc_period[pillar], label=pillar.capitalize())
-
-ax.axvline(pd.Timestamp('2008-09-15'), color='red', linestyle='--', label='Lehman Collapse')
-ax.set_title('Pillar Decomposition During Global Financial Crisis')
-ax.set_xlabel('Date')
-ax.set_ylabel('Pillar Score')
-ax.legend()
-ax.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('gfc_pillars.png', dpi=300)
-```
-
-### Table 2: MAC Scores at Crisis Peak Dates
-```python
-# Get MAC scores for all crisis events
-crisis_events = [
-    ('2008-09-15', 'Lehman Brothers'),
-    ('2020-03-16', 'COVID-19'),
-    ('2023-03-10', 'SVB Crisis'),
-    # ... add others
-]
-
-for date, name in crisis_events:
-    score = df.loc[date, 'mac_score']
-    print(f"{name:40s} {date:12s} {score:.3f}")
-```
-
-## Checking Backtest Progress
-
-To check if the backtest is complete:
-
-```bash
-python check_backtest_progress.py
-```
-
-This will show you how many data points have been processed and whether the backtest is complete.
+First run fetches data from FRED API (rate limited). Subsequent runs use cached data.
 
 ## Troubleshooting
 
+### Unicode errors on Windows
+Set encoding before running:
+```bash
+set PYTHONIOENCODING=utf-8
+python run_backtest.py --extended
+```
+
+### Missing historical data files
+The `--extended` mode requires historical data files in `data/historical/`. Run `download_historical_data.py` to fetch them.
+
 ### "No data available for date X"
-- Some series have limited historical coverage
-- Pre-2018: Uses LIBOR-OIS instead of SOFR-IORB (automatic substitution)
-- Pre-2006: Some indicators unavailable (marked as "poor" data quality)
+Some series have limited coverage. Pre-1971 data relies on monthly proxies interpolated to weekly. Check `data_quality` column for quality tier.
 
-### "ValueError: Series not found"
-- Check FRED API key is set
-- Some series may be discontinued or renamed
-- Check `grri_mac/data/fred.py` for series mappings
-
-### Slow performance
-- Use `--frequency weekly` instead of daily for faster results
-- Daily frequency recommended only for final paper results
-
-### Data Status
-All pillars now use **real data** from free public sources:
-- **Liquidity**: FRED SOFR-IORB/TED spread, CP-Treasury spread
-- **Valuation**: FRED credit spreads (IG/HY OAS), term premium (10Y-2Y)
-- **Positioning**: CFTC COT Treasury futures positioning
-- **Volatility**: FRED VIX, yfinance for RV-IV gap (SPY returns vs VIX)
-- **Policy**: FRED fed funds rate (policy room = distance from ELB)
-- **Contagion**: FRED EMBI proxy, DXY; yfinance for EM flows and global equity correlation
-
-## Next Steps
+## Generating Validation Metrics
 
 After running the backtest:
 
-1. **Analyze results** in Python/R/Excel
-2. **Generate figures** for academic paper
-3. **Complete Section 5** (Empirical Validation) with:
-   - Validation metrics table
-   - MAC time series figure
-   - Crisis period detailed analysis
-   - Comparison to alternative stress indices
-4. **Run sensitivity analysis** (optional):
-   - Different pillar weights
-   - Different threshold calibrations
-   - Sub-period analysis (pre-GFC vs. post-GFC)
-
-## Academic Paper Sections to Complete
-
-With backtest results in hand, complete these sections:
-
-### Section 5.2: Results
-```
-We backtest the MAC framework across 20 years (2004-2024), encompassing
-15 major crisis events. The framework correctly identified 14 of 15 crises
-(93% true positive rate) with an average lead time of 23 days...
+```bash
+python generate_validation_metrics.py
 ```
 
-### Section 5.3: Discussion
-```
-The backtesting results demonstrate several key patterns. First, the MAC
-score exhibits strong leading indicator properties, entering elevated
-stress regimes prior to or coincident with all major market dislocations...
-```
+This produces:
+- `tables/crisis_warnings.csv` — Per-crisis detection results
+- `tables/validation_summary.csv` — Summary metrics
+- `tables/validation_latex.txt` — LaTeX table for paper
 
-See `docs/MAC_Academic_Paper_6Pillar_G20.md` for paper structure.
+## Documentation
 
-## Citation
-
-If using these results in publications:
-
-```bibtex
-@article{grri_mac_2026,
-  title={A Six-Pillar Framework for Measuring Market Absorption Capacity:
-         Theory, Methodology, and International Application},
-  author={[Your Name]},
-  journal={Working Paper},
-  year={2026}
-}
-```
+- [Section 5: Empirical Validation](docs/Section_5_Validation_Results.md) — Full methodology and results writeup
+- [Data Continuity Specification](docs/Data_Continuity_Specification.md) — Historical proxy chain documentation
+- [Era Configurations](grri_mac/backtest/era_configs.py) — Era boundaries, pillar availability, threshold overrides

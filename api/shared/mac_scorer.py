@@ -359,6 +359,19 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
             lower_is_better=True,
         ))
     
+    # BTC-SPY correlation (crypto-equity contagion channel)
+    if "btc_spy_correlation" in indicators:
+        corr = indicators["btc_spy_correlation"]
+        # Thresholds: <0.3 decoupled (good), 0.3-0.5 moderate, >0.7 contagion risk
+        if corr <= 0.3:
+            scores.append(1.0)
+        elif corr <= 0.5:
+            scores.append(1.0 - (corr - 0.3) / 0.2 * 0.5)
+        elif corr <= 0.7:
+            scores.append(0.5 - (corr - 0.5) / 0.2 * 0.3)
+        else:
+            scores.append(0.2)
+
     # Default: derive from available spreads
     if not scores:
         # Use IG OAS as proxy for financial stress
@@ -375,7 +388,7 @@ def score_contagion(indicators: dict) -> tuple[float, str]:
                 scores.append(0.25)
             else:
                 scores.append(0.0)
-    
+
     if not scores:
         return 0.5, "NO_DATA"
     

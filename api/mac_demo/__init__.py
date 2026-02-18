@@ -12,6 +12,7 @@ try:
     from shared.fred_client import FREDClient
     from shared.mac_scorer import calculate_mac
     from shared.database import get_database
+    from shared.crypto_client import get_btc_spy_correlation
     IMPORTS_OK = True
     IMPORT_ERROR = None
 except Exception as e:
@@ -30,6 +31,7 @@ DEMO_INDICATORS = {
     "policy_room_bps": 433,
     "fed_balance_sheet_gdp_pct": 28,
     "core_pce_vs_target_bps": 65,
+    "btc_spy_correlation": 0.42,
 }
 
 
@@ -84,6 +86,15 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         if not indicators:
             indicators = DEMO_INDICATORS.copy()
             data_source = "Demo Data"
+
+        # Enrich with BTC-SPY correlation (non-FRED indicator)
+        if "btc_spy_correlation" not in indicators:
+            try:
+                corr = get_btc_spy_correlation()
+                if corr is not None:
+                    indicators["btc_spy_correlation"] = corr
+            except Exception:
+                pass  # Non-critical — contagion scores still work without it
 
         # Calculate MAC score
         result = calculate_mac(indicators)

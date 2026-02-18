@@ -319,23 +319,73 @@ function updateDashboard(data) {
     }
 }
 
+// Sub-indicator definitions per pillar
+// Each entry: [indicator_key_in_api, display_label, format_fn]
+const PILLAR_SUB_INDICATORS = {
+    liquidity: [
+        ['sofr_iorb_spread_bps', 'SOFR-IORB', v => `${v.toFixed(0)} bps`],
+        ['cp_treasury_spread_bps', 'CP-Tsy', v => `${v.toFixed(0)} bps`],
+    ],
+    valuation: [
+        ['ig_oas_bps', 'IG OAS', v => `${v.toFixed(0)} bps`],
+        ['hy_oas_bps', 'HY OAS', v => `${v.toFixed(0)} bps`],
+        ['term_premium_10y_bps', 'Term Prem', v => `${v.toFixed(0)} bps`],
+    ],
+    positioning: [
+        ['basis_trade_size_billions', 'Basis Trade', v => `$${v.toFixed(0)}B`],
+        ['treasury_spec_net_pctl', 'Spec Net %ile', v => `${v.toFixed(0)}th`],
+    ],
+    volatility: [
+        ['vix_level', 'VIX', v => v.toFixed(1)],
+    ],
+    policy: [
+        ['policy_room_bps', 'Policy Room', v => `${v.toFixed(0)} bps`],
+        ['fed_balance_sheet_gdp_pct', 'Fed BS/GDP', v => `${v.toFixed(1)}%`],
+    ],
+    contagion: [
+        ['cross_currency_basis_bps', 'XCcy Basis', v => `${Math.abs(v).toFixed(0)} bps`],
+        ['financial_oas_bps', 'Fin OAS', v => `${v.toFixed(0)} bps`],
+        ['btc_spy_correlation', 'BTC-SPY Corr', v => v.toFixed(2)],
+    ],
+    private_credit: [
+        ['ci_lending_standards', 'SLOOS Tight', v => `${v.toFixed(0)}%`],
+    ],
+};
+
 function renderPillars(pillars) {
     const grid = document.getElementById('pillarsGrid');
     grid.innerHTML = '';
-    
+
+    // Get raw indicators from API response for sub-indicator display
+    const indicators = currentData?.indicators || {};
+
     PILLAR_ORDER.forEach(key => {
         const pillar = pillars[key];
         if (!pillar) return;
-        
+
         const stress = 1 - pillar.score;
         const status = getStressStatus(stress);
-        
+
+        // Build sub-indicator rows
+        const subs = PILLAR_SUB_INDICATORS[key] || [];
+        let subHtml = '';
+        for (const [indKey, label, fmt] of subs) {
+            const val = indicators[indKey];
+            if (val != null && !isNaN(val)) {
+                subHtml += `<div class="sub-indicator"><span class="sub-label">${label}</span><span class="sub-value">${fmt(val)}</span></div>`;
+            }
+        }
+        if (subHtml) {
+            subHtml = `<div class="sub-indicators">${subHtml}</div>`;
+        }
+
         const card = document.createElement('div');
         card.className = `pillar-card ${status.class}`;
         card.innerHTML = `
             <div class="pillar-name">${formatPillarName(key)}</div>
             <div class="pillar-value">${stress.toFixed(2)}</div>
             <div class="pillar-status">${status.label}</div>
+            ${subHtml}
         `;
         grid.appendChild(card);
     });

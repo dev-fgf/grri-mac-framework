@@ -361,6 +361,30 @@ body {
 .pillar-card.stretched .pillar-status { background: rgba(249, 115, 22, 0.15); color: var(--stretched); }
 .pillar-card.critical .pillar-status { background: rgba(239, 68, 68, 0.15); color: var(--critical); }
 
+.sub-indicators {
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.sub-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    font-size: 0.7rem;
+}
+
+.sub-label {
+    color: var(--text-muted);
+}
+
+.sub-value {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
 /* ============================================
    Charts
    ============================================ */
