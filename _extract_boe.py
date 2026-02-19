@@ -16,7 +16,7 @@ df = pd.read_excel(
     xl_path, sheet_name=gbp_sheet,
     engine="openpyxl", header=None, skiprows=6,
 )
-df.columns = ["year", "month_name", "rate"]
+df.columns = ["year", "month_name", "rate"]  # type: ignore[assignment]
 
 month_map = {m: i for i, m in enumerate(calendar.month_abbr) if m}
 rows = []

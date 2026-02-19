@@ -181,7 +181,7 @@ def _clean_ohlcv(raw: pd.DataFrame, series_id: str) -> pd.DataFrame:
 
     df = raw.copy()
     # Normalise column names
-    df.columns = [c.lower().strip() for c in df.columns]
+    df.columns = [c.lower().strip() for c in df.columns]  # type: ignore[assignment]
     ohlcv_cols = ("open", "high", "low", "close", "volume")
     keep = [
         c for c in ohlcv_cols if c in df.columns
