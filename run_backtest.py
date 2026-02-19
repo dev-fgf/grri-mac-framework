@@ -37,12 +37,12 @@ else:
 def get_output_path(output_file: str) -> Path:
     """Get full output path, ensuring results directory exists."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     # If output_file is just a filename, put it in results dir
     output_path = Path(output_file)
     if not output_path.is_absolute() and output_path.parent == Path('.'):
         output_path = RESULTS_DIR / output_file
-    
+
     return output_path
 
 
@@ -161,14 +161,14 @@ def main():
         from grri_mac.data.fred import FREDClient, CACHE_FILE
         print("\nVALIDATING CACHED DATA INTEGRITY\n")
         print(f"Cache file: {CACHE_FILE}")
-        
+
         if not CACHE_FILE.exists():
             print("[ERROR] No cache file found. Run without --validate to build cache.")
             return 1
-        
+
         fred = FREDClient()
         cache = fred._bulk_cache
-        
+
         # Historical proxy information
         PROXY_INFO = {
             "VIXCLS": "Proxy: NASDAQCOM realized vol (1971+) with 1.2x VRP",
@@ -178,7 +178,7 @@ def main():
             "TEDRATE": "Proxy: FEDFUNDS-TB3MS (1954-1986)",
             "BAA10Y": "Proxy: BAA-DGS10 (1919+)",
         }
-        
+
         print(f"\nCached series: {len(cache)}")
         print("-" * 75)
         header = (
@@ -187,7 +187,7 @@ def main():
         )
         print(header)
         print("-" * 75)
-        
+
         all_valid = True
         for series_id, data in sorted(cache.items()):
             if data is not None and len(data) > 0:
@@ -195,27 +195,27 @@ def main():
                 max_date = data.index.max().date()
                 obs_count = len(data)
                 nulls = data.isna().sum()
-                
+
                 # Check if series covers our backtest period
                 covers_1971 = min_date <= datetime(1971, 1, 1).date()
-                
+
                 if covers_1971:
                     status = "[OK] Full coverage"
                 elif series_id in PROXY_INFO:
                     status = "[~] Has proxy"
                 else:
                     status = "[!] Limited"
-                
+
                 row = (
                     f"{series_id:<20} | {min_date} to {max_date} | "
                     f"{obs_count:6} | {nulls:5} | {status}"
                 )
                 print(row)
-                
+
                 # Show proxy info if applicable
                 if series_id in PROXY_INFO and not covers_1971:
                     print(f"   └─ {PROXY_INFO[series_id]}")
-                
+
                 if nulls > obs_count * 0.1:  # More than 10% nulls is concerning
                     print(
                         f"   [!] High null rate ({nulls/obs_count*100:.1f}%)"
@@ -223,7 +223,7 @@ def main():
             else:
                 print(f"{series_id:<20} | EMPTY OR NULL")
                 all_valid = False
-        
+
         print("-" * 75)
         print("\nDATA INTEGRITY SUMMARY:")
         core_series = sum(
@@ -250,7 +250,7 @@ def main():
     print("Initializing backtest runner...")
     use_era_weights = getattr(args, 'era_weights', False)
     runner = BacktestRunner(use_era_weights=use_era_weights)
-    
+
     if start_date.year < 1962:
         print("[*] Extended mode: era-specific proxy chains active")
         if use_era_weights:

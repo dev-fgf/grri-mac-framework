@@ -3,7 +3,7 @@
 import os
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 import requests
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class FREDClient:
         if start_date is None:
             start_date = end_date - timedelta(days=30)
 
-        params = {
+        params: dict[str, Any] = {
             "series_id": series_id,
             "api_key": self.api_key,
             "file_type": "json",
@@ -255,7 +255,7 @@ class FREDClient:
         if not self.api_key:
             return {}
 
-        params = {
+        params: dict[str, Any] = {
             "series_id": series_id,
             "api_key": self.api_key,
             "file_type": "json",

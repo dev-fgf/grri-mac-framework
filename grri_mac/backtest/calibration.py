@@ -265,7 +265,7 @@ class CalibrationValidator:
             SensitivityResult with stability metrics
         """
         # Get baseline results
-        baseline_results = {}
+        baseline_results: dict[str, dict[str, Any]] = {}
         for scenario in self.scenarios:
             result = self.engine.run_scenario(scenario)
             # All three validation criteria
@@ -284,7 +284,7 @@ class CalibrationValidator:
         perturbed_engine = self._create_perturbed_engine(perturbation_pct)
 
         # Run with perturbed thresholds
-        perturbed_results = {}
+        perturbed_results: dict[str, dict[str, Any]] = {}
         for scenario in self.scenarios:
             result = perturbed_engine.run_scenario(scenario)
             passed = (

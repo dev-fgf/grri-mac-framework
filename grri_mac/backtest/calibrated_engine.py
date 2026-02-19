@@ -1,7 +1,5 @@
 """Calibrated backtesting engine with adjusted thresholds."""
 
-from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
 
 from .scenarios import HistoricalScenario, KNOWN_EVENTS

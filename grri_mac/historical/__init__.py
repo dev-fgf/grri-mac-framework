@@ -34,7 +34,7 @@ from .sovereign_proxy import (
 __all__ = [
     "FREDHistoricalClient",
     "REGIME_PERIODS",
-    "get_regime_for_date", 
+    "get_regime_for_date",
     "MACHistorical",
     # Sovereign bond proxy (v6 §16.2)
     "BenchmarkEra",

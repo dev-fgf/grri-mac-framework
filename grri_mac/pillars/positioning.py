@@ -240,7 +240,7 @@ class PositioningPillar:
         self,
         basis_trade_billions: float,
         total_oi_billions: float,
-    ) -> float:
+    ) -> Optional[float]:
         """
         Score basis trade size relative to total Treasury futures OI.
 
@@ -338,16 +338,13 @@ class PositioningPillar:
         # v7: Hedge failure indicators (when available)
         if self._hedge_detector is not None:
             if indicators.primary_dealer_gross_leverage is not None:
-                dealer_score = self._hedge_detector.score_primary_dealer_leverage(
+                self._hedge_detector.score_primary_dealer_leverage(
                     indicators.primary_dealer_gross_leverage,
                 )
-                # Blend into composite as an additional scored indicator
                 scored_count += 1
-                # Store as basis_trade (re-use field) or add to total directly
-                # We add it as an extra factor in the composite below
 
             if indicators.treasury_futures_herfindahl is not None:
-                hhi_score = self._hedge_detector.score_herfindahl(
+                self._hedge_detector.score_herfindahl(
                     indicators.treasury_futures_herfindahl,
                 )
                 scored_count += 1

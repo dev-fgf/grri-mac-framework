@@ -1,0 +1,2252 @@
+\documentclass[11pt, a4paper]{article}
+
+% ── Encoding & Fonts ──────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ── Layout ────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{parskip}
+
+% ── Math ──────────────────────────────────────────────────
+\usepackage{amsmath,amssymb}
+
+% ── Tables ────────────────────────────────────────────────
+\usepackage{longtable,booktabs,array}
+\usepackage{calc}
+
+% ── Graphics & Figures ────────────────────────────────────
+\usepackage{graphicx}
+\usepackage{float}
+
+% ── Code listings ─────────────────────────────────────────
+\usepackage{fancyvrb}
+\usepackage{color,xcolor}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\small}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,249,250}
+
+% Syntax highlight tokens (Pandoc defaults)
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+
+% ── Links ─────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black, citecolor=blue!60!black]{hyperref}
+\usepackage{bookmark}
+
+% ── Headers & Footers ─────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small MAC Framework v7.1}
+\fancyhead[R]{\small Confidential}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Section formatting ────────────────────────────────────
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+% ── Diagram placeholder command ───────────────────────────
+\newcommand{\diagramplaceholder}[2]{%
+  \begin{figure}[H]
+  \centering
+  \fbox{\parbox{0.85\textwidth}{\centering\vspace{2em}%
+    \textit{Diagram: #1}\\[0.5em]%
+    \small See \texttt{docs/methodologySchematics/#2}\\%
+    \small Render with: \texttt{mmdc -i #2 -o #2.pdf}%
+    \vspace{2em}}}
+  \caption{#1}
+  \end{figure}%
+}
+
+
+\title{%
+  \textbf{MAC Framework: Quantitative Methodology}\\[0.5em]
+  \large Market Absorption Capacity (MAC) --- Technical Specification v7.1
+}
+\author{Prepared for external quantitative review}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\begin{abstract}
+The Market Absorption Capacity (MAC) framework produces a composite score in $[0, 1]$ measuring the capacity of financial markets to absorb exogenous shocks without disorderly price adjustment. This document specifies the v7.1 implementation: eight scoring pillars, non-linear interaction penalties, machine-learning weight optimisation, bootstrap confidence intervals, and HMM regime detection. Walk-forward backtest on 2,813 weekly observations (1971--2025) achieves 92.3\% true positive rate across 39 crisis events.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+
+
+\section{Framework Overview}\label{framework-overview}
+
+The Market Absorption Capacity (MAC) framework produces a single
+composite score in [0, 1] that measures the capacity of financial
+markets to absorb exogenous shocks without disorderly price adjustment.
+A score near 1.0 indicates ample buffers; a score below 0.35 signals
+that one or more systemic transmission channels is impaired.
+
+\subsection{Design Principles}\label{design-principles}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Multi-pillar construction} --- eight independent dimensions of
+  market resilience (seven quantitative, one text-based sentiment), each
+  scored [0, 1].
+\item
+  \textbf{Non-linear interaction penalties} --- co-breach of multiple
+  pillars incurs a super-additive penalty derived from
+  information-theoretic mutual information.
+\item
+  \textbf{Empirical calibration} --- pillar weights and the composite
+  calibration factor are fitted to a catalogue of 35+ historical stress
+  episodes (1907--2025) via gradient-boosted ensemble methods.
+\item
+  \textbf{Uncertainty quantification} --- bootstrap confidence intervals
+  propagate indicator noise, weight instability, and calibration
+  uncertainty through to the final score.
+\item
+  \textbf{Walk-forward discipline} --- all backtest results use
+  expanding-window re-estimation with no lookahead.
+\end{enumerate}
+
+\subsection{Score Interpretation}\label{score-interpretation}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3235}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2059}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4706}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+MAC Range
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Label
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Interpretation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textgreater= 0.80 & \textbf{Ample} & Markets can absorb large shocks;
+full risk budget available \\
+0.60--0.80 & \textbf{Comfortable} & Moderate absorption capacity \\
+0.40--0.60 & \textbf{Thin} & Limited buffer; elevated transmission
+risk \\
+0.20--0.40 & \textbf{Stretched} & High transmission risk; hedging
+recommended \\
+\textless{} 0.20 & \textbf{Regime Break} & Buffers exhausted; non-linear
+dynamics likely \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Architecture}\label{architecture}
+
+\subsection{System Pipeline}\label{system-pipeline}
+
+\diagramplaceholder{System Pipeline (8 Pillars, v7.1)}{01_system_pipeline.mmd}
+
+\subsection{Computation Flow (Per
+Timestep)}\label{computation-flow-per-timestep}
+
+\diagramplaceholder{Per-Timestep Computation Flow}{02_computation_flow.mmd}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pillar Construction}\label{pillar-construction}
+
+Each pillar maps a set of market observables to a score in [0, 1]
+using a piecewise-linear scoring function. The general form for a
+``lower-is-better'' indicator (e.g., spreads) is:
+
+\[
+s(x) = \begin{cases}
+1.0 & x \le x_{\text{ample}} \\
+0.5 + 0.5 \cdot \dfrac{x_{\text{ample}} - x}{x_{\text{ample}} - x_{\text{thin}}} & x_{\text{ample}} < x \le x_{\text{thin}} \\
+0.5 \cdot \dfrac{x_{\text{thin}} - x}{x_{\text{thin}} - x_{\text{breach}}} & x_{\text{thin}} < x \le x_{\text{breach}} \\
+0.0 & x > x_{\text{breach}}
+\end{cases}
+\]
+
+For ``range-based'' indicators (valuation pillar), both compressed and
+extremely wide values score low:
+
+\[
+s(x) = \begin{cases}
+1.0 & x_{\text{ample,lo}} \le x \le x_{\text{ample,hi}} \\
+\text{linear interp} & x_{\text{thin}} \text{ bands} \\
+0.0 & x < x_{\text{breach,lo}} \text{ or } x > x_{\text{breach,hi}}
+\end{cases}
+\]
+
+\subsection{Liquidity Pillar}\label{liquidity-pillar}
+
+\textbf{Core question:} Can markets transact without disorderly price
+impact?
+
+\diagramplaceholder{Liquidity Pillar Scoring}{03_liquidity_pillar.mmd}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ample
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Thin
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Breach
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+SOFR-IORB spread & FRED: SOFR, IORB & \textless{} 5 bps & \textless{} 25
+bps & \textgreater{} 50 bps \\
+CP-Treasury spread & FRED: DCPN3M, DTB3 & \textless{} 20 bps &
+\textless{} 50 bps & \textgreater{} 100 bps \\
+Cross-currency basis (EUR/USD) & BIS / Bloomberg & \textgreater{} -30
+bps & \textgreater{} -75 bps & \textless{} -120 bps \\
+Treasury bid-ask & Market data (32nds) & \textless{} 1.0 & \textless{}
+2.0 & \textgreater{} 4.0 \\
+\end{longtable}
+}
+
+\textbf{Historical proxy chain:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Era
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Proxy
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2018--present & FRED: SOFR, IORB & Native \\
+1986--2018 & FRED: TEDRATE & TED spread (3M LIBOR minus T-Bill) \\
+1954--1986 & FRED: DFF, TB3MS & Fed Funds minus T-Bill spread \\
+1934--1954 & FRED: INTDSRUSM193N, TB3MS & Discount rate minus T-Bill \\
+1907--1934 & NBER: m13001 & Call money rate minus short-term govt
+rate \\
+\end{longtable}
+}
+
+\textbf{References:} - Brunnermeier \& Pedersen (2009), ``Market
+Liquidity and Funding Liquidity,'' \emph{Review of Financial Studies}
+22(6), 2201--2238. - Bao, Pan \& Wang (2011), ``The Illiquidity of
+Corporate Bonds,'' \emph{Journal of Finance} 66(3), 911--946.
+
+\subsection{Valuation Pillar}\label{valuation-pillar}
+
+\textbf{Core question:} Are risk premia adequate buffers or compressed
+to dangerous levels?
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1897}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1379}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2241}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2069}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2414}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ample Range
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Thin Range
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Breach Range
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+10Y Term Premium & FRED: THREEFYTP10 & [40, 120] bps & [0, 200]
+bps & \textless{} -50 or \textgreater{} 250 bps \\
+IG OAS & FRED: BAMLC0A0CM & [100, 180] bps & [75, 280] bps &
+\textless{} 60 or \textgreater{} 400 bps \\
+HY OAS & FRED: BAMLH0A0HYM2 & [350, 550] bps & [280, 800] bps &
+\textless{} 200 or \textgreater{} 1000 bps \\
+\end{longtable}
+}
+
+\textbf{Design note:} Two-sided scoring is critical. Pre-GFC complacency
+(June 2007: IG OAS at 60 bps, HY OAS at 250 bps) is captured as a breach
+via compressed spreads, while crisis blow-outs are captured at the wide
+end. This avoids the asymmetric blind spot of traditional spread-only
+models.
+
+\textbf{v7.1 Adaptive Bands:} After accumulating 52+ weekly
+observations, the valuation pillar switches to regime-dependent
+rolling-percentile bands via \texttt{AdaptiveValuationBands}. Percentile
+boundaries adapt to the monetary policy regime (QE / tightening /
+neutral), so the definition of ``ample'' spreads evolves with the
+environment rather than relying on fixed thresholds calibrated to a
+single era.
+
+\textbf{Historical proxy chain:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Era
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Proxy
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1996--present & FRED: BAMLC0A0CM, BAMLH0A0HYM2 & ICE BofA indices
+(native) \\
+1919--1996 & FRED: BAA, AAA, DGS10 & Moody's Baa-10Y as IG proxy (-40
+bps); Baa-Aaa x 4.5 as HY proxy \\
+1907--1919 & NBER: m13020, m13028 & Railroad bond yields minus govt
+yields \\
+\end{longtable}
+}
+
+\textbf{References:} - Adrian, Crump \& Moench (2013), ``Pricing the
+Term Structure with Linear Regressions,'' \emph{Journal of Financial
+Economics} 110(1), 110--138. (ACM term premium model) - Gilchrist \&
+Zakrajsek (2012), ``Credit Spreads and Business Cycle Fluctuations,''
+\emph{American Economic Review} 102(4), 1692--1720.
+
+\subsection{Volatility Pillar}\label{volatility-pillar}
+
+\textbf{Core question:} Is the volatility regime stable, or are
+conditions ripe for a regime break?
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1897}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1379}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2241}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2069}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2414}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ample Range
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Thin Range
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Breach Range
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+VIX level & FRED: VIXCLS & [15, 20] & [12, 35] & \textless{} 10
+or \textgreater{} 50 \\
+VIX term structure (M2/M1) & CBOE & [1.00, 1.05] & [0.95, 1.08]
+& \textless{} 0.90 or \textgreater{} 1.10 \\
+Realised-Implied vol gap & Computed & \textless{} 20\% & \textless{}
+40\% & \textgreater{} 60\% \\
+\end{longtable}
+}
+
+\textbf{Volatility Risk Premium (VRP) Adjustment:}
+
+The VRP scales the volatility pillar to account for the variance risk
+premium (Carr \& Wu, 2009). v7.1 uses a Kalman filter state-space model
+as the primary estimator, falling back to the linear formula when
+filterpy/pykalman are unavailable:
+
+\emph{Kalman State-Space Model (primary):} - State equation:
+\(\text{VRP}_t = \text{VRP}_{t-1} + w_t\), \(w_t \sim N(0, Q)\) -
+Observation equation: \(z_t = \text{VRP}_t + v_t\), \(v_t \sim N(0, R)\)
+- Measurement inputs: vol-of-vol, skew, and excess kurtosis of returns -
+The filter optimally combines noisy observations with the random-walk
+prior
+
+\emph{Linear Fallback:}
+
+\[
+\text{VRP}_t = \text{clip}\!\Big(1.05 + 0.015 \cdot \sigma(\Delta\text{VIX})_{252d},\; [1.05,\; 1.55]\Big)
+\]
+
+\[
+s_{\text{adj}} = 1.0 - (1.0 - s_{\text{base}}) \times \text{VRP}_t
+\]
+
+where \(\sigma(\Delta\text{VIX})_{252d}\) is the trailing 252-day
+standard deviation of daily VIX changes (vol-of-vol).
+
+\textbf{Low-Volatility Persistence Penalty:}
+
+\[
+\text{penalty} = \min\!\Big(0.15,\; 0.003 \times n_{\text{consecutive days VIX} < 15}\Big)
+\]
+
+Applied over a rolling 60-day window. Extended low-vol periods build
+complacency that increases fragility (Brunnermeier \& Pedersen, 2009).
+
+\textbf{Historical proxy chain:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Era
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Proxy
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1990--present & FRED: VIXCLS & VIX (native) \\
+1986--1990 & FRED: VXOCLS & VXO x 0.95 (S\&P 100 options, r
+\textgreater{} 0.95 with VIX) \\
+1971--1986 & FRED: NASDAQCOM & 21-day realised vol x 1.2 VRP
+adjustment \\
+1871--1971 & Shiller monthly prices & Monthly realised vol x 1.3 VRP \\
+1802--1871 & Schwert (1989) & Reconstructed monthly stock volatility \\
+\end{longtable}
+}
+
+\textbf{References:} - Carr \& Wu (2009), ``Variance Risk Premiums,''
+\emph{Review of Financial Studies} 22(3), 1311--1341. - Schwert (1989),
+``Why Does Stock Market Volatility Change Over Time?,'' \emph{Journal of
+Finance} 44(5), 1115--1153. - Whaley (2000), ``The Investor Fear
+Gauge,'' \emph{Journal of Portfolio Management} 26(3), 12--17.
+
+\subsection{Positioning Pillar}\label{positioning-pillar}
+
+\textbf{Core question:} Is leverage manageable and positioning
+sufficiently diverse?
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ample
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Thin
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Breach
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Basis trade size & CFTC Treasury futures & \textless{} \$400B &
+\textless{} \$700B & \textgreater{} \$700B \\
+Treasury spec net (percentile) & CFTC COT & 25th--75th & 10th--90th &
+\textless{} 5th or \textgreater{} 95th \\
+SVXY AUM & ETF data & \textless{} \$500M & \textless{} \$1B &
+\textgreater{} \$1B \\
+\end{longtable}
+}
+
+\textbf{Dynamic OI-relative threshold:}
+
+\[
+\text{basis\_pct} = \frac{\text{basis\_trade\_billions}}{\text{total\_treasury\_OI\_billions}} \times 100
+\]
+
+Ample: \textless{} 8\% of OI; Thin: 8--12\%; Breach: \textgreater{}
+18\%.
+
+\textbf{Hedge failure mechanism:} When any positioning indicator
+breaches its critical threshold, the pillar composite is forced below
+0.18, triggering the interaction penalty and reflecting the empirical
+finding that positioning breach is a necessary condition for Treasury
+hedge failure (see Section 13.1).
+
+\textbf{v7.1 Hedge Failure Detector:} The positioning pillar integrates
+a formal \texttt{HedgeFailureDetector} module that scores two additional
+indicators when available: (1) primary dealer gross leverage (NY Fed
+data), and (2) Treasury futures Herfindahl index (concentration
+measure). These are blended into the composite as additional scored
+factors. The detector formalises the hedge failure definition as
+simultaneous 10Y return \textless{} -2\% and S\&P 500 \textless{} -3\%,
+and maintains a Bayesian posterior over P(severe \textbar{} positioning
+breach) updated from an expanded sample of N = 9 episodes (see Section
+12.6).
+
+\textbf{References:} - Federal Reserve Board (2024), ``Quantifying
+Treasury Cash-Futures Basis Trades.'' - Office of Financial Research
+(2021), ``Hedge Funds and the Treasury Cash-Futures Disconnect.'' -
+Federal Reserve Board (2023), ``Recent Developments in Hedge Funds'
+Treasury Futures and Repo Positions.''
+
+\subsection{Policy Pillar}\label{policy-pillar}
+
+\textbf{Core question:} Does the central bank retain capacity to respond
+to stress?
+
+\textbf{Binding-constraint architecture:} When policy sub-indicators are
+heterogeneous (max - min \textgreater{} homogeneity threshold), the
+composite equals the \emph{minimum} sub-indicator (bottleneck model).
+Otherwise, the composite is a weighted average.
+
+\diagramplaceholder{Policy Pillar Binding-Constraint Architecture}{04_policy_pillar.mmd}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3409}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1818}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1591}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1364}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1818}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Sub-Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ample
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Thin
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Breach
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Policy room (ELB distance) & FRED: DFEDTARU / FEDFUNDS & \textgreater=
+150 bps & \textgreater= 50 bps & \textless{} 25 bps \\
+Fed balance sheet (\% GDP) & FRED: WALCL, GDP & \textless= 25\% &
+\textless= 35\% & \textgreater{} 45\% \\
+Inflation deviation (above target) & FRED: PCEPILFE & \textless= 50 bps
+& \textless= 125 bps & \textgreater{} 200 bps \\
+Inflation deviation (below target) & FRED: PCEPILFE & \textless= 75 bps
+& \textless= 200 bps & \textgreater{} 350 bps \\
+Forward inflation expectations & TIPS 5y5y breakeven & \textless= 30 bps
+& \textless= 75 bps & \textgreater{} 150 bps \\
+Fiscal space (debt/GDP) & FRED: GFDEBTN, GDP & \textless= 70\% &
+\textless= 90\% & \textgreater{} 120\% \\
+\end{longtable}
+}
+
+\textbf{Homogeneity threshold} defaults to 0.25 but can be data-driven
+via the 75th percentile of historical cross-indicator dispersions.
+
+\textbf{Historical era caps} restrict the policy pillar to reflect
+structural constraints:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5238}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Era
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Cap
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rationale
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pre-1913 (pre-Fed) & min(0.30, 0.15 + 0.30 x gold\_reserve\_ratio) & No
+central bank; gold stock only backstop \\
+1913--1934 (early Fed + gold) & 0.55 & Fed constrained by Gold Standard
+Act (40\% reserve) \\
+1944--1971 (Bretton Woods) & 0.65 & Fixed exchange rate limits monetary
+autonomy \\
+Post-1971 & 1.00 & Unconstrained fiat regime \\
+\end{longtable}
+}
+
+\textbf{References:} - Taylor (1993), ``Discretion Versus Policy Rules
+in Practice,'' \emph{Carnegie-Rochester Conference Series on Public
+Policy} 39, 195--214. - Eggertsson \& Woodford (2003), ``The Zero Bound
+on Interest Rates and Optimal Monetary Policy,'' \emph{Brookings Papers
+on Economic Activity} 2003(1), 139--211.
+
+\subsection{Contagion Pillar}\label{contagion-pillar}
+
+\textbf{Core question:} Are cross-border transmission channels stable?
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2075}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1509}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1321}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1132}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2075}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1887}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ample
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Thin
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Stretched
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Critical
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Cross-currency basis (EUR/USD, JPY/USD) & BIS / Bloomberg &
+\textbar\textless{} 15 bps\textbar{} & \textless{} 30 bps & \textless{}
+60 bps & \textgreater{} 100 bps \\
+TARGET2 imbalances (\% EZ GDP) & ECB & \textless{} 5\% & \textless{}
+10\% & \textless{} 20\% & \textgreater{} 20\% \\
+EM reserve coverage (Guidotti-Greenspan) & IMF & \textgreater{} 150\% &
+\textgreater{} 125\% & \textgreater{} 100\% & \textless{} 75\% \\
+Cross-border banking flows (\% world GDP) & BIS & [-0.5\%, +1.5\%] &
++/- 3\% & +/- 5\% & \textless{} -4\% or \textgreater{} +7\% \\
+G-SIB CDS (regime-specific) & Bloomberg & \textless{} 60 bps* &
+\textless{} 120 bps* & \textless{} 200 bps* & \textgreater{} 200 bps* \\
+BTC-SPY 60d correlation & Computed & \textless= 0.30 & \textless= 0.50 &
+--- & \textgreater{} 0.70 \\
+\end{longtable}
+}
+
+*G-SIB thresholds vary by regulatory era: pre-2010 (wider), 2010--2014,
+post-2015 (tighter due to Basel III).
+
+\textbf{References:} - Rey (2015), ``Dilemma Not Trilemma: The Global
+Financial Cycle and Monetary Policy Independence,'' \emph{NBER Working
+Paper} 21162. - Guidotti, Sturzenegger \& Villar (2004), ``On the
+Consequences of Sudden Stops,'' \emph{Economia} 4(2), 171--214.
+
+\subsection{Private Credit Pillar}\label{private-credit-pillar}
+
+\textbf{Core question:} Is the \$1.7T+ opaque private credit market
+building hidden fragilities?
+
+\diagramplaceholder{Private Credit Pillar Pipeline}{05_private_credit_pillar.mmd}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2444}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1778}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1778}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1778}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Normal
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Elevated
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Severe
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+SLOOS C\&I tightening (small firms) & FRED: DRTSCIS & \textless= 20\% &
+\textless= 40\% & \textgreater{} 40\% \\
+SLOOS C\&I tightening (large firms) & FRED: DRTSCILM & \textless= 20\% &
+\textless= 40\% & \textgreater{} 40\% \\
+SLOOS spreads widening & FRED: DRISCFS & \textless= 15\% & \textless=
+30\% & \textgreater{} 30\% \\
+BDC price/NAV discount & ARCC, MAIN, FSK, PSEC, GBDC & [-5\%, +5\%]
+& [-5\%, -15\%] & \textless{} -25\% \\
+Leveraged loan ETFs (30d change) & BKLN, SRLN & \textgreater{} -2\% &
+\textless{} -5\% & \textless{} -10\% \\
+PE firm stocks (30d change) & KKR, BX, APO, CG & \textgreater{} -5\% &
+\textless{} -15\% & \textless{} -25\% \\
+\end{longtable}
+}
+
+\textbf{Composite weighting} (when decorrelation pipeline is
+unavailable):
+
+\[
+\text{PC} = 0.30 \times s_{\text{SLOOS}} + 0.35 \times s_{\text{BDC}} + 0.20 \times s_{\text{Loans}} + 0.15 \times s_{\text{PE}}
+\]
+
+When decorrelation time-series are available:
+
+\[
+\text{PC} = 0.60 \times s_{\text{decorrelated}} + 0.40 \times s_{\text{SLOOS}}
+\]
+
+\textbf{5-Factor PCA Decorrelation Pipeline:} Input: SPX returns, dVIX,
+dHY\_OAS, dMOVE, dXCCY basis. Rolling 252-day PCA extracts top 3
+orthogonal components. BDC returns are regressed on PCs; residuals form
+the decorrelated private credit signal, capturing
+private-credit-specific stress that public factors cannot explain.
+
+\textbf{References:} - Aramonte \& Avalos (2021), ``The Rise of Private
+Markets,'' \emph{BIS Quarterly Review}, December. - Stein (2013),
+``Overheating in Credit Markets: Origins, Measurement, and Policy
+Responses,'' speech at Federal Reserve Bank of St.~Louis.
+
+\subsection{Sentiment Pillar}\label{sentiment-pillar}
+
+\textbf{Core question:} Is central-bank communication signalling a
+dovish (capacity-building) or hawkish (capacity-constraining) policy
+stance?
+
+The sentiment pillar captures forward-looking policy intent that is not
+reflected in the numerical indicators. It is the 8th pillar, scoring
+FOMC minutes, statements, and speeches on a dovish-to-hawkish continuum.
+
+\diagramplaceholder{Weight Selection Logic}{06_weight_selection.mmd}
+
+\subsubsection{FinBERT Text Scoring (Production
+Path)}\label{finbert-text-scoring-production-path}
+
+When FOMC texts are available, the pillar uses FinBERT (Araci, 2019), a
+BERT model fine-tuned on financial text:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Sentence splitting} --- Each document is split at sentence
+  boundaries (\texttt{.!?} followed by whitespace + capital letter).
+\item
+  \textbf{Classification} --- FinBERT assigns each sentence a label:
+  \texttt{positive} (dovish), \texttt{negative} (hawkish), or
+  \texttt{neutral}, with a confidence score.
+\item
+  \textbf{Mapping to MAC scale:}
+\end{enumerate}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llc@{}}
+\toprule\noalign{}
+FinBERT Label & MAC Direction & Mapped Score \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+positive & Dovish (high capacity) & 0.8 \\
+neutral & Neutral & 0.5 \\
+negative & Hawkish (constrained) & 0.2 \\
+\end{longtable}
+}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  \textbf{Confidence weighting:}
+\end{enumerate}
+
+\[
+s_k = m_k \cdot c_k + 0.5 \cdot (1 - c_k)
+\]
+
+where \(m_k\) is the mapped score and \(c_k\) is FinBERT's confidence
+for sentence \(k\).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  \textbf{Composite with uncertainty penalty:}
+\end{enumerate}
+
+\[
+s_{\text{sentiment}} = \bar{s} - 0.10 \cdot \sigma(s_k)
+\]
+
+Clipped to [0, 1]. Higher sentence-level disagreement (std) reduces
+the score, reflecting genuine policy ambiguity.
+
+\textbf{Keyword fallback:} When FinBERT dependencies
+(\texttt{transformers}, \texttt{torch}) are not installed, a
+bag-of-words classifier with curated dovish (15 terms) and hawkish (14
+terms) dictionaries is used, including bigrams (``forward guidance'',
+``balance sheet reduction''). The dovish ratio maps linearly to [0.2,
+0.8].
+
+\subsubsection{Rate-Change Proxy (Backtest
+Path)}\label{rate-change-proxy-backtest-path}
+
+For the historical backtest (1960--2025), FOMC text data is not
+universally available. The sentiment proxy derives a score from three
+FRED-observable signals:
+
+\textbf{Signal 1 --- Fed Funds Rate Change (6-month delta, weight
+0.50):}
+
+\[
+s_{\text{ff}} = \frac{1}{1 + e^{1.5 \cdot \Delta\text{FF}_{6m}}}
+\]
+
+where \(\Delta\text{FF}_{6m} = \text{FF}_t - \text{FF}_{t-180}\) in
+percentage points. A 300 bps cut maps to \textasciitilde0.90 (dovish); a
+300 bps hike maps to \textasciitilde0.10 (hawkish).
+
+\textbf{Signal 2 --- Yield Curve Slope (10Y minus 2Y, weight 0.25):}
+
+\[
+s_{\text{yc}} = \text{clip}\!\Big(0.5 + 0.15 \cdot (r_{10Y} - r_{2Y}),\; [0.10, 0.90]\Big)
+\]
+
+A 200 bps positive slope maps to 0.80 (accommodative); a 200 bps
+inversion maps to 0.20 (restrictive).
+
+\textbf{Signal 3 --- Credit Spread Momentum (BAA-AAA 3-month delta,
+weight 0.25):}
+
+\[
+s_{\text{cs}} = \frac{1}{1 + e^{-3.0 \cdot \Delta(\text{BAA} - \text{AAA})_{3m}}}
+\]
+
+Widening spreads signal stress, which historically triggers dovish
+policy pivots (positive for absorption capacity).
+
+\textbf{Combined proxy:}
+
+\[
+s_{\text{proxy}} = \text{clip}\!\Big(0.50 \cdot s_{\text{ff}} + 0.25 \cdot s_{\text{yc}} + 0.25 \cdot s_{\text{cs}},\; [0.05, 0.95]\Big)
+\]
+
+\textbf{Calibration anchors:} 14 known FOMC dates (2007--2023) with
+assigned tone scores (e.g., Lehman week 2008-09-16: 0.95 dovish; Taper
+Tantrum 2013-05-22: 0.20 hawkish) override the proxy within a 14-day
+window.
+
+\textbf{Data coverage:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llc@{}}
+\toprule\noalign{}
+Era & Method & Uncertainty Tier \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pre-1913 & No Fed → neutral 0.5 & N/A \\
+1913--1960 & Limited data → neutral 0.5 & N/A \\
+1960--1987 & Rate-change proxy (FEDFUNDS, DGS10) & Tier 4 \\
+1987--1993 & Rate-change proxy + calibration anchors & Tier 3 \\
+1993--present & FOMC minutes (text) or rate proxy & Tier 2 \\
+\end{longtable}
+}
+
+\textbf{References:} - Araci, D. (2019). ``FinBERT: Financial Sentiment
+Analysis with Pre-Trained Language Models.'' arXiv:1908.10063. - Hansen,
+S. \& McMahon, M. (2016). ``Shocking Language: Understanding the
+Macroeconomic Effects of Central Bank Communication.'' \emph{Journal of
+International Economics} 99, S114--S133. - Loughran, T. \& McDonald, B.
+(2011). ``When Is a Liability Not a Liability? Textual Analysis,
+Dictionaries, and 10-Ks.'' \emph{Journal of Finance} 66(1), 35--65. -
+Lucca, D. O. \& Trebbi, F. (2009). ``Measuring Central Bank
+Communication: An Automated Approach with Application to FOMC
+Statements.'' \emph{NBER Working Paper} 15367.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Composite Aggregation}\label{composite-aggregation}
+
+\subsection{MAC Formula}\label{mac-formula}
+
+The MAC composite is computed in three stages:
+
+\textbf{Stage 1: Weighted average}
+
+\[
+\bar{S} = \sum_{i=1}^{K} w_i \cdot s_i
+\]
+
+where \(K = 8\) pillars (when sentiment is active; \(K = 7\) otherwise),
+\(w_i\) are ML-optimised weights (Section 5), and \(s_i \in [0,1]\) are
+individual pillar scores.
+
+\textbf{Stage 2: Breach interaction penalty}
+
+\[
+n = \bigl|\{i : s_i < \theta_{\text{stress}}\}\bigr|, \quad \theta_{\text{stress}} = 0.30
+\]
+
+\[
+\pi(n) = \min\!\Big(\gamma_{\text{cap}},\; \gamma \cdot \ln\!\Big(\frac{f_{\text{obs}}(n)}{f_{\text{indep}}(n)}\Big)\Big)
+\]
+
+where: - \(\gamma = 0.043\), \(\gamma_{\text{cap}} = 0.15\) -
+\(f_{\text{indep}}(n) = \binom{K}{n} \hat{p}^n (1-\hat{p})^{K-n}\) with
+pooled breach rate \(\hat{p} \approx 0.125\) (default), or per-pillar
+breach probabilities from the Dirichlet-multinomial model (Section 8.2)
+when the data-driven breach model is active - \(f_{\text{obs}}(n)\) is
+the observed co-breach frequency across 14 modern crises
+
+\textbf{Observed excess ratios} (14 modern crises, 1998--2025):
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ccc@{}}
+\toprule\noalign{}
+Breaches (n) & \(f_{\text{obs}}/f_{\text{indep}}\) & \(\pi(n)\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 1.0 & 0.000 \\
+1 & 1.0 & 0.000 \\
+2 & 2.1 & 0.032 \\
+3 & 6.8 & 0.082 \\
+4 & 17.0 & 0.122 \\
+5+ & 35.0 & 0.150 (cap) \\
+\end{longtable}
+}
+
+\textbf{Sensitivity:} Penalties change by \textless= 0.02 under
+perturbation of breach threshold (0.25--0.35) and pooled probability
+(0.10--0.15).
+
+\textbf{Stage 3: Calibration}
+
+\[
+\text{MAC} = \text{clip}\!\Big(\alpha \cdot \max\!\big(0,\; \bar{S} - \pi(n)\big),\;\; [0, 1]\Big)
+\]
+
+where \(\alpha = 0.78 \pm 0.05\) is the calibration factor (Section 6).
+
+\subsection{Weight Selection}\label{weight-selection}
+
+\diagramplaceholder{ML Training Pipeline}{07_ml_training_pipeline.mmd}
+
+\textbf{ML-optimised weights (8-pillar baseline):}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2759}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1724}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1724}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3793}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Pillar
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+7-Pillar
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+8-Pillar
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rationale
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Liquidity & 0.16 & 0.14 & Core transmission channel \\
+Valuation & 0.10 & 0.09 & Breaches only in extreme crises \\
+Positioning & 0.22 & 0.20 & Highest --- necessary condition for hedge
+failure \\
+Volatility & 0.15 & 0.13 & Common but not predictive alone \\
+Policy & 0.12 & 0.11 & Elevated after binding-constraint architecture \\
+Contagion & 0.15 & 0.13 & Key for distinguishing global vs.~local
+stress \\
+Private Credit & 0.10 & 0.09 & Decorrelated leading credit stress
+indicator \\
+Sentiment & --- & 0.11 & Forward-looking policy intent signal \\
+\end{longtable}
+}
+
+\textbf{Interaction-adjusted weights (8-pillar, under dual-stress):}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lccl@{}}
+\toprule\noalign{}
+Pillar & 7-Pillar & 8-Pillar & Change \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Liquidity & 0.14 & 0.12 & -0.02 \\
+Valuation & 0.08 & 0.07 & -0.01 \\
+Positioning & \textbf{0.24} & \textbf{0.22} & Boosted --- forced-unwind
+risk \\
+Volatility & 0.16 & 0.14 & +0.01 \\
+Policy & 0.09 & 0.08 & -0.01 \\
+Contagion & \textbf{0.18} & \textbf{0.16} & Boosted --- global
+contagion \\
+Private Credit & 0.11 & 0.10 & -0.01 \\
+Sentiment & --- & 0.11 & Orthogonal signal, unchanged \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Machine Learning Weight
+Optimisation}\label{machine-learning-weight-optimisation}
+
+\subsection{Feature Engineering}\label{feature-engineering}
+
+The ML model operates on a feature vector per scenario:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Base features (8):} One per-pillar score \(s_i \in [0,1]\)
+  (including sentiment when active)
+\item
+  \textbf{Interaction features (6):} Pairwise products of theoretically
+  motivated pillar pairs
+\end{itemize}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4737}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5263}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Interaction Pair
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Financial Mechanism
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Positioning x Volatility & Crowded trades + vol spike = forced
+unwinds \\
+Positioning x Liquidity & Crowded trades + illiquidity = margin
+spirals \\
+Policy x Contagion & Policy constrained + global stress = no backstop \\
+Liquidity x Contagion & Dollar illiquidity + global stress = funding
+squeeze \\
+Valuation x Volatility & Compressed spreads + vol = sudden repricing \\
+Positioning x Contagion & Crowded trades + global = coordinated
+deleveraging \\
+\end{longtable}
+}
+
+\subsection{Training Procedure}\label{training-procedure}
+
+\diagramplaceholder{Bootstrap Confidence Interval Sources}{08_uncertainty_sources.mmd}
+
+\textbf{XGBoost hyperparameter search space} (Optuna Bayesian
+optimisation):
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Parameter & Range & Scale \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+max\_depth & [2, 5] & Integer \\
+learning\_rate & [0.01, 0.3] & Log \\
+n\_estimators & [30, 200] & Integer \\
+min\_child\_weight & [1, 5] & Integer \\
+subsample & [0.6, 1.0] & Uniform \\
+colsample\_bytree & [0.6, 1.0] & Uniform \\
+reg\_alpha & [0.0, 1.0] & Uniform \\
+reg\_lambda & [0.0, 1.0] & Uniform \\
+\end{longtable}
+}
+
+\textbf{Sklearn GBM fallback} (fixed configuration):
+
+\begin{verbatim}
+n_estimators=50, max_depth=2, learning_rate=0.1,
+min_samples_leaf=2, random_state=42
+\end{verbatim}
+
+\subsection{Synthetic Augmentation}\label{synthetic-augmentation}
+
+To mitigate small-sample overfitting, scenarios are augmented before ML
+training:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  For each of the 35 real scenarios, generate 8 synthetic variants.
+\item
+  Apply noise to pillar scores: \(\tilde{s}_i = s_i + \epsilon_i\) where
+  \(\epsilon_i = 0.5\epsilon_{\text{shared}} + 0.5\epsilon_{\text{indep}}\),
+  with
+  \(\epsilon_{\text{shared}}, \epsilon_{\text{indep}} \sim \text{Uniform}(-0.05, +0.05)\).
+\item
+  Clip \(\tilde{s}_i\) to \([0, 1]\).
+\item
+  CSR targets are preserved (no noise on ground truth).
+\item
+  Augmented scenarios are excluded from LOOCV --- only the 35 real
+  scenarios are held out.
+\end{enumerate}
+
+Effective training set: \(35 \times (1 + 8) = 315\) scenarios.
+
+\subsection{Validation}\label{validation}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{LOOCV} on real scenarios only (no augmented scenarios in
+  hold-out)
+\item
+  \textbf{5-fold TimeSeriesSplit} for hyperparameter selection
+\item
+  \textbf{Weight stability check:} If average deviation from equal
+  weights \textless{} 0.03, ML weights are not used (insufficient
+  signal)
+\item
+  \textbf{Positioning p-value:} Fisher exact test on positioning-breach
+  x hedge-failure contingency table: \(p = 0.0027\)
+\end{itemize}
+
+\textbf{References:} - Breiman (2001), ``Random Forests,'' \emph{Machine
+Learning} 45(1), 5--32. - Friedman (2001), ``Greedy Function
+Approximation: A Gradient Boosting Machine,'' \emph{Annals of
+Statistics} 29(5), 1189--1232. - Chen \& Guestrin (2016), ``XGBoost: A
+Scalable Tree Boosting System,'' \emph{Proceedings of KDD}, 785--794. -
+Akiba et al.~(2019), ``Optuna: A Next-generation Hyperparameter
+Optimization Framework,'' \emph{Proceedings of KDD}, 2623--2631.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Calibration Engine}\label{calibration-engine}
+
+\subsection{Crisis Severity Rating
+(CSR)}\label{crisis-severity-rating-csr}
+
+Each historical scenario is assigned a ground-truth CSR on five
+independent dimensions, each scored [0, 1] where 0 = maximum
+severity:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Dimension & Definition & Example (Lehman 2008) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Drawdown} & Peak-to-trough S\&P 500 within 90 days & 0.10 \\
+\textbf{Market dysfunction} & Categorical: degree of market freeze &
+0.10 \\
+\textbf{Policy response} & Intensity of official intervention & 0.10 \\
+\textbf{Contagion} & Breadth across segments/geographies & 0.10 \\
+\textbf{Duration} & Length of acute VIX-elevated phase & 0.10 \\
+\end{longtable}
+}
+
+\[
+\text{CSR}_{\text{composite}} = \frac{1}{5}\sum_{d=1}^{5} \text{CSR}_d
+\]
+
+\subsection{Calibration Factor
+Alpha}\label{calibration-factor-alpha}
+
+The calibration factor \(\alpha\) corrects for the systematic bias
+between raw MAC scores and CSR targets:
+
+\[
+\alpha^* = \arg\min_{\alpha} \sum_{j=1}^{N} \Big(\alpha \cdot \text{MAC}_{\text{raw},j} - \text{CSR}_j\Big)^2
+\]
+
+subject to \(\alpha \in [0.5, 1.0]\).
+
+\textbf{Current estimate:} \(\alpha = 0.78\), \(\sigma_\alpha = 0.05\)
+(from LOOCV residual variance on 6 anchor events).
+
+The calibration factor is re-estimated every 52 weeks in the
+walk-forward backtest (Section 9.2) to prevent lookahead bias.
+
+\subsection{Era-Aware Calibration}\label{era-aware-calibration}
+
+The \(\alpha = 0.78\) factor was calibrated against modern (post-2006)
+scenarios. For earlier eras, structural differences (higher Schwert vol,
+wider railroad spreads) already compress scores:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5238}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Era
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Calibration Factor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rationale
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2006--present & 0.78 & Full calibration \\
+1971--2006 & min(0.90, alpha + 0.12) & Milder --- structural differences
+partially self-correct \\
+Pre-1971 & 1.00 & No calibration --- proxy uncertainty dominates \\
+\end{longtable}
+}
+
+\subsection{Scenario Catalogue
+(Selected)}\label{scenario-catalogue-selected}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llccc@{}}
+\toprule\noalign{}
+Event & Date & CSR Composite & MAC Range & Hedge Fail? \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+LTCM & 1998-09-23 & 0.38 & [0.20, 0.40] & No \\
+Bear Stearns & 2008-03-16 & 0.43 & [0.30, 0.50] & No \\
+Lehman Brothers & 2008-09-15 & 0.10 & [0.15, 0.30] & No \\
+COVID Dash-for-Cash & 2020-03-16 & 0.12 & [0.10, 0.25] &
+\textbf{Yes} \\
+SVB Crisis & 2023-03-10 & 0.56 & [0.50, 0.65] & No \\
+April 2025 Tariffs & 2025-04-02 & 0.48 & [0.45, 0.60] &
+\textbf{Yes} \\
+\end{longtable}
+}
+
+Full catalogue: 35+ events spanning 1907--2025.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Confidence Intervals}\label{confidence-intervals}
+
+\subsection{Three Sources of
+Uncertainty}\label{three-sources-of-uncertainty}
+
+\diagramplaceholder{Standard Backtest Loop}{09_backtest_loop.mmd}
+
+\textbf{Proxy uncertainty tiers} (per \texttt{docs/data\_quality.md}):
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llcl@{}}
+\toprule\noalign{}
+Tier & Label & Noise \(\sigma\) & Example \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Native & 0.01 & VIX post-1990 \\
+2 & Computed & 0.03 & BAA-AAA spread \\
+3 & Proxy (modern) & 0.05 & VXO as VIX proxy \\
+4 & Proxy (historical) & 0.10 & NBER call money rate \\
+5 & Estimated & 0.15 & Basis trade size, pre-1926 volatility \\
+\end{longtable}
+}
+
+\subsection{Bootstrap Algorithm}\label{bootstrap-algorithm}
+
+For \(b = 1, \ldots, n_{\text{bootstrap}}\) (default \(n = 1000\)):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Perturb pillar scores:}
+  \(\tilde{s}_i^{(b)} = \text{clip}\!\big(s_i + \epsilon_i,\; [0,1]\big)\)
+  where \(\epsilon_i \sim \mathcal{N}(0, \sigma_{\text{tier}})\)
+\item
+  \textbf{Perturb weights:} \(\tilde{w}_i^{(b)} = w_i + \delta_i\) where
+  \(\delta_i \sim \mathcal{N}(0, 0.03 \cdot w_i)\); re-normalise to sum
+  to 1
+\item
+  \textbf{Perturb alpha:}
+  \(\tilde{\alpha}^{(b)} = \text{clip}\!\big(\alpha + \eta,\; [0.5, 1.0]\big)\)
+  where \(\eta \sim \mathcal{N}(0, 0.05)\)
+\item
+  \textbf{Compute:}
+  \(\text{MAC}^{(b)} = \text{clip}\!\big(\tilde{\alpha}^{(b)} \cdot \max(0,\; \sum \tilde{w}_i^{(b)} \tilde{s}_i^{(b)} - \pi(n)),\; [0,1]\big)\)
+\end{enumerate}
+
+\[
+\text{CI}_{80} = \big[Q_{10}(\{\text{MAC}^{(b)}\}),\; Q_{90}(\{\text{MAC}^{(b)}\})\big]
+\]
+
+\[
+\text{CI}_{90} = \big[Q_{5}(\{\text{MAC}^{(b)}\}),\; Q_{95}(\{\text{MAC}^{(b)}\})\big]
+\]
+
+\subsection{Conformal Prediction
+Bands}\label{conformal-prediction-bands}
+
+Using LOOCV absolute residuals \(\{|r_j|\}_{j=1}^{N}\):
+
+\[
+q = \text{Quantile}_{(N+1)(1-\alpha)/N}\!\big(\{|r_j|\}\big)
+\]
+
+\[
+\text{Band} = [\text{MAC} - q,\; \text{MAC} + q]
+\]
+
+These provide distribution-free coverage guarantees under the
+exchangeability assumption (Vovk et al., 2005).
+
+\textbf{References:} - Efron \& Tibshirani (1993), \emph{An Introduction
+to the Bootstrap}, Chapman \& Hall. - Vovk, Gammerman \& Shafer (2005),
+\emph{Algorithmic Learning in a Random World}, Springer.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Regime Detection}\label{regime-detection}
+
+\subsection{Hidden Markov Model
+Overlay}\label{hidden-markov-model-overlay}
+
+A 2-state Gaussian HMM is fitted to the 8-dimensional pillar score
+vector:
+
+\[
+\mathbf{s}_t \sim \mathcal{N}(\boldsymbol{\mu}_{z_t}, \boldsymbol{\Sigma}_{z_t}), \quad z_t \in \{0, 1\}
+\]
+
+with transition matrix:
+
+\[
+\mathbf{A} = \begin{pmatrix} P(\text{Normal} \to \text{Normal}) & P(\text{Normal} \to \text{Fragile}) \\ P(\text{Fragile} \to \text{Normal}) & P(\text{Fragile} \to \text{Fragile}) \end{pmatrix}
+\]
+
+The ``fragile'' state is identified post-estimation as the state with
+the lower mean pillar score vector.
+
+\textbf{Estimation:} Expectation-Maximisation (Baum-Welch), 100
+iterations, full covariance.
+
+\textbf{Output at time \(t\):} -
+\(P(\text{fragile}_t \mid \mathbf{s}_{1:t})\) --- posterior fragility
+probability - Viterbi path --- most likely state sequence
+
+\textbf{Decision rule:} When \(P(\text{fragile}) > 0.6\), the decision
+matrix shifts one row toward defensive posture (e.g., ``Thin'' actions
+become ``Stretched'' actions).
+
+\textbf{Fallback:} When \texttt{hmmlearn} is unavailable, a threshold
+classifier is used: fragile if \(\bar{s}_t < 0.5\).
+
+\textbf{References:} - Hamilton (1989), ``A New Approach to the Economic
+Analysis of Nonstationary Time Series and the Business Cycle,''
+\emph{Econometrica} 57(2), 357--384. - Baum et al.~(1970), ``A
+Maximization Technique Occurring in the Statistical Analysis of
+Probabilistic Functions of Markov Chains,'' \emph{Annals of Mathematical
+Statistics} 41(1), 164--171.
+
+\subsection{Breach Probability
+Model}\label{breach-probability-model}
+
+The pooled breach probability \(\hat{p} \approx 0.125\) is extended to
+per-pillar, per-era rates using a Dirichlet-multinomial model:
+
+\[
+(p_1, \ldots, p_K) \sim \text{Dirichlet}(\alpha_1, \ldots, \alpha_K)
+\]
+
+\[
+n_{\text{breaches}} \sim \text{Multinomial}(N, p_1, \ldots, p_K)
+\]
+
+This replaces the binomial independence assumption in the co-breach
+penalty with an empirical joint distribution that varies by historical
+era.
+
+\textbf{v7.1 Integration:} The \texttt{PillarBreachModel} is initialised
+in the backtest runner and passed to \texttt{calculate\_mac\_with\_ci()}
+at every timestep. When fitted, it provides data-driven co-breach
+penalties via \texttt{get\_penalty\_for\_breach\_count(n)} that replace
+the hardcoded \texttt{BREACH\_INTERACTION\_PENALTY} lookup table. The
+fitted model captures era-specific patterns --- e.g., pre-1990 episodes
+show higher volatility-policy co-breach rates, while post-2000 episodes
+show higher positioning-liquidity clustering. Fallback to the
+pooled-probability table is automatic when insufficient scenario data is
+available.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Backtesting Methodology}\label{backtesting-methodology}
+
+\subsection{Standard Backtest}\label{standard-backtest}
+
+\diagramplaceholder{Walk-Forward Re-estimation Protocol}{10_walk_forward_protocol.mmd}
+
+\textbf{Three backtest modes:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Mode & Period & Data Requirements \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Standard & 1971--2025 & FRED series only (29+ cached) \\
+Extended & 1962--2025 & FRED + Moody's historical \\
+Full & 1907--2025 & FRED + NBER + Shiller + Schwert + BoE + FINRA \\
+\end{longtable}
+}
+
+\textbf{Sentiment pillar integration:}
+
+The sentiment pillar participates in the composite from 1960 onward,
+using the rate-change proxy (Section 3.8.2). For pre-1960 dates, the
+pillar is excluded from the composite via the \texttt{has\_data} gate
+(Fix A). The FRED prefetch includes a 200-day lookback buffer to support
+the 6-month rate-change signal.
+
+\subsection{Walk-Forward
+Discipline}\label{walk-forward-discipline}
+
+To eliminate lookahead bias, all model parameters are re-estimated on an
+expanding window:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Parameter & Frequency & Training Window \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+ML pillar weights & Every 52 weeks & Expanding (min 104 weeks) \\
+Calibration factor \(\alpha\) & Every 52 weeks & Expanding \\
+SVAR estimates & Every 52 weeks & Expanding \\
+\end{longtable}
+}
+
+\textbf{Walk-forward protocol:}
+
+\diagramplaceholder{Sentiment Pillar Pipeline}{11_sentiment_pillar.mmd}
+
+\textbf{Outputs:} - Rolling TPR/FPR over time - Weight stability: mean,
+std, max deviation per pillar - Alpha stability: mean \(\bar{\alpha}\),
+std \(\sigma_\alpha\) across refitting epochs
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Precision-Recall
+Framework}\label{precision-recall-framework}
+
+\subsection{Classification Setup}\label{classification-setup}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4231}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2692}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3077}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Parameter
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Value
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Crisis window & +/- 6 weeks around event date & v6 Section 15.6 \\
+Lead time & 8 weeks early (still counts as TP) & v6 Section 15.6 \\
+Threshold sweep & \(\tau = 0.10, 0.11, \ldots, 0.80\) (71 points) & v6
+Section 15.6 \\
+Total crisis events & 56 (1907--2025) & Expanded crisis catalogue
+(v7) \\
+\end{longtable}
+}
+
+\textbf{Classification at threshold \(\tau\):} - \textbf{True Positive
+(TP):} MAC \textless{} \(\tau\) during a crisis window (or within 8-week
+lead) - \textbf{False Positive (FP):} MAC \textless{} \(\tau\) outside
+any crisis window - \textbf{False Negative (FN):} MAC \textgreater=
+\(\tau\) during a crisis window - \textbf{True Negative (TN):} MAC
+\textgreater= \(\tau\) outside any crisis window
+
+\subsection{Client-Specific Operating
+Points}\label{client-specific-operating-points}
+
+The \(F_\beta\) score balances precision and recall via the \(\beta\)
+parameter:
+
+\[
+F_\beta = (1 + \beta^2) \cdot \frac{\text{Precision} \times \text{Recall}}{\beta^2 \cdot \text{Precision} + \text{Recall}}
+\]
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4884}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1163}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1163}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2791}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Client Archetype
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(\beta\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Optimal \(\tau^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Priority
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Sovereign Wealth Fund & 2.0 & \textasciitilde0.55 & Recall (better safe
+than sorry) \\
+Central Bank / Reserve Manager & 1.0 & \textasciitilde0.50 & Balanced \\
+Macro Hedge Fund & 0.5 & \textasciitilde0.40 & Precision (avoid false
+signals) \\
+Insurance / Pension & 1.5 & \textasciitilde0.52 & Moderate recall
+bias \\
+\end{longtable}
+}
+
+\subsection{False-Positive
+Taxonomy}\label{false-positive-taxonomy}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2703}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3243}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4054}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Category
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Definition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Cost Treatment
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Near-miss} & FP within 90 days of an actual crisis & Low
+(genuine stress that didn't escalate) \\
+\textbf{Regime artefact} & FP before 1971-08-15 (Bretton Woods
+structural effects) & Zero (expected model limitation) \\
+\textbf{Pure false} & All other FPs & Full (30 bps hedge cost per FP
+week) \\
+\end{longtable}
+}
+
+\subsection{Economic Cost
+Analysis}\label{economic-cost-analysis}
+
+\[
+\text{Cost}(\tau) = 30\text{ bps} \times n_{\text{FP weeks}}(\tau) + 1500\text{ bps} \times n_{\text{FN crises}}(\tau)
+\]
+
+\[
+\text{Net EV}(\tau) = \text{FN cost avoided} - \text{FP cost incurred}
+\]
+
+The optimal operating point maximises Net EV (or equivalently, maximises
+the after-cost Sharpe ratio of a hedged portfolio).
+
+\subsection{Standard Operating
+Points}\label{standard-operating-points}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lcl@{}}
+\toprule\noalign{}
+Name & Threshold \(\tau\) & Use Case \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Conservative & 0.30 & Only strongest signals; minimises FP \\
+Moderate & 0.40 & Balanced false-positive/false-negative \\
+Default & 0.50 & General-purpose \\
+Sensitive & 0.60 & Higher recall; accepts more FPs \\
+Maximum recall & 0.70 & Catch nearly all crises; high FP rate \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Data Sources and Proxy
+Construction}\label{data-sources-and-proxy-construction}
+
+\subsection{Primary Data Sources}\label{primary-data-sources}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2759}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1034}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3448}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2759}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Series Count
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Coverage
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Access
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{FRED} (Federal Reserve Economic Data) & 41+ & 1919--present &
+API (key required) \\
+\textbf{NBER Macrohistory} & 21 CSV files & 1857--1989 & Static
+download \\
+\textbf{Shiller Online Data} & S\&P 500, CAPE, CPI, yields &
+1871--present & XLS download \\
+\textbf{Schwert (1989)} & Monthly realised volatility & 1802--1987 &
+Published dataset \\
+\textbf{Bank of England Research} & GBP/USD, Bank Rate & 1694--1995 &
+CSV download \\
+\textbf{MeasuringWorth} & US nominal GDP & 1790--present & CSV
+download \\
+\textbf{FINRA/NYSE} & Margin debt & 1918--present & CSV download \\
+\textbf{CFTC} & Commitments of Traders & 1962--present & Weekly
+reports \\
+\textbf{BIS} & Cross-border flows, xccy basis & 1990--present &
+Quarterly \\
+\textbf{IMF} & Reserves, external debt & 1990--present & IFS database \\
+\textbf{ECB} & TARGET2 balances & 2008--present & Statistical
+warehouse \\
+\textbf{Federal Reserve} & FOMC minutes, statements & 1993--present &
+Website (public) \\
+\end{longtable}
+}
+
+\subsection{FRED Series Inventory}\label{fred-series-inventory}
+
+\textbf{Funding / Liquidity:} \texttt{SOFR}, \texttt{IORB},
+\texttt{IOER}, \texttt{TEDRATE}, \texttt{DFF}, \texttt{FEDFUNDS},
+\texttt{TB3MS}, \texttt{DCPF3M}, \texttt{DCPN3M}, \texttt{DTB3}
+
+\textbf{Credit Spreads (Modern):} \texttt{BAMLC0A0CM} (IG OAS),
+\texttt{BAMLH0A0HYM2} (HY OAS)
+
+\textbf{Credit Spreads (Historical):} \texttt{AAA}, \texttt{BAA},
+\texttt{AAA10Y}, \texttt{BAA10Y}
+
+\textbf{Volatility:} \texttt{VIXCLS}, \texttt{VXOCLS},
+\texttt{NASDAQCOM}, \texttt{SPASTT01USM661N}
+
+\textbf{Policy / Macro:} \texttt{DFEDTARU}, \texttt{WALCL},
+\texttt{GDP}, \texttt{PCEPILFE}, \texttt{BOGMBASE}, \texttt{M2SL},
+\texttt{GDPA}
+
+\textbf{Treasury Yields:} \texttt{DGS1MO}, \texttt{DGS3MO},
+\texttt{DGS6MO}, \texttt{DGS1}, \texttt{DGS2}, \texttt{DGS5},
+\texttt{DGS10}, \texttt{DGS30}
+
+\textbf{Term Premium:} \texttt{THREEFYTP10} (ACM 10-year term premium)
+
+\textbf{Historical:} \texttt{INTDSRUSM193N} (Fed Discount Rate, 1913+),
+\texttt{IRLTLT01USM156N} (Long-term govt yield, 1920+)
+
+\textbf{Private Credit:} \texttt{DRTSCIS}, \texttt{DRTSCILM},
+\texttt{DRISCFS}, \texttt{DRISCFLM}
+
+\subsection{Proxy Construction
+Methods}\label{proxy-construction-methods}
+
+\textbf{IG OAS proxy (1919--1996):}
+
+\[
+\widehat{\text{IG OAS}} = \max\!\big(50,\; (\text{BAA} - \text{DGS10}) \times 100 - 40\big) \text{ bps}
+\]
+
+The 40 bps offset corrects for the fact that Moody's Baa includes more
+credit-risky issuers than the ICE BofA IG index (Gilchrist \& Zakrajsek,
+2012).
+
+\textbf{HY OAS proxy (1919--1996):}
+
+\[
+\widehat{\text{HY OAS}} = \max\!\big(250,\; (\text{BAA} - \text{AAA}) \times 100 \times 4.5\big) \text{ bps}
+\]
+
+The 4.5x multiplier maps the Baa-Aaa spread (\textasciitilde100 bps
+typical) to HY levels (\textasciitilde450 bps typical).
+
+\textbf{VIX proxy (1971--1986):}
+
+\[
+\widehat{\text{VIX}} = 1.2 \times \text{RV}_{21d} \times 100
+\]
+
+where \(\text{RV}_{21d}\) is the annualised 21-day rolling standard
+deviation of daily NASDAQ returns. The 1.2x factor approximates the
+variance risk premium (Carr \& Wu, 2009).
+
+\textbf{Pre-1971 VIX proxy:}
+
+\[
+\widehat{\text{VIX}} = 1.3 \times \text{RV}_{\text{monthly}}
+\]
+
+using Shiller monthly S\&P 500 returns; 1.3x for higher uncertainty in
+monthly estimation.
+
+\textbf{Sentiment proxy (1960--present):}
+
+\[
+s_{\text{proxy}} = 0.50 \cdot \sigma\!\left(\frac{1}{1 + e^{1.5 \cdot \Delta\text{FF}_{6m}}}\right) + 0.25 \cdot s_{\text{YC}} + 0.25 \cdot s_{\text{CS}}
+\]
+
+Using FRED: \texttt{FEDFUNDS}/\texttt{DFF} (rate change),
+\texttt{DGS10}/\texttt{DGS2} (yield curve), \texttt{BAA}/\texttt{AAA}
+(credit spreads). See Section 3.8.2 for full derivation.
+
+\subsection{Proxy Reliability by
+Era}\label{proxy-reliability-by-era}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1724}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}
+  >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1034}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Era
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Liquidity
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Valuation
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Volatility
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Positioning
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Policy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Contagion
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Priv Credit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Sentiment
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1850--1913 & Tier 4 & Tier 4 & Tier 5 & Tier 5 & Tier 5 & Tier 5 & N/A &
+N/A \\
+1913--1960 & Tier 4 & Tier 3 & Tier 3 & Tier 4 & Tier 4 & Tier 4 & N/A &
+N/A \\
+1960--1986 & Tier 3 & Tier 2 & Tier 3 & Tier 4 & Tier 3 & Tier 4 & N/A &
+Tier 4 \\
+1986--2000 & Tier 2 & Tier 2 & Tier 1--2 & Tier 3 & Tier 1--2 & Tier 3 &
+Tier 4 & Tier 3 \\
+2000--present & Tier 1 & Tier 1 & Tier 1 & Tier 1--2 & Tier 1 & Tier
+1--2 & Tier 2--3 & Tier 2 \\
+\end{longtable}
+}
+
+\emph{Tier 1 = Native (sigma = 0.01); Tier 5 = Estimated (sigma = 0.15).
+See \texttt{docs/data\_quality.md} for full matrix.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Validation Results}\label{validation-results}
+
+\subsection{Standard Backtest (1971--2025, 8-Pillar Model, v7.1
+Fully
+Wired)}\label{standard-backtest-19712025-8-pillar-model-v7.1-fully-wired}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lc@{}}
+\toprule\noalign{}
+Metric & Value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Data points (weekly) & 2,813 \\
+Crises evaluated & 39 \\
+Crises with warning (TP) & 36 \\
+\textbf{True Positive Rate} & \textbf{92.3\%} \\
+Average MAC (overall) & 0.471 \\
+Average MAC (crisis periods) & 0.425 \\
+Average MAC (non-crisis) & 0.485 \\
+MAC range & [0.000, 0.854] \\
+Crisis-period separation & 0.060 (statistically significant) \\
+Mean bootstrap std & 0.036 \\
+Mean 80\% CI width & 0.093 \\
+Mean 90\% CI width & 0.118 \\
+\end{longtable}
+}
+
+\subsection{Per-Era Detection
+Rates}\label{per-era-detection-rates}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lccc@{}}
+\toprule\noalign{}
+Era & Crises (N) & Detected & TPR \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Post-Bretton Woods (1971--1990) & 8 & 7 & \textbf{87.5\%} \\
+Modern (1990--2025) & 31 & 29 & \textbf{93.5\%} \\
+\end{longtable}
+}
+
+\subsection{Progressive Improvement: 7-Pillar to v7.1 Fully
+Wired}\label{progressive-improvement-7-pillar-to-v7.1-fully-wired}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2581}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1613}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1613}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1613}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2581}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Metric
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+7-Pillar (v7.0)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+8-Pillar (v7.1 base)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+8-Pillar (v7.1 wired)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Change
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Overall TPR & 84.6\% & 89.7\% & \textbf{92.3\%} & +7.7pp \\
+Crises detected & 33/39 & 35/39 & \textbf{36/39} & +3 \\
+Modern-era TPR & 87.1\% & 93.5\% & \textbf{93.5\%} & +6.4pp \\
+Avg MAC (crisis) & 0.449 & 0.442 & \textbf{0.425} & -0.024 (better
+separation) \\
+Avg MAC (non-crisis) & 0.518 & 0.502 & \textbf{0.485} & -0.033 \\
+Bootstrap CI (80\%) & N/A & N/A & \textbf{0.093} & new \\
+HMM P(fragile) mean & N/A & N/A & \textbf{0.559} & new \\
+\end{longtable}
+}
+
+The v7.1 fully-wired improvements come from three sources: (1)
+Kalman-filtered VRP produces smoother, more responsive volatility
+estimates that improve early detection, (2) adaptive valuation bands
+avoid false negatives from structural regime shifts in spread levels,
+and (3) the data-driven breach model (Dirichlet-multinomial) generates
+more accurate co-breach penalties than the pooled-probability
+approximation.
+
+\subsection{Data Quality
+Distribution}\label{data-quality-distribution}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ccc@{}}
+\toprule\noalign{}
+Quality Tier & Points & Percentage \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Excellent (2018+) & 352 & 12.5\% \\
+Good (2011--2018) & 339 & 12.1\% \\
+Fair (1990--2011) & 1,135 & 40.3\% \\
+Poor (1971--1990) & 987 & 35.1\% \\
+\end{longtable}
+}
+
+\subsection{Multi-Country Sovereign Proxy
+Validation}\label{multi-country-sovereign-proxy-validation}
+
+The MAC sovereign spread proxy was validated against Reinhart \& Rogoff
+(2009) crisis dates for four countries:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lcccc@{}}
+\toprule\noalign{}
+Country & Crises (N) & Detected & Detection Rate & Mean Separation \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+United Kingdom & 11 & --- & --- & --- \\
+Germany & 5 & --- & --- & --- \\
+France & 6 & --- & --- & --- \\
+Japan & 6 & --- & --- & --- \\
+\end{longtable}
+}
+
+\emph{Values computed from synthetic proxies for demonstration;
+production validation requires country-specific historical data.}
+
+\subsection{Hedge Failure
+Analysis}\label{hedge-failure-analysis}
+
+Based on N = 9 documented episodes where 10Y Treasury return \textless{}
+-2\% and S\&P 500 \textless{} -3\%:
+
+\begin{itemize}
+\tightlist
+\item
+  6 of 9 episodes had positioning breach
+\item
+  \textbf{2 of 2 severe episodes} had positioning breach AND basis trade
+  unwind
+\item
+  0 of 3 non-breach episodes were severe
+\item
+  Positioning breach is \textbf{necessary but not sufficient} for severe
+  hedge failure
+\end{itemize}
+
+\textbf{Bayesian posterior} (Beta-Binomial with uninformative prior):
+
+\[
+P(\text{severe} \mid \text{positioning breach}) = \text{Beta}(3, 5) \implies \hat{p} = 0.375
+\]
+
+\[
+\text{90% Credible Interval:}\; [0.12,\; 0.67]
+\]
+
+\textbf{Caveat:} The wide CI reflects small N. See
+\texttt{docs/hedge\_failure\_caveat.md} for full statistical
+limitations.
+
+\textbf{References:} - Reinhart \& Rogoff (2009), \emph{This Time Is
+Different: Eight Centuries of Financial Folly}, Princeton University
+Press.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Limitations}\label{limitations}
+
+\subsection{Small Training Sample}\label{small-training-sample}
+
+The framework is calibrated on N = 35 historical scenarios. While
+augmentation expands the effective training set to \textasciitilde315,
+the diversity of genuine stress episodes is limited. The bootstrap CI
+framework (Section 7) is designed to propagate this uncertainty
+honestly.
+
+\subsection{Proxy Degradation
+Pre-1926}\label{proxy-degradation-pre-1926}
+
+All pillars rely on Tier 4--5 proxies before 1926. MAC scores before
+1926 should be interpreted with wide error bars. The policy pillar
+enforces hard caps (pre-Fed \textless= 0.30) that dominate proxy
+uncertainty in this era.
+
+\subsection{Private Credit
+Opacity}\label{private-credit-opacity}
+
+The private credit pillar relies on public-market proxies (BDCs,
+leveraged loan ETFs) that may lag true private credit stress by 3--6
+months. PIK provisions and sponsor support can further delay distress
+recognition.
+
+\subsection{Positioning Data
+Limitations}\label{positioning-data-limitations}
+
+Basis trade size is estimated indirectly from CFTC Treasury futures
+positioning. The true gross notional of basis trades is not publicly
+reported and may differ substantially from estimates.
+
+\subsection{Regime Dependence}\label{regime-dependence}
+
+Threshold calibrations (e.g., IG OAS ``ample'' = 100--180 bps) reflect
+post-2000 market structure. Structural changes in market microstructure,
+regulation, or central bank policy could shift these ranges.
+
+\subsection{Survivorship Bias}\label{survivorship-bias}
+
+Historical data series only include surviving entities, potentially
+understating true stress levels in pre-1950 periods.
+
+\subsection{Sentiment Pillar
+Limitations}\label{sentiment-pillar-limitations}
+
+The sentiment pillar has several specific limitations:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Rate-proxy is backward-looking.} The rate-change proxy
+  captures \emph{realised} policy actions, not \emph{forward-looking}
+  communications. True forward guidance can only be captured by the
+  FinBERT text path, which requires \texttt{transformers} and
+  \texttt{torch} dependencies.
+\item
+  \textbf{No FOMC text corpus for historical backtest.} The rate proxy
+  is a reduced-form approximation. Production deployments should use
+  actual FOMC minutes (1993+) for higher fidelity.
+\item
+  \textbf{FinBERT domain mismatch.} ProsusAI/finbert was trained on
+  financial news, not central bank communications. A domain-specific
+  fine-tuning step (e.g., on FOMC transcripts) would improve accuracy.
+\item
+  \textbf{Calibration anchors are subjective.} The 14 FOMC tone scores
+  are expert-assigned, not derived from an independent source.
+\item
+  \textbf{Quarterly signal in a weekly framework.} FOMC meetings occur 8
+  times per year; between meetings, the proxy interpolates from rate
+  data, creating temporal smoothing.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{References}\label{references}
+
+\subsubsection{Academic Literature}\label{academic-literature}
+
+\begin{itemize}
+\tightlist
+\item
+  Adrian, T., Crump, R. K. \& Moench, E. (2013). ``Pricing the Term
+  Structure with Linear Regressions.'' \emph{Journal of Financial
+  Economics}, 110(1), 110--138.
+\item
+  Akiba, T., Sano, S., Yanase, T., Ohta, T. \& Koyama, M. (2019).
+  ``Optuna: A Next-generation Hyperparameter Optimization Framework.''
+  \emph{Proceedings of KDD}, 2623--2631.
+\item
+  Araci, D. (2019). ``FinBERT: Financial Sentiment Analysis with
+  Pre-Trained Language Models.'' arXiv:1908.10063.
+\item
+  Aramonte, S. \& Avalos, F. (2021). ``The Rise of Private Markets.''
+  \emph{BIS Quarterly Review}, December.
+\item
+  Bao, J., Pan, J. \& Wang, J. (2011). ``The Illiquidity of Corporate
+  Bonds.'' \emph{Journal of Finance}, 66(3), 911--946.
+\item
+  Baum, L. E., Petrie, T., Soules, G. \& Weiss, N. (1970). ``A
+  Maximization Technique Occurring in the Statistical Analysis of
+  Probabilistic Functions of Markov Chains.'' \emph{Annals of
+  Mathematical Statistics}, 41(1), 164--171.
+\item
+  Breiman, L. (2001). ``Random Forests.'' \emph{Machine Learning},
+  45(1), 5--32.
+\item
+  Brunnermeier, M. K. \& Pedersen, L. H. (2009). ``Market Liquidity and
+  Funding Liquidity.'' \emph{Review of Financial Studies}, 22(6),
+  2201--2238.
+\item
+  Carr, P. \& Wu, L. (2009). ``Variance Risk Premiums.'' \emph{Review of
+  Financial Studies}, 22(3), 1311--1341.
+\item
+  Chen, T. \& Guestrin, C. (2016). ``XGBoost: A Scalable Tree Boosting
+  System.'' \emph{Proceedings of KDD}, 785--794.
+\item
+  Efron, B. \& Tibshirani, R. J. (1993). \emph{An Introduction to the
+  Bootstrap}. Chapman \& Hall/CRC.
+\item
+  Eggertsson, G. B. \& Woodford, M. (2003). ``The Zero Bound on Interest
+  Rates and Optimal Monetary Policy.'' \emph{Brookings Papers on
+  Economic Activity}, 2003(1), 139--211.
+\item
+  Friedman, J. H. (2001). ``Greedy Function Approximation: A Gradient
+  Boosting Machine.'' \emph{Annals of Statistics}, 29(5), 1189--1232.
+\item
+  Gilchrist, S. \& Zakrajsek, E. (2012). ``Credit Spreads and Business
+  Cycle Fluctuations.'' \emph{American Economic Review}, 102(4),
+  1692--1720.
+\item
+  Guidotti, P. E., Sturzenegger, F. \& Villar, A. (2004). ``On the
+  Consequences of Sudden Stops.'' \emph{Economia}, 4(2), 171--214.
+\item
+  Hamilton, J. D. (1989). ``A New Approach to the Economic Analysis of
+  Nonstationary Time Series and the Business Cycle.''
+  \emph{Econometrica}, 57(2), 357--384.
+\item
+  Hansen, S. \& McMahon, M. (2016). ``Shocking Language: Understanding
+  the Macroeconomic Effects of Central Bank Communication.''
+  \emph{Journal of International Economics}, 99, S114--S133.
+\item
+  Loughran, T. \& McDonald, B. (2011). ``When Is a Liability Not a
+  Liability? Textual Analysis, Dictionaries, and 10-Ks.'' \emph{Journal
+  of Finance}, 66(1), 35--65.
+\item
+  Lucca, D. O. \& Trebbi, F. (2009). ``Measuring Central Bank
+  Communication: An Automated Approach with Application to FOMC
+  Statements.'' \emph{NBER Working Paper} 15367.
+\item
+  Reinhart, C. M. \& Rogoff, K. S. (2009). \emph{This Time Is Different:
+  Eight Centuries of Financial Folly}. Princeton University Press.
+\item
+  Rey, H. (2015). ``Dilemma Not Trilemma: The Global Financial Cycle and
+  Monetary Policy Independence.'' \emph{NBER Working Paper} 21162.
+\item
+  Schwert, G. W. (1989). ``Why Does Stock Market Volatility Change Over
+  Time?'' \emph{Journal of Finance}, 44(5), 1115--1153.
+\item
+  Stein, J. C. (2013). ``Overheating in Credit Markets: Origins,
+  Measurement, and Policy Responses.'' Speech at Federal Reserve Bank of
+  St.~Louis.
+\item
+  Taylor, J. B. (1993). ``Discretion Versus Policy Rules in Practice.''
+  \emph{Carnegie-Rochester Conference Series on Public Policy}, 39,
+  195--214.
+\item
+  Vovk, V., Gammerman, A. \& Shafer, G. (2005). \emph{Algorithmic
+  Learning in a Random World}. Springer.
+\item
+  Whaley, R. E. (2000). ``The Investor Fear Gauge.'' \emph{Journal of
+  Portfolio Management}, 26(3), 12--17.
+\end{itemize}
+
+\subsubsection{Regulatory and Policy
+Sources}\label{regulatory-and-policy-sources}
+
+\begin{itemize}
+\tightlist
+\item
+  Federal Reserve Board (2023). ``Recent Developments in Hedge Funds'
+  Treasury Futures and Repo Positions.'' \emph{FEDS Notes}.
+\item
+  Federal Reserve Board (2024). ``Quantifying Treasury Cash-Futures
+  Basis Trades.'' \emph{FEDS Notes}.
+\item
+  Office of Financial Research (2021). ``Hedge Funds and the Treasury
+  Cash-Futures Disconnect.'' \emph{OFR Brief Series} 21-01.
+\end{itemize}
+
+\subsubsection{Data Sources}\label{data-sources}
+
+\begin{itemize}
+\tightlist
+\item
+  Federal Reserve Bank of St.~Louis. \emph{FRED Economic Data}.
+  https://fred.stlouisfed.org/
+\item
+  National Bureau of Economic Research. \emph{NBER Macrohistory
+  Database}. https://www.nber.org/research/data/nber-macrohistory-online
+\item
+  Shiller, R. J. \emph{Online Data}.
+  http://www.econ.yale.edu/\textasciitilde shiller/data.htm
+\item
+  Bank for International Settlements. \emph{Statistics}.
+  https://www.bis.org/statistics/
+\item
+  European Central Bank. \emph{TARGET2 Balances}.
+  https://www.ecb.europa.eu/
+\item
+  Commodity Futures Trading Commission. \emph{Commitments of Traders}.
+  https://www.cftc.gov/MarketReports/CommitmentsofTraders/
+\item
+  Schwert, G. W. (1989). Stock volatility dataset. Published with ``Why
+  Does Stock Market Volatility Change Over Time?''
+\item
+  Bank of England. \emph{Research Datasets}.
+  https://www.bankofengland.co.uk/statistics/research-datasets
+\item
+  MeasuringWorth. \emph{US GDP}. https://www.measuringworth.com/
+\item
+  FINRA. \emph{Margin Statistics}.
+  https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics
+\item
+  Board of Governors of the Federal Reserve System. \emph{FOMC Minutes}.
+  https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Document generated from MAC Framework v7.1 codebase. All formulas,
+thresholds, and constants verified against source code. 8-pillar
+backtest (fully wired): 2,813 weekly observations, 92.3\% TPR, 36/39
+crises detected. Bootstrap CI, HMM regime overlay, and data-driven
+breach model active.}
+
+
+\end{document}

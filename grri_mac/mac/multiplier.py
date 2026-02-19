@@ -64,7 +64,8 @@ def mac_to_multiplier(
     elif multiplier <= 1.6:
         interpretation = f"MODERATE TRANSMISSION ({multiplier:.2f}x): Some amplification expected"
     elif multiplier <= 2.0:
-        interpretation = f"ELEVATED TRANSMISSION ({multiplier:.2f}x): Significant shock amplification"
+        interpretation = f"ELEVATED TRANSMISSION ({
+            multiplier: .2f} x): Significant shock amplification"
     else:
         interpretation = f"HIGH TRANSMISSION ({multiplier:.2f}x): Severe amplification, use caution"
 
@@ -119,13 +120,14 @@ def multiplier_sensitivity(
     """
     result = mac_to_multiplier(mac, alpha, beta)
 
-    if result.is_regime_break:
+    if result.is_regime_break or result.multiplier is None:
         return []
 
     shock_min, shock_max = shock_range
     step_size = (shock_max - shock_min) / steps
+    multiplier = result.multiplier
 
     return [
-        (shock_min + i * step_size, (shock_min + i * step_size) * result.multiplier)
+        (shock_min + i * step_size, (shock_min + i * step_size) * multiplier)
         for i in range(steps + 1)
     ]

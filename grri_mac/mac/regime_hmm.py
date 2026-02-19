@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -107,7 +107,7 @@ class RegimeHMM:
         config: Optional[RegimeHMMConfig] = None,
     ):
         self.config = config or RegimeHMMConfig()
-        self._model = None
+        self._model: Any = None
         self._fragile_state_idx: Optional[int] = None
         self._fitted = False
 
@@ -231,7 +231,7 @@ class RegimeHMM:
 
     def _fit_threshold(self, X: np.ndarray) -> bool:
         """Simple threshold-based fallback fitting."""
-        cfg = self.config
+        self.config
 
         # Compute mean MAC per observation
         mean_mac = X.mean(axis=1)
@@ -337,13 +337,13 @@ class RegimeHMM:
         else:
             # No fitted params: use raw threshold
             if mean_score < cfg.fragile_threshold:
-                fragile_prob = 0.7 + 0.3 * (
+                fragile_prob = float(0.7 + 0.3 * (
                     cfg.fragile_threshold - mean_score
-                ) / cfg.fragile_threshold
+                ) / cfg.fragile_threshold)
             else:
-                fragile_prob = 0.3 * (
+                fragile_prob = float(0.3 * (
                     1.0 - mean_score
-                ) / (1.0 - cfg.fragile_threshold)
+                ) / (1.0 - cfg.fragile_threshold))
 
         fragile_prob = float(np.clip(fragile_prob, 0.0, 1.0))
         regime = "fragile" if fragile_prob > 0.5 else "normal"

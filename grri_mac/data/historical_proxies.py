@@ -35,7 +35,7 @@ Data Sources:
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Optional
 import numpy as np
 
 # Try to import data fetching libraries
@@ -62,7 +62,7 @@ class ProxyConfig:
     start_date: str             # Proxy coverage start (YYYY-MM-DD)
     end_date: Optional[str]     # When native series takes over (None = still active)
     transformation: str         # How to transform proxy to target
-    correlation_estimate: float # Estimated correlation with target during overlap
+    correlation_estimate: float  # Estimated correlation with target during overlap
     notes: str                  # Caveats and warnings
 
 

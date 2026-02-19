@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from ..mac.composite import MACResult, get_mac_interpretation, get_pillar_status
-from ..mac.multiplier import mac_to_multiplier, MultiplierResult
+from ..mac.multiplier import mac_to_multiplier
 from ..china.activation import ChinaVectorScores
 
 

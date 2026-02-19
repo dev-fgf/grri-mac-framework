@@ -107,7 +107,7 @@ class RollingPCADecorrelator:
 
         if min_len < self.min_observations:
             return PCADecorrelationResult(
-                decorrelated_score=np.mean(bdc_returns[-20:])
+                decorrelated_score=float(np.mean(bdc_returns[-20:]))
                 if len(bdc_returns) >= 20
                 else 0.5,
                 raw_score=0.5,

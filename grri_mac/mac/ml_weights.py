@@ -15,6 +15,8 @@ References:
 """
 
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 
 try:
@@ -494,12 +496,12 @@ class MLWeightOptimizer:
         equal_weights = {p: 1/n_pillars for p in PILLAR_NAMES}
 
         # Calculate MACs with equal weights
-        equal_macs = []
+        equal_macs_list = []
         for scores in pillar_scores:
             mac = sum(scores.get(p, 0.5) * equal_weights[p] for p in PILLAR_NAMES)
-            equal_macs.append(mac)
+            equal_macs_list.append(mac)
 
-        equal_macs = np.array(equal_macs)
+        equal_macs = np.array(equal_macs_list)
         expected = np.array(expected_mac_scores)
 
         equal_rmse = np.sqrt(np.mean((equal_macs - expected) ** 2))
@@ -508,12 +510,12 @@ class MLWeightOptimizer:
         # ML-optimized weights
         opt_result = self.optimize_for_severity(pillar_scores, expected_mac_scores)
 
-        ml_macs = []
+        ml_macs_list = []
         for scores in pillar_scores:
             mac = sum(scores.get(p, 0.5) * opt_result.weights[p] for p in PILLAR_NAMES)
-            ml_macs.append(mac)
+            ml_macs_list.append(mac)
 
-        ml_macs = np.array(ml_macs)
+        ml_macs = np.array(ml_macs_list)
         ml_rmse = np.sqrt(np.mean((ml_macs - expected) ** 2))
         ml_corr = np.corrcoef(ml_macs, expected)[0, 1]
 
@@ -608,6 +610,7 @@ def run_optimization_on_scenarios(
             pass  # Augmentation module not available
 
     # Select optimizer based on method
+    optimizer: Any
     if method == "xgboost":
         try:
             from .ml_weights_xgb import XGBWeightOptimizer

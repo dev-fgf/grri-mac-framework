@@ -47,7 +47,7 @@ def generate_demo_history(days: int) -> list:
         date = now - timedelta(days=i)
 
         # Calculate stress boost from episodes
-        stress_boost = 0
+        stress_boost: float = 0
         for ep in stress_episodes:
             if ep["start"] >= i > ep["start"] - ep["duration"]:
                 progress = (ep["start"] - i) / ep["duration"]
@@ -72,7 +72,8 @@ def generate_demo_history(days: int) -> list:
         contagion = evolve(contagion, 0.58, 1.0)
         private_credit = evolve(private_credit, 0.55, 0.8)
 
-        mac = (liquidity + valuation + positioning + volatility_score + policy + contagion + private_credit) / 7
+        mac = (liquidity + valuation + positioning + volatility_score +
+               policy + contagion + private_credit) / 7
 
         data.append({
             "date": date.strftime("%Y-%m-%d"),

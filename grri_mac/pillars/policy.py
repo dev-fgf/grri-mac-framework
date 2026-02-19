@@ -4,7 +4,7 @@ Question: Does the central bank have capacity to respond?
 
 Architecture (v6 §4.5):
   Pillar₅ = min(rate_room, inflation, bs_capacity, fiscal_space)
-  
+
   Safeguard: when max(scores) − min(scores) ≤ 0.25 (homogeneously tight),
   revert to weighted average:
     inflation 35%, rate_room 25%, B/S 20%, fiscal 20%

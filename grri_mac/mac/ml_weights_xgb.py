@@ -12,7 +12,7 @@ Usage:
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 import logging
 
 import numpy as np
@@ -39,7 +39,6 @@ except ImportError:
 
 from .ml_weights import (
     OptimizedWeights,
-    InteractionEffect,
     PILLAR_NAMES,
     INTERACTION_PAIRS,
 )
@@ -90,9 +89,9 @@ class XGBWeightOptimizer:
 
         self.config = config or XGBOptimizationConfig()
         self.scaler = StandardScaler() if SKLEARN_AVAILABLE else None
-        self._fitted_model = None
-        self._feature_names = None
-        self._best_params = None
+        self._fitted_model: Any = None
+        self._feature_names: Optional[list[str]] = None
+        self._best_params: Optional[dict[str, Any]] = None
 
     def _prepare_features(
         self,
@@ -281,7 +280,7 @@ class XGBWeightOptimizer:
 
         feature_importances = {
             name: float(imp)
-            for name, imp in zip(self._feature_names, raw_importances)
+            for name, imp in zip(self._feature_names or [], raw_importances)
         }
 
         interaction_scores = {}
@@ -366,7 +365,7 @@ class XGBWeightOptimizer:
 
         feature_importances = {
             name: float(imp)
-            for name, imp in zip(self._feature_names, raw_importances)
+            for name, imp in zip(self._feature_names or [], raw_importances)
         }
 
         interaction_scores = {}

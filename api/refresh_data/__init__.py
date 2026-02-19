@@ -38,9 +38,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     the cache instead of fetching live data.
     """
     db = get_database()
-    results = {
+    sources: dict[str, dict] = {}
+    results: dict = {
         "timestamp": datetime.utcnow().isoformat(),
-        "sources": {},
+        "sources": sources,
         "success": True,
     }
 
@@ -52,14 +53,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         if indicators:
             saved = db.save_indicators(indicators, source="FRED")
-            results["sources"]["FRED"] = {
+            sources["FRED"] = {
                 "status": "success" if saved else "save_failed",
                 "indicator_count": len(indicators),
                 "indicators": indicators,
             }
             report = validate_source("FRED", indicators)
         else:
-            results["sources"]["FRED"] = {
+            sources["FRED"] = {
                 "status": "no_data",
                 "error": "FRED API returned no data (check API key)",
             }
@@ -69,7 +70,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         report["latency_ms"] = int((time.time() - _t) * 1000)
         record_health(db, "FRED", report)
     except Exception as e:
-        results["sources"]["FRED"] = {
+        sources["FRED"] = {
             "status": "error",
             "error": str(e),
         }
@@ -107,7 +108,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 cftc_indicators["positioning_status"] = status
 
                 saved = db.save_indicators(cftc_indicators, source="CFTC")
-                results["sources"]["CFTC"] = {
+                sources["CFTC"] = {
                     "status": "success" if saved else "save_failed",
                     "indicator_count": len(cftc_indicators),
                     "contracts": list(positioning_data.keys()),
@@ -116,7 +117,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 }
                 report = validate_source("CFTC", {"positioning_score": score})
             else:
-                results["sources"]["CFTC"] = {
+                sources["CFTC"] = {
                     "status": "no_data",
                     "error": "CFTC fetch returned no data",
                 }
@@ -125,12 +126,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             report["latency_ms"] = int((time.time() - _t) * 1000)
             record_health(db, "CFTC", report)
         else:
-            results["sources"]["CFTC"] = {
+            sources["CFTC"] = {
                 "status": "unavailable",
                 "error": "cot-reports package not installed",
             }
     except Exception as e:
-        results["sources"]["CFTC"] = {
+        sources["CFTC"] = {
             "status": "error",
             "error": str(e),
         }
@@ -143,7 +144,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     results["db_connected"] = db.connected
 
     # === Update FRED Series Cache (incremental - last 30 days) ===
-    fred_status = results["sources"].get("FRED", {}).get("status")
+    fred_status = sources.get("FRED", {}).get("status")
     if db.connected and fred_status == "success":
         try:
             series_updated = update_fred_series_cache(client, db)

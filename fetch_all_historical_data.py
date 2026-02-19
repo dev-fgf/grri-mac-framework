@@ -13,13 +13,11 @@ Datasets that cannot be auto-downloaded get synthetic fallbacks
 constructed from overlapping series we already have.
 """
 
-import os
 import sys
 import time
 import logging
 from datetime import datetime
 from pathlib import Path
-from io import StringIO
 import urllib.request
 import urllib.error
 
@@ -86,7 +84,8 @@ def download_nber_series():
         url = f"https://data.nber.org/databases/macrohistory/rectdata/{chapter}/{sid}.dat"
         logger.info("  ⬇ %s — %s", sid, desc)
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 MAC-Framework-Research"})
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "Mozilla/5.0 MAC-Framework-Research"})
             with urllib.request.urlopen(req, timeout=30) as resp:
                 raw = resp.read().decode("utf-8", errors="replace")
 
@@ -216,7 +215,7 @@ def _combine_nber(target_id: str, source_ids: list):
 def download_schwert_volatility():
     """
     Build Schwert-style monthly stock volatility from Shiller price data.
-    
+
     Schwert (1990) used Dow/S&P returns to compute monthly realized vol.
     We replicate the methodology using Shiller's S&P Composite Index.
     """
@@ -279,8 +278,9 @@ def download_schwert_volatility():
         }).dropna()
 
         out.to_csv(csv_path, index=False)
-        logger.info("  ✓ Built schwert_volatility.csv: %d observations (%s to %s)",
-                     len(out), out["date"].iloc[0], out["date"].iloc[-1])
+        logger.info(
+            "  ✓ Built schwert_volatility.csv: %d observations (%s to %s)",
+            len(out), out["date"].iloc[0], out["date"].iloc[-1])
         return True
 
     except Exception as e:
@@ -300,8 +300,8 @@ def download_boe_data():
 
     # Try the millennium dataset spreadsheet
     boe_urls = [
-        "https://www.bankofengland.co.uk/-/media/boe/files/statistics/research-datasets/a-millennium-of-macroeconomic-data-for-the-uk.xlsx",
-        "https://www.bankofengland.co.uk/-/media/boe/files/statistics/research-datasets/a-millennium-of-macroeconomic-data.xlsx",
+        "https://www.bankofengland.co.uk/-/media/boe/files/statistics/research-datasets/a-millennium-of-macroeconomic-data-for-the-uk.xlsx",  # noqa: E501
+        "https://www.bankofengland.co.uk/-/media/boe/files/statistics/research-datasets/a-millennium-of-macroeconomic-data.xlsx",  # noqa: E501
     ]
 
     xlsx_path = BOE_DIR / "boe_millennium.xlsx"
@@ -311,7 +311,8 @@ def download_boe_data():
         for url in boe_urls:
             logger.info("  ⬇ Trying %s ...", url[:80])
             try:
-                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 MAC-Framework-Research"})
+                req = urllib.request.Request(
+                    url, headers={"User-Agent": "Mozilla/5.0 MAC-Framework-Research"})
                 with urllib.request.urlopen(req, timeout=60) as resp:
                     data = resp.read()
                     with open(xlsx_path, "wb") as f:
@@ -473,8 +474,9 @@ def download_measuringworth_gdp():
             rows = []
             for date, val in gdpa.items():
                 if not pd.isna(val):
-                    rows.append({"year": date.year, "gdp": float(val) * 1000})  # Convert to millions
-            
+                    # Convert to millions
+                    rows.append({"year": date.year, "gdp": float(val) * 1000})
+
             # Add pre-1929 estimates (from MeasuringWorth historical consensus)
             # GDP in millions of nominal dollars
             pre_1929 = {

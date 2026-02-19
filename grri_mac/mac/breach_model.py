@@ -18,8 +18,6 @@ from typing import Optional
 import numpy as np
 
 try:
-    from scipy.special import gammaln
-    from scipy.optimize import minimize_scalar
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
@@ -80,8 +78,8 @@ class PillarBreachModel:
             breach_threshold: Score below which a pillar is in breach
         """
         self.breach_threshold = breach_threshold
-        self._rates = None
-        self._dm_result = None
+        self._rates: Optional[PillarBreachRates] = None
+        self._dm_result: Optional[DirichletMultinomialResult] = None
 
     def fit(
         self,
@@ -135,7 +133,7 @@ class PillarBreachModel:
         rates.n_breaches_total = total_breaches
 
         # Per-era rates (if dates available)
-        era_scenarios = {era: [] for era in ERA_BOUNDARIES}
+        era_scenarios: dict[str, list[dict]] = {era: [] for era in ERA_BOUNDARIES}
         for scenario in scenarios:
             date = scenario.get(date_key)
             if date is None:

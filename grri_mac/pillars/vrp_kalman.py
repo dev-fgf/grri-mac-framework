@@ -214,7 +214,7 @@ class KalmanVRPEstimator:
                 proxy += max(0, kurtosis) * 0.01
 
             observations.append(
-                max(VRP_FLOOR, min(VRP_CEILING, proxy))
+                float(max(VRP_FLOOR, min(VRP_CEILING, proxy)))
             )
 
         return observations

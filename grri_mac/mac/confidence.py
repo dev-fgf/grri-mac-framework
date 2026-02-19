@@ -12,7 +12,6 @@ Usage:
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 
@@ -39,7 +38,7 @@ class ProxyUncertainty:
     TIER_NOISE = {
         "native": 0.01,      # Direct FRED series (e.g., VIXCLS)
         "computed": 0.03,     # Derived from FRED (e.g., SOFR-IORB spread)
-        "proxy_modern": 0.05, # Modern proxy (e.g., Moody's → OAS)
+        "proxy_modern": 0.05,  # Modern proxy (e.g., Moody's → OAS)
         "proxy_historical": 0.10,  # Historical proxy (e.g., realised vol → VIX)
         "estimated": 0.15,    # Expert estimate (e.g., basis trade size)
     }

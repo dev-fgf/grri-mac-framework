@@ -54,7 +54,7 @@ def _run_key_dates() -> bool:
 
             print(f"  MAC Score: {point.mac_score:.3f}")
             print(f"  Status: {point.interpretation}")
-            print(f"  Pillars:")
+            print("  Pillars:")
             for pillar, score in point.pillar_scores.items():
                 print(f"    {pillar:12s}: {score:.3f}")
             if point.crisis_event:

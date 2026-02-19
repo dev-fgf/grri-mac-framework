@@ -34,10 +34,10 @@ import pickle
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -219,7 +219,7 @@ def _read_historical_csv(
     df = pd.read_csv(path)
     # Handle year-only columns (e.g. MeasuringWorth GDP)
     if date_col == "year" and "year" in df.columns:
-        df["date"] = df["year"].astype(str) + "-01-01"
+        df["date"] = df["year"].astype(str) + "-01-01"  # type: ignore[operator]
         date_col = "date"
     if date_col not in df.columns or val_col not in df.columns:
         return None
@@ -569,7 +569,7 @@ def upload_table_storage(dry_run: bool = False) -> int:
     Covers everything the original upload_all_to_azure.py did, plus
     the NBER series it was missing.
     """
-    from shared.database import get_database  # type: ignore
+    from shared.database import get_database
 
     db = get_database()
     if not db.connected and not dry_run:
@@ -676,7 +676,7 @@ def upload_table_storage(dry_run: bool = False) -> int:
             continue
         df = pd.read_csv(csv_path)
         if date_col == "year" and "year" in df.columns:
-            df["date"] = df["year"].astype(str) + "-01-01"
+            df["date"] = df["year"].astype(str) + "-01-01"  # type: ignore[operator]
             date_col = "date"
         if date_col not in df.columns or val_col not in df.columns:
             _skip(f"{series_key}: missing columns")
@@ -728,9 +728,9 @@ def upload_table_storage(dry_run: bool = False) -> int:
 
 def _upload_backtest_cache(db, df: pd.DataFrame) -> None:
     """Build and upload the pre-computed backtest API cache."""
-    time_series = []
+    time_series: list[dict[str, Any]] = []
     for _, row in df.iterrows():
-        point = {
+        point: dict[str, Any] = {
             "date": row["date"],
             "mac_score": row["mac_score"],
             "pillar_scores": {
@@ -756,7 +756,7 @@ def _upload_backtest_cache(db, df: pd.DataFrame) -> None:
         except Exception:
             pass
 
-    backtest_response = {
+    backtest_response: dict[str, Any] = {
         "status": "success",
         "data_source": "Pre-computed (Azure Table Cache)",
         "parameters": {
@@ -808,7 +808,7 @@ def verify_blob(store: BlobStore) -> None:
 
 def verify_table() -> None:
     """Report what's in Table Storage."""
-    from shared.database import get_database  # type: ignore
+    from shared.database import get_database
     db = get_database()
 
     print(f"\n{'=' * 60}")

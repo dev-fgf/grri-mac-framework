@@ -228,7 +228,7 @@ class AlertSystem:
         Returns:
             List of alerts
         """
-        alerts = []
+        alerts: list[Alert] = []
 
         if multiplier is None:
             return alerts  # Regime break handled elsewhere

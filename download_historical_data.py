@@ -28,7 +28,6 @@ import os
 import sys
 import argparse
 import logging
-from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -128,7 +127,11 @@ def download_fred_series():
             data = fred.get_series(series_id)
             if data is not None and len(data) > 0:
                 data.to_csv(cache_file, header=True)
-                print(f"  ⬇ {series_id:<24} — {len(data)} obs ({data.index[0].date()} to {data.index[-1].date()})")
+                print(
+                    f"  ⬇ {series_id:<24} — {len(data)} obs"
+                    f" ({data.index[0].date()} to"
+                    f" {data.index[-1].date()})"
+                )
                 success += 1
             else:
                 print(f"  ⚠ {series_id:<24} — empty response")
@@ -149,7 +152,7 @@ def download_shiller_dataset():
     xls_path = SHILLER_DIR / "ie_data.xls"
 
     if xls_path.exists():
-        print(f"  ✓ Shiller ie_data.xls already exists")
+        print("  ✓ Shiller ie_data.xls already exists")
         return True
 
     url = "http://www.econ.yale.edu/~shiller/data/ie_data.xls"
@@ -322,7 +325,7 @@ def check_data_files():
 
         status = "✓" if group_found == group_total else ("◐" if group_found > 0 else "✗")
         print(f"  {status} {group:<20} {group_found}/{group_total} files")
-        
+
         if group_missing and group != "FRED cache":
             missing_groups[group] = group_missing
 
@@ -330,7 +333,7 @@ def check_data_files():
     print(f"  Total: {found}/{total} files present")
 
     if missing_groups:
-        print(f"\n  Missing datasets:")
+        print("\n  Missing datasets:")
         for group, items in missing_groups.items():
             print(f"    {group}: {', '.join(items[:5])}")
             if len(items) > 5:
@@ -407,7 +410,7 @@ def main():
     print()
     print("📡 STEP 2: Downloading Shiller dataset...")
     print("-" * 70)
-    shiller_ok = download_shiller_dataset()
+    download_shiller_dataset()
 
     # Step 3: Manual download instructions
     print()

@@ -3,7 +3,7 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 from dataclasses import dataclass
 
 import pandas as pd
@@ -119,9 +119,16 @@ class DataImporter:
 
                 # Store each data point
                 for date, value in data.items():
-                    if value is not None and not (isinstance(value, float) and value != value):  # Check for NaN
+                    # Check for NaN
+                    is_nan = isinstance(value, float) and value != value
+                    if value is not None and not is_nan:
+                        ts: datetime = (
+                            date.to_pydatetime()
+                            if hasattr(date, 'to_pydatetime')
+                            else cast(datetime, date)
+                        )
                         indicator = IndicatorValue(
-                            timestamp=date.to_pydatetime() if hasattr(date, 'to_pydatetime') else date,
+                            timestamp=ts,
                             indicator_name=series_id,
                             value=float(value),
                             source="FRED",
@@ -233,8 +240,13 @@ class DataImporter:
 
                 for date, row in data.iterrows():
                     # Store close price
+                    _ts: datetime = (
+                        date.to_pydatetime()
+                        if hasattr(date, 'to_pydatetime')
+                        else cast(datetime, date)
+                    )
                     indicator = IndicatorValue(
-                        timestamp=date.to_pydatetime() if hasattr(date, 'to_pydatetime') else date,
+                        timestamp=_ts,
                         indicator_name=f"ETF_{symbol}_CLOSE",
                         value=float(row["Close"]),
                         source="ETF",
@@ -245,7 +257,7 @@ class DataImporter:
 
                     # Store volume
                     indicator_vol = IndicatorValue(
-                        timestamp=date.to_pydatetime() if hasattr(date, 'to_pydatetime') else date,
+                        timestamp=_ts,
                         indicator_name=f"ETF_{symbol}_VOLUME",
                         value=float(row["Volume"]),
                         source="ETF",

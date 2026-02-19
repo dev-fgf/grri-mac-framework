@@ -287,7 +287,10 @@ CALCULATED_INDICATORS = {
     "fed_balance_sheet_gdp_pct": "FRED WALCL / GDP",
     "core_pce_vs_target_bps": "FRED PCEPILFE - 2.0%",
     "rv_iv_gap_pct": "abs(RV - VIX) / VIX × 100 - SPY returns (yfinance) vs VIX (FRED)",
-    "cross_currency_basis_bps": "CIP deviation weighted composite (EUR 40%, JPY 30%, GBP 15%, CHF 15%) from spot vs futures (yfinance)",
+    "cross_currency_basis_bps":
+    "CIP deviation weighted composite"
+    " (EUR 40%, JPY 30%, GBP 15%, CHF 15%)"
+    " from spot vs futures (yfinance)",
 }
 
 # ALL INDICATORS NOW USE REAL DATA

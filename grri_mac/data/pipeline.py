@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 
 from .blob_store import BlobStore, DataTier, get_blob_store
 
@@ -164,7 +164,7 @@ def _clean_time_series_csv(raw: bytes, series_id: str) -> pd.DataFrame:
 
     if date_col and val_col:
         df = df[[date_col, val_col]].copy()
-        df.columns = ["date", "value"]
+        df.columns = ["date", "value"]  # type: ignore[assignment]
         df["date"] = pd.to_datetime(df["date"], errors="coerce")
         df = df.dropna(subset=["date"])
         df = df.set_index("date").sort_index()
@@ -428,7 +428,7 @@ class DataPipeline:
     def _fetch_fred(_client: Any, series_id: str) -> dict:
         """Fetch a FRED series via fredapi."""
         try:
-            from fredapi import Fred  # type: ignore
+            from fredapi import Fred
             import os
             api_key = os.environ.get("FRED_API_KEY")
             if not api_key:
@@ -477,7 +477,7 @@ class DataPipeline:
     @staticmethod
     def _fetch_cboe(_client: Any, series_id: str) -> bytes:
         """Fetch a CBOE volatility index CSV."""
-        import requests as _requests  # type: ignore
+        import requests as _requests
 
         cdn = "https://cdn.cboe.com/api/global/us_indices/daily_prices"
         urls = {
@@ -520,7 +520,7 @@ class DataPipeline:
     def _fetch_etf(_client: Any, series_id: str) -> pd.DataFrame:
         """Fetch 5 years of OHLCV via yfinance."""
         try:
-            import yfinance as yf  # type: ignore
+            import yfinance as yf
         except ImportError:
             raise ImportError("yfinance not installed")
         ticker = yf.Ticker(series_id)
@@ -530,7 +530,7 @@ class DataPipeline:
     def _fetch_crypto_prices(_client: Any, series_id: str) -> pd.DataFrame:
         """Fetch crypto daily OHLCV via yfinance."""
         try:
-            import yfinance as yf  # type: ignore
+            import yfinance as yf
         except ImportError:
             raise ImportError("yfinance not installed")
         ticker = yf.Ticker(series_id)
@@ -544,7 +544,7 @@ class DataPipeline:
         sys.path.insert(0, os.path.join(
             os.path.dirname(__file__), "..", "..", "api"
         ))
-        from api.shared.bis_client import (  # type: ignore
+        from api.shared.bis_client import (
             _fetch_bis_latest,
         )
         val = _fetch_bis_latest(series_id)

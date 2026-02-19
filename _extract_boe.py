@@ -1,5 +1,5 @@
 """Extract BoE millennium dataset into CSV files."""
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 import numpy as np
 import calendar
 import os
@@ -10,7 +10,7 @@ xl_path = os.path.join(BOE_DIR, "boe_millennium.xlsx")
 xl = pd.ExcelFile(xl_path, engine="openpyxl")
 
 # ===== GBP/USD =====
-gbp_sheet = [s for s in xl.sheet_names if "1791" in s][0]
+gbp_sheet = [s for s in xl.sheet_names if "1791" in str(s)][0]
 print(f"GBP/USD sheet: {gbp_sheet}")
 df = pd.read_excel(
     xl_path, sheet_name=gbp_sheet,
@@ -38,7 +38,7 @@ last = out["date"].iloc[-1]
 print(f"GBP/USD: {len(out)} obs ({first} to {last})")
 
 # ===== Bank Rate (D1 sheet) =====
-rate_sheet = [s for s in xl.sheet_names if "D1" in s][0]
+rate_sheet = [s for s in xl.sheet_names if "D1" in str(s)][0]
 print(f"\nBank Rate sheet: {rate_sheet}")
 df2 = pd.read_excel(
     xl_path, sheet_name=rate_sheet,
@@ -59,7 +59,7 @@ for i in range(len(df2)):
         data_start = i
         break
     try:
-        y = int(float(val))
+        y = int(float(str(val)))
         if 1600 < y < 2100:
             data_start = i
             break

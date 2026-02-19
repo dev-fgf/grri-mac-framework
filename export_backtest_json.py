@@ -1,4 +1,6 @@
 """Export backtest data to JSON for frontend."""
+from typing import Any
+
 import pandas as pd
 import json
 from grri_mac.backtest.crisis_events import CRISIS_EVENTS
@@ -20,26 +22,26 @@ for _, row in df.iterrows():
     })
 
 # Get crisis prediction analysis - use CAUTIOUS threshold (0.35)
-crisis_analysis = []
+crisis_analysis: list[dict[str, Any]] = []
 min_date = df['date_dt'].min()
 
 for event in CRISIS_EVENTS:
     event_dt = pd.to_datetime(event.start_date)
-    
+
     # Skip events before our data starts
     if event_dt < min_date:
         continue
-    
+
     closest_idx = (df['date_dt'] - event_dt).abs().idxmin()
-    row = df.loc[closest_idx]
-    
-    mac = float(row['mac_score'])
+    event_row: Any = df.loc[closest_idx]
+
+    mac = float(event_row['mac_score'])
     stress = 1 - mac
-    
+
     # Check for warning signals in 12 weeks before crisis
     warning_start = event_dt - pd.Timedelta(days=84)
     warning_data = df[(df['date_dt'] >= warning_start) & (df['date_dt'] <= event_dt)]
-    
+
     # Detected if stress hit CAUTIOUS (0.35) threshold before crisis
     warning_days = 0
     if len(warning_data) > 0:
@@ -50,9 +52,9 @@ for event in CRISIS_EVENTS:
             first_signal = cautious_signals.iloc[0]['date_dt']
             warning_days = (event_dt - first_signal).days
             warning_days = max(0, warning_days)
-    
+
     detected = warning_days > 0 or stress >= 0.35
-    
+
     crisis_analysis.append({
         'event': event.name,
         'event_date': event.start_date.strftime('%Y-%m-%d'),
@@ -84,6 +86,7 @@ with open('frontend/backtest_data.json', 'w') as f:
 
 print(f'Exported: {total} crises, {detected_count} detected ({(detected_count/total*100):.1f}%)')
 print('\nTop crises by stress:')
-for c in sorted(crisis_analysis, key=lambda x: 1-x['mac_at_event'], reverse=True)[:10]:
-    stress = 1 - c['mac_at_event']
-    print(f"  {c['event'][:35]:35} stress={stress:.2f} warn={c['days_of_warning']}d")
+for c in sorted(crisis_analysis, key=lambda x: 1 - float(x['mac_at_event']), reverse=True)[:10]:
+    stress = 1 - float(c['mac_at_event'])
+    name = str(c['event'])[:35]
+    print(f"  {name:35} stress={stress:.2f} warn={c['days_of_warning']}d")

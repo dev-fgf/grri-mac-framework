@@ -110,14 +110,14 @@ class FREDClient:
 
         # Lazy-loaded historical data provider for pre-1954 data
         self._historical_provider = None
-        
+
         # Load persisted cache from disk
         self._load_cache_from_disk()
 
     def set_backtest_mode(self, enabled: bool = True) -> None:
         """
         Enable or disable backtest mode.
-        
+
         In backtest mode, the client only uses cached data and returns None
         for missing series instead of making API calls. This prevents rate
         limiting during long historical backtests.
@@ -160,7 +160,7 @@ class FREDClient:
     ) -> pd.Series:
         """
         Merge new data into existing series, extending date range.
-        
+
         IMPORTANT: For overlapping dates, we keep the EXISTING (cached) value
         to maintain data consistency. FRED data is immutable for historical dates,
         so cached values should always match new fetches for the same dates.
@@ -169,7 +169,7 @@ class FREDClient:
             return new_data
         if new_data is None or len(new_data) == 0:
             return existing
-        
+
         # Combine and remove duplicates, keeping FIRST value (existing/cached)
         # This ensures we don't accidentally overwrite good data
         combined = pd.concat([existing, new_data])
@@ -186,7 +186,7 @@ class FREDClient:
         """
         Pre-fetch multiple series for a date range into bulk cache.
         Merges with existing cached data to extend date coverage.
-        
+
         Args:
             series_ids: List of FRED series IDs or aliases
             start_date: Start date for data
@@ -195,19 +195,19 @@ class FREDClient:
         # Normalize dates to remove time component for comparison
         start_date_norm = datetime(start_date.year, start_date.month, start_date.day)
         end_date_norm = datetime(end_date.year, end_date.month, end_date.day)
-        
+
         # Check which series need fetching or extending
         # Use dict to avoid duplicates: actual_id -> (fetch_start, fetch_end)
         series_to_fetch = {}
         already_cached = 0
-        
+
         for series_id in series_ids:
             actual_id = self.SERIES.get(series_id, series_id)
-            
+
             if actual_id in series_to_fetch:
                 # Already queued for fetch
                 continue
-                
+
             if actual_id not in self._bulk_cache:
                 # Not cached at all
                 series_to_fetch[actual_id] = (start_date, end_date)
@@ -224,11 +224,11 @@ class FREDClient:
                     cached_end_norm = datetime(
                         cached_end.year, cached_end.month, cached_end.day
                     )
-                    
+
                     # Only fetch if cache doesn't cover the requested range
                     needs_earlier = start_date_norm < cached_start_norm
                     needs_later = end_date_norm > cached_end_norm
-                    
+
                     if needs_earlier or needs_later:
                         # Fetch full range to fill gaps
                         series_to_fetch[actual_id] = (start_date, end_date)
@@ -236,7 +236,7 @@ class FREDClient:
                         already_cached += 1
                 else:
                     series_to_fetch[actual_id] = (start_date, end_date)
-        
+
         if not series_to_fetch:
             print(
                 "All "
@@ -244,7 +244,7 @@ class FREDClient:
                 "No API calls needed."
             )
             return
-        
+
         if already_cached > 0:
             print(
                 f"{already_cached} series already cached. "
@@ -252,7 +252,7 @@ class FREDClient:
             )
         else:
             print(f"Fetching {len(series_to_fetch)} series from FRED...")
-        
+
         fetched_count = 0
         for actual_id, (fetch_start, fetch_end) in series_to_fetch.items():
             try:
@@ -261,14 +261,14 @@ class FREDClient:
                 time_since_last = current_time - self._last_request_time
                 if time_since_last < self._min_request_interval:
                     time.sleep(self._min_request_interval - time_since_last)
-                
+
                 data = self.fred.get_series(
                     actual_id,
                     observation_start=fetch_start,
                     observation_end=fetch_end,
                 )
                 self._last_request_time = time.time()
-                
+
                 # Merge with existing data
                 if actual_id in self._bulk_cache:
                     self._bulk_cache[actual_id] = self._merge_series(
@@ -284,11 +284,11 @@ class FREDClient:
                 fetched_count += 1
             except Exception as e:
                 print(f"  [FAIL] {actual_id}: {e}")
-        
+
         # Save to disk after fetching
         if fetched_count > 0:
             self._save_cache_to_disk()
-        
+
         print(f"Pre-fetch complete. {len(self._bulk_cache)} series cached.")
 
     def get_series(
@@ -371,7 +371,7 @@ class FREDClient:
             Value for date, or most recent value within lookback window, or None
         """
         actual_id = self.SERIES.get(series_id, series_id)
-        
+
         # Check bulk cache first (for backtesting efficiency)
         if actual_id in self._bulk_cache:
             data = self._bulk_cache[actual_id]
@@ -386,11 +386,11 @@ class FREDClient:
                     if len(valid_dates) > 0:
                         return filtered.loc[valid_dates[-1]]
             return None
-        
+
         # In backtest mode, don't hit the API for missing series
         if self._backtest_mode:
             return None
-        
+
         # Fallback to API fetch (original behavior)
         start = date - timedelta(days=lookback_days)
         data = self.get_series(series_id, start, date)
@@ -445,19 +445,19 @@ class FREDClient:
         ted_value = self.get_value_for_date("TEDRATE", date, lookback_days=10)
         if ted_value is not None:
             return ted_value * 100  # Convert percentage to bps
-        
+
         # Fallback: use Fed Funds - T-Bill spread (use cache)
         ff_value = self.get_value_for_date("DFF", date, lookback_days=10)
         if ff_value is None:
             ff_value = self.get_value_for_date("FEDFUNDS", date, lookback_days=35)
-        
+
         tb_value = self.get_value_for_date("DTB3", date, lookback_days=10)
         if tb_value is None:
             tb_value = self.get_value_for_date("TB3MS", date, lookback_days=35)
-        
+
         if ff_value is None or tb_value is None:
             raise ValueError(f"No funding spread data for {date}")
-        
+
         return (ff_value - tb_value) * 100  # Convert to bps
 
     def get_liquidity_spread(self, date: Optional[datetime] = None) -> float:
@@ -489,26 +489,26 @@ class FREDClient:
     def _get_ff_tbill_spread(self, date: datetime) -> float:
         """
         Get Fed Funds - T-Bill spread for pre-1986 periods.
-        
+
         The spread between Fed Funds and T-Bills measures bank funding stress,
         similar conceptually to the TED spread. During normal times, banks can
         borrow near the Fed Funds rate; during stress, they pay a premium.
-        
+
         Uses bulk cache for efficiency during backtesting.
         """
         # Try daily Fed Funds first, then monthly
         ff_value = self.get_value_for_date("DFF", date, lookback_days=35)
         if ff_value is None:
             ff_value = self.get_value_for_date("FEDFUNDS", date, lookback_days=35)
-        
+
         # Try daily T-Bill first, then monthly
         tb_value = self.get_value_for_date("DTB3", date, lookback_days=35)
         if tb_value is None:
             tb_value = self.get_value_for_date("TB3MS", date, lookback_days=35)
-        
+
         if ff_value is None or tb_value is None:
             raise ValueError(f"No funding spread data for date {date}")
-        
+
         return (ff_value - tb_value) * 100  # Convert to bps
 
     def _get_historical_provider(self):
@@ -521,25 +521,25 @@ class FREDClient:
     def _get_discount_tbill_spread(self, date: datetime) -> float:
         """
         Get discount rate - T-Bill spread for 1934-1954 period.
-        
+
         Uses Fed discount rate (INTDSRUSM193N, 1913+) and 3M T-Bill (TB3MS, 1934+).
         """
         discount = self.get_value_for_date("INTDSRUSM193N", date, lookback_days=35)
         tbill = self.get_value_for_date("TB3MS", date, lookback_days=35)
-        
+
         if discount is not None and tbill is not None:
             return (discount - tbill) * 100  # Convert to bps
-        
+
         # Fallback: just use discount rate level as stress indicator
         if discount is not None:
             return discount * 20  # Scale: 5% rate → 100bps equiv
-        
+
         raise ValueError(f"No funding spread data for {date}")
 
     def _get_historical_funding_spread(self, date: datetime) -> float:
         """
         Get funding stress spread for pre-1934 dates using NBER data.
-        
+
         Uses Call Money Rate - Short-Term Govt Rate from NBER Macrohistory.
         Analogous to TED spread / SOFR-IORB spread.
         """
@@ -595,7 +595,7 @@ class FREDClient:
     def get_ig_oas(self, date: Optional[datetime] = None) -> float:
         """
         Get Investment Grade OAS in basis points for a specific date.
-        
+
         Note: ICE BofA series (BAMLC0A0CM) returns values in percentage
         format (e.g., 1.26 = 126bps).
         For dates before Dec 1996, uses Moody's Baa-10Y Treasury spread as proxy.
@@ -610,12 +610,12 @@ class FREDClient:
             if value is not None:
                 # ICE BofA returns percentage (1.26 = 1.26%), convert to bps
                 return value * 100  # Convert to bps
-        
+
         # 1919-1997: Use Moody's Baa - 10Y Treasury as proxy
         # Use 35-day lookback for monthly data
         baa_yield = self.get_value_for_date("BAA", date, lookback_days=35)
         treasury_10y = self.get_value_for_date("DGS10", date, lookback_days=35)
-        
+
         if baa_yield is not None and treasury_10y is not None:
             baa_spread = baa_yield - treasury_10y
             # Baa-Treasury is ~40bps wider than IG OAS on average
@@ -640,7 +640,7 @@ class FREDClient:
     def get_hy_oas(self, date: Optional[datetime] = None) -> float:
         """
         Get High Yield OAS in basis points for a specific date.
-        
+
         Note: ICE BofA series (BAMLH0A0HYM2) returns values in percentage
         format (e.g., 5.72 = 572bps).
         For dates before Dec 1996, uses scaled Baa-Aaa spread as proxy.
@@ -655,12 +655,12 @@ class FREDClient:
             if value is not None:
                 # ICE BofA returns percentage (5.72 = 5.72%), convert to bps
                 return value * 100  # Convert to bps
-        
+
         # 1919-1997: Use Baa-Aaa spread scaled up as proxy
         # Use 35-day lookback for monthly data
         baa = self.get_value_for_date("BAA", date, lookback_days=35)
         aaa = self.get_value_for_date("AAA", date, lookback_days=35)
-        
+
         if baa is not None and aaa is not None:
             # Baa-Aaa spread, scaled by 4.5x to approximate HY OAS
             baa_aaa_spread = (baa - aaa) * 100  # Convert to bps
@@ -679,7 +679,7 @@ class FREDClient:
     def get_vix(self, date: Optional[datetime] = None) -> float:
         """
         Get VIX level for a specific date.
-        
+
         For dates before Jan 1990, uses VXO (old VIX based on S&P 100) as proxy.
         VXO runs from 1986-2021 and is highly correlated with VIX (r > 0.95).
         """
@@ -691,7 +691,7 @@ class FREDClient:
             value = self.get_value_for_date("VIX", date, lookback_days=10)
             if value is not None:
                 return value
-        
+
         # Pre-1990: Use VXO as proxy
         if date >= self.VXO_START:
             try:
@@ -701,7 +701,7 @@ class FREDClient:
                     return vxo * 0.95
             except Exception:
                 pass
-        
+
         # Pre-1986: Use realized volatility from equity returns
         if date >= self.NASDAQ_START:
             try:
@@ -736,33 +736,33 @@ class FREDClient:
     ) -> Optional[float]:
         """
         Compute realized volatility from NASDAQ returns as VIX proxy for pre-1986.
-        
+
         Realized volatility (standard deviation of returns) is the historical equivalent
         of implied volatility (VIX). The VIX represents market expectations of future
         volatility; realized vol measures actual past volatility. For backtesting,
         we use a 21-day rolling window (~1 month) of daily returns, annualized.
-        
+
         Calibration: VIX tends to be ~15-20% higher than realized vol on average
         (the "variance risk premium"). We scale realized vol by 1.2 to approximate VIX.
-        
+
         References:
         - Carr & Wu (2009): "Variance Risk Premiums", Review of Financial Studies
         - Whaley (2000, 2009): VIX methodology papers
-        
+
         Args:
             date: Target date for volatility estimate
             window_days: Rolling window for returns (default 21 trading days)
             annualize: Whether to annualize volatility (default True)
-            
+
         Returns:
             Estimated VIX-equivalent volatility level
         """
         import numpy as np
-        
+
         # Get NASDAQ series from bulk cache or fetch
         series_id = "NASDAQCOM"
         actual_id = self.SERIES.get(series_id, series_id)
-        
+
         # Check bulk cache first
         if actual_id in self._bulk_cache:
             data = self._bulk_cache[actual_id]
@@ -770,36 +770,36 @@ class FREDClient:
             # Fetch with buffer for computing returns
             start = date - timedelta(days=window_days * 3)
             data = self.get_series(series_id, start_date=start, end_date=date)
-        
+
         if data is None or len(data) < window_days + 1:
             return None
-        
+
         # Filter to dates up to target date
         data = data[data.index <= pd.Timestamp(date)]
         if len(data) < window_days + 1:
             return None
-        
+
         # Compute daily returns (fill_method=None to avoid deprecation warning)
         returns = data.pct_change(fill_method=None).dropna()
-        
+
         # Get last N days of returns
         recent_returns = returns.tail(window_days)
         if len(recent_returns) < window_days // 2:  # Need at least half the window
             return None
-        
+
         # Compute standard deviation of returns
         daily_vol = recent_returns.std()
-        
+
         # Annualize (252 trading days)
         if annualize:
             annual_vol = daily_vol * np.sqrt(252)
         else:
             annual_vol = daily_vol
-        
+
         # Convert to VIX-like scale (percentage points)
         # Apply variance risk premium adjustment (VIX ~ 1.2x realized vol)
         vix_equivalent = annual_vol * 100 * 1.2
-        
+
         return vix_equivalent
 
     def get_fed_funds(self, date: Optional[datetime] = None) -> Optional[float]:

@@ -1,10 +1,9 @@
 """GRRI Data Client for fetching Global Risk and Resilience Index indicators."""
 
-import os
 import logging
 import requests
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional, cast
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +146,7 @@ class GRRIClient:
                 return {}
 
             # Parse results into country -> year -> value format
-            results = {}
+            results: dict[str, Any] = {}
             for entry in data[1]:
                 country = entry.get("countryiso3code") or entry.get("country", {}).get("id")
                 year = entry.get("date")
@@ -184,7 +183,7 @@ class GRRIClient:
         value: float,
         indicator_name: str,
         all_values: list,
-    ) -> float:
+    ) -> Optional[float]:
         """
         Normalize indicator to 0-1 scale using robust scaling.
         Higher = better resilience (polarity adjustment applied).
@@ -237,12 +236,12 @@ class GRRIClient:
         raw_data: dict,
     ) -> dict:
         """Calculate pillar scores for a country-year."""
-        pillar_scores = {}
+        pillar_scores: dict[str, Optional[float]] = {}
 
         for pillar_key, pillar_info in GRRI_PILLARS.items():
             indicator_scores = []
 
-            for indicator_name in pillar_info["indicators"]:
+            for indicator_name in cast(list, pillar_info["indicators"]):
                 if indicator_name not in raw_data:
                     continue
 
@@ -277,7 +276,7 @@ class GRRIClient:
     def calculate_composite_score(self, pillar_scores: dict) -> Optional[float]:
         """Calculate composite GRRI score from pillar scores."""
         valid_scores = [
-            (score, GRRI_PILLARS[pillar]["weight"])
+            (score, cast(float, GRRI_PILLARS[pillar]["weight"]))
             for pillar, score in pillar_scores.items()
             if score is not None
         ]

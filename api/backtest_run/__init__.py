@@ -9,8 +9,6 @@ import azure.functions as func
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from shared.fred_client import FREDClient
-from shared.mac_scorer import calculate_mac
 from shared.database import get_database
 
 logger = logging.getLogger(__name__)
@@ -107,7 +105,7 @@ def calculate_crisis_analysis(time_series: list, start_date, end_date) -> list:
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """Return historical MAC time series - from cache first, then fallbacks."""
-    
+
     try:
         # Get parameters
         start_date_str = req.params.get('start', '2006-01-01')
@@ -125,21 +123,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         db = get_database()
-        
+
         # === PRIORITY 1: Try chunked cache (uploaded from local) ===
         if db.connected:
             cached = db.get_backtest_cache_chunked()
             if cached and cached.get("time_series"):
                 logger.info(f"Found cached backtest with {len(cached['time_series'])} points")
-                
+
                 time_series = cached["time_series"]
-                
+
                 # Apply date filtering
                 filtered = [
                     p for p in time_series
                     if start_date_str <= p["date"] <= end_date_str
                 ]
-                
+
                 # Apply interval filtering
                 if interval_days > 1 and filtered:
                     spaced = []
@@ -154,19 +152,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                 spaced.append(point)
                                 last_date = current
                     filtered = spaced
-                
+
                 if filtered:
                     # Add crisis annotations
                     filtered = add_crisis_events(filtered)
-                    
+
                     # Calculate stats
                     mac_scores = [p["mac_score"] for p in filtered]
                     crisis_analysis = calculate_crisis_analysis(filtered, start_date, end_date)
-                    
+
                     total_crises = len(crisis_analysis)
                     crises_stretched = sum(1 for c in crisis_analysis if c["days_stretched"] > 0)
-                    prediction_accuracy = (crises_stretched / total_crises * 100) if total_crises > 0 else 0
-                    
+                    prediction_accuracy = (crises_stretched / total_crises *
+                                           100) if total_crises > 0 else 0
+
                     response = {
                         "data_source": "Cached (Azure Table)",
                         "cache_age_seconds": cached.get("cache_age_seconds", 0),
@@ -184,10 +183,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                             "current_mac": filtered[-1]["mac_score"],
                             "current_status": filtered[-1]["status"],
                             "prediction_accuracy": f"{prediction_accuracy:.0f}%",
-                            "periods_in_comfortable": sum(1 for p in filtered if p["status"] == "COMFORTABLE"),
-                            "periods_in_cautious": sum(1 for p in filtered if p["status"] == "CAUTIOUS"),
-                            "periods_in_stretched": sum(1 for p in filtered if p["status"] == "STRETCHED"),
-                            "periods_in_critical": sum(1 for p in filtered if p["status"] == "CRITICAL"),
+                            "periods_in_comfortable": sum(
+                                1 for p in filtered
+                                if p["status"] == "COMFORTABLE"
+                            ),
+                            "periods_in_cautious": sum(
+                                1 for p in filtered
+                                if p["status"] == "CAUTIOUS"
+                            ),
+                            "periods_in_stretched": sum(
+                                1 for p in filtered
+                                if p["status"] == "STRETCHED"
+                            ),
+                            "periods_in_critical": sum(
+                                1 for p in filtered
+                                if p["status"] == "CRITICAL"
+                            ),
                         },
                         "crisis_prediction_analysis": crisis_analysis,
                         "time_series": filtered,
@@ -201,7 +212,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                             }
                         }
                     }
-                    
+
                     return func.HttpResponse(
                         json.dumps(response),
                         mimetype="application/json"
@@ -212,7 +223,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             stored_data = db.get_backtest_history(start_date_str, end_date_str)
             if stored_data:
                 logger.info(f"Found {len(stored_data)} stored backtest points")
-                
+
                 # Filter by interval
                 if interval_days > 1:
                     filtered = []
@@ -229,16 +240,17 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     time_series = filtered
                 else:
                     time_series = stored_data
-                
+
                 if time_series:
                     time_series = add_crisis_events(time_series)
                     mac_scores = [p["mac_score"] for p in time_series]
                     crisis_analysis = calculate_crisis_analysis(time_series, start_date, end_date)
-                    
+
                     total_crises = len(crisis_analysis)
                     crises_stretched = sum(1 for c in crisis_analysis if c["days_stretched"] > 0)
-                    prediction_accuracy = (crises_stretched / total_crises * 100) if total_crises > 0 else 0
-                    
+                    prediction_accuracy = (crises_stretched / total_crises *
+                                           100) if total_crises > 0 else 0
+
                     return func.HttpResponse(
                         json.dumps({
                             "data_source": "Pre-computed (Azure Table Storage)",
@@ -274,7 +286,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
-        
+
     except Exception as e:
         logger.exception("Backtest endpoint error")
         return func.HttpResponse(

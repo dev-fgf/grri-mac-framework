@@ -1,8 +1,7 @@
 """Data access repository for MAC database operations."""
 
 from datetime import datetime, timedelta
-from typing import Optional
-import json
+from typing import Any, Optional
 
 from .connection import Database, get_db
 from .models import MACSnapshot, PillarScore, Alert, ChinaSnapshot, IndicatorValue
@@ -97,7 +96,7 @@ class MACRepository:
             List of MACSnapshot objects
         """
         sql = "SELECT * FROM mac_snapshots WHERE 1=1"
-        params = []
+        params: list[Any] = []
 
         if start_date:
             sql += " AND timestamp >= ?"
@@ -297,7 +296,7 @@ class MACRepository:
     ) -> list[Alert]:
         """Get alerts with optional filters."""
         sql = "SELECT * FROM alerts WHERE 1=1"
-        params = []
+        params: list[Any] = []
 
         if level:
             sql += " AND level = ?"

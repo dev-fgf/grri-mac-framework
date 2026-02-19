@@ -7,7 +7,7 @@ to replace estimated values in the backtest scenarios.
 import os
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 import requests
 
 logger = logging.getLogger(__name__)
@@ -140,7 +140,7 @@ class HistoricalDataPuller:
             raise ValueError(f"Unknown scenario: {scenario_name}")
 
         target_date = SCENARIO_DATES[scenario_name]
-        results = {
+        results: dict[str, Any] = {
             "scenario": scenario_name,
             "date": target_date.strftime("%Y-%m-%d"),
             "real_values": {},
@@ -238,7 +238,10 @@ class HistoricalDataPuller:
             dxy = "Y" if rv.get("DXY") else "N"
             notes = len(data.get("notes", []))
 
-            lines.append(f"| {scenario} | {date} | {vix} | {ig} | {hy} | {sofr} | {dxy} | {notes} notes |")
+            lines.append(
+                f"| {scenario} | {date} | {vix} | {ig} "
+                f"| {hy} | {sofr} | {dxy} | {notes} notes |"
+            )
 
         return "\n".join(lines)
 

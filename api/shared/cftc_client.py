@@ -1,6 +1,5 @@
 """CFTC Commitments of Traders (COT) data client for positioning indicators."""
 
-import os
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
@@ -152,7 +151,7 @@ class CFTCClient:
             logger.error(f"Error processing COT data for {contract}: {e}")
             return []
 
-    def calculate_net_positioning(self, cot_data: list) -> dict:
+    def calculate_net_positioning(self, cot_data: list) -> Optional[dict]:
         """
         Calculate net speculator positioning from COT data.
 
@@ -310,8 +309,8 @@ class CFTCClient:
             "TREASURY_2Y": 0.15,
         }
 
-        total_weight = 0
-        weighted_score = 0
+        total_weight: float = 0
+        weighted_score: float = 0
 
         for contract_key, data in indicators.items():
             if contract_key not in weights:

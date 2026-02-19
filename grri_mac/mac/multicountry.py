@@ -30,16 +30,15 @@ Example Usage:
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional
 from enum import Enum
 
-from .composite import MACResult, calculate_mac, calculate_mac_ml
+from .composite import calculate_mac, calculate_mac_ml
 from .scorer import score_indicator_simple, score_indicator_range
 from ..pillars.countries import (
     CountryProfile,
     COUNTRY_PROFILES,
     get_country_profile,
-    list_supported_countries,
 )
 from ..pillars.calibrated import get_calibrated_thresholds
 
@@ -141,7 +140,10 @@ class MultiCountryMAC:
         data_coverage = {}
 
         # Score each pillar
-        for pillar in ["liquidity", "valuation", "positioning", "volatility", "policy", "contagion"]:
+        for pillar in [
+            "liquidity", "valuation", "positioning",
+            "volatility", "policy", "contagion",
+        ]:
             if pillar not in indicators:
                 pillar_scores[pillar] = 0.5  # Default neutral
                 data_coverage[pillar] = False
@@ -475,11 +477,19 @@ def _generate_comparison_interpretation(
 
     # Overall divergence assessment
     if divergence_score < 0.1:
-        lines.append("Regional MAC scores are closely synchronized, indicating global stress transmission.")
+        lines.append(
+            "Regional MAC scores are closely synchronized, indicating global stress transmission.")
     elif divergence_score < 0.25:
-        lines.append("Moderate regional divergence suggests partial decoupling or delayed transmission.")
+        lines.append(
+            "Moderate regional divergence suggests"
+            " partial decoupling or delayed transmission."
+        )
     else:
-        lines.append("Significant regional divergence indicates localized stress or strong policy differentiation.")
+        lines.append(
+            "Significant regional divergence indicates"
+            " localized stress or strong policy"
+            " differentiation."
+        )
 
     # Lead/lag dynamics
     lead_result = regional_results[lead_region]
@@ -495,10 +505,22 @@ def _generate_comparison_interpretation(
 
     # Contagion direction
     direction_text = {
-        ContagionDirection.US_TO_REGION: "Stress appears to originate from US and spread to other regions.",
-        ContagionDirection.REGION_TO_US: "Stress appears to originate from non-US regions and spread to US.",
-        ContagionDirection.BIDIRECTIONAL: "Stress is synchronized across regions (global systemic event).",
-        ContagionDirection.DECOUPLED: "Regional stress patterns appear decoupled (localized events).",
+        ContagionDirection.US_TO_REGION: (
+            "Stress appears to originate from US"
+            " and spread to other regions."
+        ),
+        ContagionDirection.REGION_TO_US: (
+            "Stress appears to originate from"
+            " non-US regions and spread to US."
+        ),
+        ContagionDirection.BIDIRECTIONAL: (
+            "Stress is synchronized across regions"
+            " (global systemic event)."
+        ),
+        ContagionDirection.DECOUPLED: (
+            "Regional stress patterns appear"
+            " decoupled (localized events)."
+        ),
     }
     lines.append(f"\nContagion pattern: {direction_text[contagion_direction]}")
 
@@ -529,7 +551,7 @@ def analyze_contagion_pathways(
     Returns:
         List of identified contagion pathways
     """
-    pathways = []
+    pathways: list[ContagionPathway] = []
 
     regions = list(regional_results.keys())
     if len(regions) < 2:
@@ -547,7 +569,8 @@ def analyze_contagion_pathways(
                 pathways.append(banking_pathway)
 
             # Currency channel
-            currency_pathway = _analyze_currency_channel(source, target, source_result, target_result)
+            currency_pathway = _analyze_currency_channel(
+                source, target, source_result, target_result)
             if currency_pathway:
                 pathways.append(currency_pathway)
 

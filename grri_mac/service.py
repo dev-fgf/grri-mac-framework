@@ -9,7 +9,7 @@ from .china.activation import ChinaActivationScore, ChinaVectorIndicators, China
 from .china.adjustment import adjust_mac_for_china
 from .dashboard.daily import DailyDashboard, DashboardReport
 from .dashboard.alerts import AlertSystem, Alert
-from .db import get_db, MACRepository, MACSnapshot, PillarScore, ChinaSnapshot
+from .db import get_db, MACRepository, MACSnapshot, ChinaSnapshot
 from .db.models import Alert as AlertModel
 
 

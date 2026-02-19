@@ -9,7 +9,6 @@ Usage:
     # effective N ≈ 35 real × 8 = 280 synthetic + 35 real = 315 total
 """
 
-import random
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Optional

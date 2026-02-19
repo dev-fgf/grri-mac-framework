@@ -17,7 +17,6 @@ if conn_str:
 
 # Check if azure-data-tables is installed
 try:
-    from azure.data.tables import TableServiceClient
     print("azure-data-tables: installed")
 except ImportError:
     print("azure-data-tables: NOT INSTALLED")
@@ -30,6 +29,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'api'))
 from shared.fred_client import FREDClient
 from shared.mac_scorer import calculate_mac
 from shared.database import get_database
+
 
 def main():
     days = 730  # 2 years
@@ -94,6 +94,7 @@ def main():
             skipped += 1
 
     print(f"\nDone! Saved {saved} records, skipped {skipped} (no data)")
+
 
 if __name__ == "__main__":
     main()

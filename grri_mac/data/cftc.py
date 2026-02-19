@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import cot_reports
 try:
-    from cot_reports.cot_reports import cot_year, cot_all
+    from cot_reports.cot_reports import cot_year
     COT_REPORTS_AVAILABLE = True
 except ImportError:
     COT_REPORTS_AVAILABLE = False
@@ -176,7 +176,10 @@ class CFTCClient:
                 oi_col = col
 
         if long_col is None or short_col is None:
-            raise ValueError(f"Could not find positioning columns. Available: {treasury.columns.tolist()[:10]}")
+            raise ValueError(
+                "Could not find positioning columns. "
+                f"Available: {treasury.columns.tolist()[:10]}"
+            )
 
         # Calculate net speculative position
         treasury["spec_net"] = (

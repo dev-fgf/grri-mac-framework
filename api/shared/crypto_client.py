@@ -6,6 +6,7 @@ and computes 60-day rolling correlation. No yfinance dependency needed.
 
 import logging
 from datetime import datetime, timedelta
+from typing import Any
 
 import pandas as pd
 import requests
@@ -28,7 +29,7 @@ def _fetch_daily_closes(symbol: str, days: int = 90) -> pd.Series:
     end = int(datetime.now().timestamp())
     start = int((datetime.now() - timedelta(days=days)).timestamp())
 
-    params = {
+    params: dict[str, Any] = {
         "period1": start,
         "period2": end,
         "interval": "1d",

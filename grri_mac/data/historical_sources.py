@@ -15,7 +15,7 @@ Run download_historical_data.py to fetch publicly available datasets.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Any, Optional, Dict
 
 import numpy as np
 import pandas as pd
@@ -110,8 +110,10 @@ def load_nber_series(series_id: str) -> Optional[pd.Series]:
         df = pd.read_csv(filepath, parse_dates=["date"])
         series = pd.Series(df["value"].values, index=df["date"])
         series = series.dropna().sort_index()
-        logger.info(f"Loaded NBER {series_id}: {len(series)} obs, "
-                     f"{series.index[0].date()} to {series.index[-1].date()}")
+        logger.info(
+            f"Loaded NBER {series_id}: {len(series)} obs, "
+            f"{series.index[0].date()} to {series.index[-1].date()}"
+        )
         return series
     except Exception as e:
         logger.error(f"Error loading NBER {series_id}: {e}")
@@ -167,7 +169,7 @@ def load_shiller_dataset() -> Optional[pd.DataFrame]:
 
     try:
         # Standardise column names (Shiller format varies)
-        df.columns = [c.strip().lower() for c in df.columns]
+        df.columns = [c.strip().lower() for c in df.columns]  # type: ignore[assignment]
 
         # Parse the fractional year date column (e.g., 1871.01 = Jan 1871)
         if "date" in df.columns:
@@ -175,7 +177,7 @@ def load_shiller_dataset() -> Optional[pd.DataFrame]:
         else:
             date_col = df.columns[0]
 
-        dates = []
+        dates: list[Any] = []
         for val in df[date_col]:
             try:
                 year = int(val)
@@ -211,8 +213,10 @@ def load_shiller_dataset() -> Optional[pd.DataFrame]:
         if "cape" in df.columns:
             df["earnings_yield"] = 1.0 / df["cape"].replace(0, np.nan)
 
-        logger.info(f"Loaded Shiller dataset: {len(df)} months, "
-                     f"{df.index[0].date()} to {df.index[-1].date()}")
+        logger.info(
+            f"Loaded Shiller dataset: {len(df)} months, "
+            f"{df.index[0].date()} to {df.index[-1].date()}"
+        )
         return df
 
     except Exception as e:
@@ -283,8 +287,10 @@ def load_schwert_volatility() -> Optional[pd.Series]:
         df = pd.read_csv(filepath, parse_dates=["date"])
         series = pd.Series(df["volatility"].values, index=df["date"])
         series = series.dropna().sort_index()
-        logger.info(f"Loaded Schwert volatility: {len(series)} months, "
-                     f"{series.index[0].date()} to {series.index[-1].date()}")
+        logger.info(
+            f"Loaded Schwert volatility: {len(series)} months, "
+            f"{series.index[0].date()} to {series.index[-1].date()}"
+        )
         return series
     except Exception as e:
         logger.error(f"Error loading Schwert volatility: {e}")

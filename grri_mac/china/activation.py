@@ -52,7 +52,7 @@ class ChinaActivationScore:
         "treasury": {
             "latent": 0,      # Stable holdings
             "elevated": 0,    # Flat
-            "activated": -50, # Declining > $50B/qtr (negative = selling)
+            "activated": -50,  # Declining > $50B/qtr (negative = selling)
         },
         "tariff": {
             "latent": 10,     # < 10%
@@ -68,7 +68,6 @@ class ChinaActivationScore:
 
     def __init__(self):
         """Initialize China activation calculator."""
-        pass
 
     def score_treasury(self, change_billions: float) -> float:
         """
@@ -138,7 +137,11 @@ class ChinaActivationScore:
         elif growth_yoy_pct < t["elevated"]:
             return 0.5 * (growth_yoy_pct - t["latent"]) / (t["elevated"] - t["latent"])
         else:
-            return min(1.0, 0.5 + 0.5 * (growth_yoy_pct - t["elevated"]) / (t["activated"] - t["elevated"]))
+            return min(
+                1.0,
+                0.5 + 0.5 * (growth_yoy_pct - t["elevated"])
+                / (t["activated"] - t["elevated"])
+            )
 
     def calculate(
         self,

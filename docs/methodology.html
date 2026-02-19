@@ -1,0 +1,3196 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>MAC Framework: Quantitative Methodology v7.1</title>
+  <style>
+
+    /* ── Professional academic styling ─────────────────────── */
+    html {
+      color: #1a1a1a;
+      background-color: #fff;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 52em;
+      padding: 40px 60px 80px 60px;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 11.5pt;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    h1, h2, h3, h4 {
+      font-family: "Helvetica Neue", "Arial", sans-serif;
+      color: #1a1a1a;
+      margin-top: 1.8em;
+      margin-bottom: 0.5em;
+    }
+    h1 { font-size: 1.8em; border-bottom: 2px solid #2c3e50; padding-bottom: 0.3em; }
+    h2 { font-size: 1.4em; border-bottom: 1px solid #bdc3c7; padding-bottom: 0.2em; }
+    h3 { font-size: 1.15em; }
+    h4 { font-size: 1.0em; font-style: italic; }
+
+    /* Title block */
+    header#title-block-header {
+      text-align: center;
+      margin-bottom: 2em;
+      padding-bottom: 1em;
+      border-bottom: 3px double #2c3e50;
+    }
+    header#title-block-header h1 {
+      font-size: 2.0em;
+      border-bottom: none;
+      margin-bottom: 0.2em;
+    }
+
+    /* Table of contents */
+    nav#TOC {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 1em 1.5em;
+      margin: 1.5em 0 2em 0;
+      font-family: "Helvetica Neue", "Arial", sans-serif;
+      font-size: 0.9em;
+    }
+    nav#TOC > ul { margin: 0; }
+    nav#TOC a { color: #2c3e50; text-decoration: none; }
+    nav#TOC a:hover { text-decoration: underline; }
+
+    /* Tables */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+      font-size: 0.92em;
+    }
+    thead tr {
+      background: #2c3e50;
+      color: white;
+    }
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
+    tbody tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    tbody tr:hover {
+      background: #e9ecef;
+    }
+
+    /* Code and pre */
+    code {
+      font-family: "SF Mono", "Consolas", "Monaco", monospace;
+      font-size: 0.88em;
+      background: #f4f4f4;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    pre {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 12px 16px;
+      overflow-x: auto;
+      font-size: 0.85em;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    /* Mermaid diagrams */
+    .mermaid-container {
+      background: #fafbfc;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 1.5em 0;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    /* Math */
+    .MathJax_Display { margin: 1em 0 !important; }
+
+    /* Blockquotes */
+    blockquote {
+      border-left: 4px solid #2c3e50;
+      margin: 1em 0;
+      padding: 0.5em 1em;
+      background: #f8f9fa;
+      font-style: italic;
+    }
+
+    /* Horizontal rules */
+    hr {
+      border: none;
+      border-top: 1px solid #dee2e6;
+      margin: 2em 0;
+    }
+
+    /* Links */
+    a { color: #2980b9; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Strong/emphasis in tables */
+    strong { font-weight: 700; }
+
+    /* Footer */
+    body > p:last-of-type {
+      font-style: italic;
+      color: #666;
+      border-top: 1px solid #dee2e6;
+      padding-top: 1em;
+      margin-top: 3em;
+      font-size: 0.9em;
+    }
+
+    /* ── Print styles ──────────────────────────────────────── */
+    @media print {
+      body {
+        max-width: none;
+        padding: 0;
+        font-size: 10pt;
+        line-height: 1.4;
+      }
+      h1, h2, h3 { page-break-after: avoid; }
+      table, figure, .mermaid-container { page-break-inside: avoid; }
+      thead { display: table-header-group; }
+      nav#TOC { display: none; }
+      a { color: #1a1a1a; }
+      a[href^="http"]::after {
+        content: none;  /* Don't print URLs inline */
+      }
+      thead tr {
+        background: #ddd !important;
+        color: #1a1a1a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      tbody tr:nth-child(even) {
+        background: #f5f5f5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .mermaid-container {
+        border: 1px solid #ccc;
+      }
+    }
+
+    @page {
+      margin: 2cm;
+      @bottom-center {
+        content: "MAC Framework v7.1 — Confidential";
+        font-size: 8pt;
+        color: #999;
+      }
+    }
+
+</style>
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">MAC Framework: Quantitative Methodology v7.1</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#mac-framework-quantitative-methodology"
+id="toc-mac-framework-quantitative-methodology">MAC Framework:
+Quantitative Methodology</a>
+<ul>
+<li><a href="#table-of-contents" id="toc-table-of-contents">Table of
+Contents</a></li>
+<li><a href="#framework-overview" id="toc-framework-overview">1.
+Framework Overview</a>
+<ul>
+<li><a href="#design-principles" id="toc-design-principles">1.1 Design
+Principles</a></li>
+<li><a href="#score-interpretation" id="toc-score-interpretation">1.2
+Score Interpretation</a></li>
+</ul></li>
+<li><a href="#architecture" id="toc-architecture">2. Architecture</a>
+<ul>
+<li><a href="#system-pipeline" id="toc-system-pipeline">2.1 System
+Pipeline</a></li>
+<li><a href="#computation-flow-per-timestep"
+id="toc-computation-flow-per-timestep">2.2 Computation Flow (Per
+Timestep)</a></li>
+</ul></li>
+<li><a href="#pillar-construction" id="toc-pillar-construction">3.
+Pillar Construction</a>
+<ul>
+<li><a href="#liquidity-pillar" id="toc-liquidity-pillar">3.1 Liquidity
+Pillar</a></li>
+<li><a href="#valuation-pillar" id="toc-valuation-pillar">3.2 Valuation
+Pillar</a></li>
+<li><a href="#volatility-pillar" id="toc-volatility-pillar">3.3
+Volatility Pillar</a></li>
+<li><a href="#positioning-pillar" id="toc-positioning-pillar">3.4
+Positioning Pillar</a></li>
+<li><a href="#policy-pillar" id="toc-policy-pillar">3.5 Policy
+Pillar</a></li>
+<li><a href="#contagion-pillar" id="toc-contagion-pillar">3.6 Contagion
+Pillar</a></li>
+<li><a href="#private-credit-pillar" id="toc-private-credit-pillar">3.7
+Private Credit Pillar</a></li>
+<li><a href="#sentiment-pillar" id="toc-sentiment-pillar">3.8 Sentiment
+Pillar</a></li>
+</ul></li>
+<li><a href="#composite-aggregation" id="toc-composite-aggregation">4.
+Composite Aggregation</a>
+<ul>
+<li><a href="#mac-formula" id="toc-mac-formula">4.1 MAC Formula</a></li>
+<li><a href="#weight-selection" id="toc-weight-selection">4.2 Weight
+Selection</a></li>
+</ul></li>
+<li><a href="#machine-learning-weight-optimisation"
+id="toc-machine-learning-weight-optimisation">5. Machine Learning Weight
+Optimisation</a>
+<ul>
+<li><a href="#feature-engineering" id="toc-feature-engineering">5.1
+Feature Engineering</a></li>
+<li><a href="#training-procedure" id="toc-training-procedure">5.2
+Training Procedure</a></li>
+<li><a href="#synthetic-augmentation"
+id="toc-synthetic-augmentation">5.3 Synthetic Augmentation</a></li>
+<li><a href="#validation" id="toc-validation">5.4 Validation</a></li>
+</ul></li>
+<li><a href="#calibration-engine" id="toc-calibration-engine">6.
+Calibration Engine</a>
+<ul>
+<li><a href="#crisis-severity-rating-csr"
+id="toc-crisis-severity-rating-csr">6.1 Crisis Severity Rating
+(CSR)</a></li>
+<li><a href="#calibration-factor-alpha"
+id="toc-calibration-factor-alpha">6.2 Calibration Factor Alpha</a></li>
+<li><a href="#era-aware-calibration" id="toc-era-aware-calibration">6.3
+Era-Aware Calibration</a></li>
+<li><a href="#scenario-catalogue-selected"
+id="toc-scenario-catalogue-selected">6.4 Scenario Catalogue
+(Selected)</a></li>
+</ul></li>
+<li><a href="#confidence-intervals" id="toc-confidence-intervals">7.
+Confidence Intervals</a>
+<ul>
+<li><a href="#three-sources-of-uncertainty"
+id="toc-three-sources-of-uncertainty">7.1 Three Sources of
+Uncertainty</a></li>
+<li><a href="#bootstrap-algorithm" id="toc-bootstrap-algorithm">7.2
+Bootstrap Algorithm</a></li>
+<li><a href="#conformal-prediction-bands"
+id="toc-conformal-prediction-bands">7.3 Conformal Prediction
+Bands</a></li>
+</ul></li>
+<li><a href="#regime-detection" id="toc-regime-detection">8. Regime
+Detection</a>
+<ul>
+<li><a href="#hidden-markov-model-overlay"
+id="toc-hidden-markov-model-overlay">8.1 Hidden Markov Model
+Overlay</a></li>
+<li><a href="#breach-probability-model"
+id="toc-breach-probability-model">8.2 Breach Probability Model</a></li>
+</ul></li>
+<li><a href="#backtesting-methodology"
+id="toc-backtesting-methodology">9. Backtesting Methodology</a>
+<ul>
+<li><a href="#standard-backtest" id="toc-standard-backtest">9.1 Standard
+Backtest</a></li>
+<li><a href="#walk-forward-discipline"
+id="toc-walk-forward-discipline">9.2 Walk-Forward Discipline</a></li>
+</ul></li>
+<li><a href="#precision-recall-framework"
+id="toc-precision-recall-framework">10. Precision-Recall Framework</a>
+<ul>
+<li><a href="#classification-setup" id="toc-classification-setup">10.1
+Classification Setup</a></li>
+<li><a href="#client-specific-operating-points"
+id="toc-client-specific-operating-points">10.2 Client-Specific Operating
+Points</a></li>
+<li><a href="#false-positive-taxonomy"
+id="toc-false-positive-taxonomy">10.3 False-Positive Taxonomy</a></li>
+<li><a href="#economic-cost-analysis"
+id="toc-economic-cost-analysis">10.4 Economic Cost Analysis</a></li>
+<li><a href="#standard-operating-points"
+id="toc-standard-operating-points">10.5 Standard Operating
+Points</a></li>
+</ul></li>
+<li><a href="#data-sources-and-proxy-construction"
+id="toc-data-sources-and-proxy-construction">11. Data Sources and Proxy
+Construction</a>
+<ul>
+<li><a href="#primary-data-sources" id="toc-primary-data-sources">11.1
+Primary Data Sources</a></li>
+<li><a href="#fred-series-inventory" id="toc-fred-series-inventory">11.2
+FRED Series Inventory</a></li>
+<li><a href="#proxy-construction-methods"
+id="toc-proxy-construction-methods">11.3 Proxy Construction
+Methods</a></li>
+<li><a href="#proxy-reliability-by-era"
+id="toc-proxy-reliability-by-era">11.4 Proxy Reliability by Era</a></li>
+</ul></li>
+<li><a href="#validation-results" id="toc-validation-results">12.
+Validation Results</a>
+<ul>
+<li><a
+href="#standard-backtest-19712025-8-pillar-model-v7.1-fully-wired"
+id="toc-standard-backtest-19712025-8-pillar-model-v7.1-fully-wired">12.1
+Standard Backtest (1971–2025, 8-Pillar Model, v7.1 Fully Wired)</a></li>
+<li><a href="#per-era-detection-rates"
+id="toc-per-era-detection-rates">12.2 Per-Era Detection Rates</a></li>
+<li><a href="#progressive-improvement-7-pillar-to-v7.1-fully-wired"
+id="toc-progressive-improvement-7-pillar-to-v7.1-fully-wired">12.3
+Progressive Improvement: 7-Pillar to v7.1 Fully Wired</a></li>
+<li><a href="#data-quality-distribution"
+id="toc-data-quality-distribution">12.4 Data Quality
+Distribution</a></li>
+<li><a href="#multi-country-sovereign-proxy-validation"
+id="toc-multi-country-sovereign-proxy-validation">12.5 Multi-Country
+Sovereign Proxy Validation</a></li>
+<li><a href="#hedge-failure-analysis"
+id="toc-hedge-failure-analysis">12.6 Hedge Failure Analysis</a></li>
+</ul></li>
+<li><a href="#limitations" id="toc-limitations">13. Limitations</a>
+<ul>
+<li><a href="#small-training-sample" id="toc-small-training-sample">13.1
+Small Training Sample</a></li>
+<li><a href="#proxy-degradation-pre-1926"
+id="toc-proxy-degradation-pre-1926">13.2 Proxy Degradation
+Pre-1926</a></li>
+<li><a href="#private-credit-opacity"
+id="toc-private-credit-opacity">13.3 Private Credit Opacity</a></li>
+<li><a href="#positioning-data-limitations"
+id="toc-positioning-data-limitations">13.4 Positioning Data
+Limitations</a></li>
+<li><a href="#regime-dependence" id="toc-regime-dependence">13.5 Regime
+Dependence</a></li>
+<li><a href="#survivorship-bias" id="toc-survivorship-bias">13.6
+Survivorship Bias</a></li>
+<li><a href="#sentiment-pillar-limitations"
+id="toc-sentiment-pillar-limitations">13.7 Sentiment Pillar
+Limitations</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">14. References</a>
+<ul>
+<li><a href="#academic-literature" id="toc-academic-literature">Academic
+Literature</a></li>
+<li><a href="#regulatory-and-policy-sources"
+id="toc-regulatory-and-policy-sources">Regulatory and Policy
+Sources</a></li>
+<li><a href="#data-sources" id="toc-data-sources">Data Sources</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="mac-framework-quantitative-methodology">MAC Framework:
+Quantitative Methodology</h1>
+<p><strong>Market Absorption Capacity (MAC) — Technical Specification
+v7.1</strong></p>
+<p><em>Prepared for external quantitative review</em></p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#1-framework-overview">Framework Overview</a></li>
+<li><a href="#2-architecture">Architecture</a></li>
+<li><a href="#3-pillar-construction">Pillar Construction</a></li>
+<li><a href="#4-composite-aggregation">Composite Aggregation</a></li>
+<li><a href="#5-machine-learning-weight-optimisation">Machine Learning
+Weight Optimisation</a></li>
+<li><a href="#6-calibration-engine">Calibration Engine</a></li>
+<li><a href="#7-confidence-intervals">Confidence Intervals</a></li>
+<li><a href="#8-regime-detection">Regime Detection</a></li>
+<li><a href="#9-backtesting-methodology">Backtesting
+Methodology</a></li>
+<li><a href="#10-precision-recall-framework">Precision-Recall
+Framework</a></li>
+<li><a href="#11-data-sources-and-proxy-construction">Data Sources and
+Proxy Construction</a></li>
+<li><a href="#12-validation-results">Validation Results</a></li>
+<li><a href="#13-limitations">Limitations</a></li>
+<li><a href="#14-references">References</a></li>
+</ol>
+<hr />
+<h2 id="framework-overview">1. Framework Overview</h2>
+<p>The Market Absorption Capacity (MAC) framework produces a single
+composite score in [0, 1] that measures the capacity of financial
+markets to absorb exogenous shocks without disorderly price adjustment.
+A score near 1.0 indicates ample buffers; a score below 0.35 signals
+that one or more systemic transmission channels is impaired.</p>
+<h3 id="design-principles">1.1 Design Principles</h3>
+<ol type="1">
+<li><strong>Multi-pillar construction</strong> — eight independent
+dimensions of market resilience (seven quantitative, one text-based
+sentiment), each scored [0, 1].</li>
+<li><strong>Non-linear interaction penalties</strong> — co-breach of
+multiple pillars incurs a super-additive penalty derived from
+information-theoretic mutual information.</li>
+<li><strong>Empirical calibration</strong> — pillar weights and the
+composite calibration factor are fitted to a catalogue of 35+ historical
+stress episodes (1907–2025) via gradient-boosted ensemble methods.</li>
+<li><strong>Uncertainty quantification</strong> — bootstrap confidence
+intervals propagate indicator noise, weight instability, and calibration
+uncertainty through to the final score.</li>
+<li><strong>Walk-forward discipline</strong> — all backtest results use
+expanding-window re-estimation with no lookahead.</li>
+</ol>
+<h3 id="score-interpretation">1.2 Score Interpretation</h3>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 20%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>MAC Range</th>
+<th>Label</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&gt;= 0.80</td>
+<td><strong>Ample</strong></td>
+<td>Markets can absorb large shocks; full risk budget available</td>
+</tr>
+<tr>
+<td>0.60–0.80</td>
+<td><strong>Comfortable</strong></td>
+<td>Moderate absorption capacity</td>
+</tr>
+<tr>
+<td>0.40–0.60</td>
+<td><strong>Thin</strong></td>
+<td>Limited buffer; elevated transmission risk</td>
+</tr>
+<tr>
+<td>0.20–0.40</td>
+<td><strong>Stretched</strong></td>
+<td>High transmission risk; hedging recommended</td>
+</tr>
+<tr>
+<td>&lt; 0.20</td>
+<td><strong>Regime Break</strong></td>
+<td>Buffers exhausted; non-linear dynamics likely</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="architecture">2. Architecture</h2>
+<h3 id="system-pipeline">2.1 System Pipeline</h3>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart TB
+    subgraph DataLayer["Data Layer"]
+        FRED["FRED API<br/>(41+ series)"]
+        NBER["NBER Macrohistory<br/>(1857–1989)"]
+        Shiller["Shiller Dataset<br/>(1871–present)"]
+        Schwert["Schwert Volatility<br/>(1802–1987)"]
+        BoE["Bank of England<br/>(1694–1995)"]
+        CFTC["CFTC / COT<br/>(1962–present)"]
+        BDC["BDC Prices<br/>(2004–present)"]
+        FOMC["FOMC Minutes<br/>(1993–present)"]
+    end
+
+    subgraph PillarLayer["Pillar Scoring (8 Pillars)"]
+        LIQ["Liquidity"]
+        VAL["Valuation"]
+        POS["Positioning"]
+        VOL["Volatility"]
+        POL["Policy"]
+        CON["Contagion"]
+        PC["Private Credit"]
+        SENT["Sentiment"]
+    end
+
+    subgraph CompositeLayer["Composite Engine"]
+        WA["Weighted Average<br/>w_i from ML"]
+        BIP["Breach Interaction<br/>Penalty pi(n)"]
+        CAL["Calibration<br/>Factor alpha"]
+        MAC["MAC Score"]
+    end
+
+    subgraph UncertaintyLayer["Uncertainty & Regime"]
+        BOOT["Bootstrap CI<br/>(n=1000)"]
+        HMM["HMM Regime<br/>P(fragile)"]
+        CONF["Conformal<br/>Prediction Bands"]
+    end
+
+    subgraph ValidationLayer["Validation"]
+        BT["Walk-Forward<br/>Backtest"]
+        PR["Precision-Recall<br/>Curve"]
+        FPC["FP Cost<br/>Analysis"]
+    end
+
+    DataLayer --> PillarLayer
+    PillarLayer --> WA
+    WA --> BIP
+    BIP --> CAL
+    CAL --> MAC
+    MAC --> BOOT
+    MAC --> HMM
+    BOOT --> CONF
+    MAC --> BT
+    BT --> PR
+    PR --> FPC
+</pre>
+</div>
+<h3 id="computation-flow-per-timestep">2.2 Computation Flow (Per
+Timestep)</h3>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart LR
+    A["Fetch indicators<br/>for date t"] --> B["Score each<br/>pillar [0,1]"]
+    B --> C["Select weights<br/>(ML-8 or equal)"]
+    C --> D["Weighted avg<br/>= sum w_i * s_i"]
+    D --> E["Count breaches<br/>n = |{s_i < 0.3}|"]
+    E --> F["Subtract penalty<br/>pi(n)"]
+    F --> G["Multiply by<br/>alpha = 0.78"]
+    G --> H["Clip to [0,1]<br/>= MAC_t"]
+    H --> I["Bootstrap CI<br/>+ HMM overlay"]
+</pre>
+</div>
+<hr />
+<h2 id="pillar-construction">3. Pillar Construction</h2>
+<p>Each pillar maps a set of market observables to a score in [0, 1]
+using a piecewise-linear scoring function. The general form for a
+“lower-is-better” indicator (e.g., spreads) is:</p>
+<p><span class="math display">\[
+s(x) = \begin{cases}
+1.0 &amp; x \le x_{\text{ample}} \\
+0.5 + 0.5 \cdot \dfrac{x_{\text{ample}} - x}{x_{\text{ample}} -
+x_{\text{thin}}} &amp; x_{\text{ample}} &lt; x \le x_{\text{thin}} \\
+0.5 \cdot \dfrac{x_{\text{thin}} - x}{x_{\text{thin}} -
+x_{\text{breach}}} &amp; x_{\text{thin}} &lt; x \le x_{\text{breach}} \\
+0.0 &amp; x &gt; x_{\text{breach}}
+\end{cases}
+\]</span></p>
+<p>For “range-based” indicators (valuation pillar), both compressed and
+extremely wide values score low:</p>
+<p><span class="math display">\[
+s(x) = \begin{cases}
+1.0 &amp; x_{\text{ample,lo}} \le x \le x_{\text{ample,hi}} \\
+\text{linear interp} &amp; x_{\text{thin}} \text{ bands} \\
+0.0 &amp; x &lt; x_{\text{breach,lo}} \text{ or } x &gt;
+x_{\text{breach,hi}}
+\end{cases}
+\]</span></p>
+<h3 id="liquidity-pillar">3.1 Liquidity Pillar</h3>
+<p><strong>Core question:</strong> Can markets transact without
+disorderly price impact?</p>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart LR
+    subgraph Indicators
+        A["SOFR-IORB<br/>spread (bps)"]
+        B["CP-Treasury<br/>spread (bps)"]
+        C["Cross-currency<br/>basis (bps)"]
+        D["Treasury bid-ask<br/>(32nds)"]
+    end
+    subgraph Scoring
+        E["Piecewise linear<br/>lower-is-better"]
+    end
+    Indicators --> E --> F["Liquidity<br/>= mean(scores)"]
+</pre>
+</div>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 20%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Source</th>
+<th>Ample</th>
+<th>Thin</th>
+<th>Breach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SOFR-IORB spread</td>
+<td>FRED: SOFR, IORB</td>
+<td>&lt; 5 bps</td>
+<td>&lt; 25 bps</td>
+<td>&gt; 50 bps</td>
+</tr>
+<tr>
+<td>CP-Treasury spread</td>
+<td>FRED: DCPN3M, DTB3</td>
+<td>&lt; 20 bps</td>
+<td>&lt; 50 bps</td>
+<td>&gt; 100 bps</td>
+</tr>
+<tr>
+<td>Cross-currency basis (EUR/USD)</td>
+<td>BIS / Bloomberg</td>
+<td>&gt; -30 bps</td>
+<td>&gt; -75 bps</td>
+<td>&lt; -120 bps</td>
+</tr>
+<tr>
+<td>Treasury bid-ask</td>
+<td>Market data (32nds)</td>
+<td>&lt; 1.0</td>
+<td>&lt; 2.0</td>
+<td>&gt; 4.0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Historical proxy chain:</strong></p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 40%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr>
+<th>Era</th>
+<th>Source</th>
+<th>Proxy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2018–present</td>
+<td>FRED: SOFR, IORB</td>
+<td>Native</td>
+</tr>
+<tr>
+<td>1986–2018</td>
+<td>FRED: TEDRATE</td>
+<td>TED spread (3M LIBOR minus T-Bill)</td>
+</tr>
+<tr>
+<td>1954–1986</td>
+<td>FRED: DFF, TB3MS</td>
+<td>Fed Funds minus T-Bill spread</td>
+</tr>
+<tr>
+<td>1934–1954</td>
+<td>FRED: INTDSRUSM193N, TB3MS</td>
+<td>Discount rate minus T-Bill</td>
+</tr>
+<tr>
+<td>1907–1934</td>
+<td>NBER: m13001</td>
+<td>Call money rate minus short-term govt rate</td>
+</tr>
+</tbody>
+</table>
+<p><strong>References:</strong> - Brunnermeier &amp; Pedersen (2009),
+“Market Liquidity and Funding Liquidity,” <em>Review of Financial
+Studies</em> 22(6), 2201–2238. - Bao, Pan &amp; Wang (2011), “The
+Illiquidity of Corporate Bonds,” <em>Journal of Finance</em> 66(3),
+911–946.</p>
+<h3 id="valuation-pillar">3.2 Valuation Pillar</h3>
+<p><strong>Core question:</strong> Are risk premia adequate buffers or
+compressed to dangerous levels?</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Source</th>
+<th>Ample Range</th>
+<th>Thin Range</th>
+<th>Breach Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10Y Term Premium</td>
+<td>FRED: THREEFYTP10</td>
+<td>[40, 120] bps</td>
+<td>[0, 200] bps</td>
+<td>&lt; -50 or &gt; 250 bps</td>
+</tr>
+<tr>
+<td>IG OAS</td>
+<td>FRED: BAMLC0A0CM</td>
+<td>[100, 180] bps</td>
+<td>[75, 280] bps</td>
+<td>&lt; 60 or &gt; 400 bps</td>
+</tr>
+<tr>
+<td>HY OAS</td>
+<td>FRED: BAMLH0A0HYM2</td>
+<td>[350, 550] bps</td>
+<td>[280, 800] bps</td>
+<td>&lt; 200 or &gt; 1000 bps</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Design note:</strong> Two-sided scoring is critical. Pre-GFC
+complacency (June 2007: IG OAS at 60 bps, HY OAS at 250 bps) is captured
+as a breach via compressed spreads, while crisis blow-outs are captured
+at the wide end. This avoids the asymmetric blind spot of traditional
+spread-only models.</p>
+<p><strong>v7.1 Adaptive Bands:</strong> After accumulating 52+ weekly
+observations, the valuation pillar switches to regime-dependent
+rolling-percentile bands via <code>AdaptiveValuationBands</code>.
+Percentile boundaries adapt to the monetary policy regime (QE /
+tightening / neutral), so the definition of “ample” spreads evolves with
+the environment rather than relying on fixed thresholds calibrated to a
+single era.</p>
+<p><strong>Historical proxy chain:</strong></p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 40%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr>
+<th>Era</th>
+<th>Source</th>
+<th>Proxy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1996–present</td>
+<td>FRED: BAMLC0A0CM, BAMLH0A0HYM2</td>
+<td>ICE BofA indices (native)</td>
+</tr>
+<tr>
+<td>1919–1996</td>
+<td>FRED: BAA, AAA, DGS10</td>
+<td>Moody’s Baa-10Y as IG proxy (-40 bps); Baa-Aaa x 4.5 as HY
+proxy</td>
+</tr>
+<tr>
+<td>1907–1919</td>
+<td>NBER: m13020, m13028</td>
+<td>Railroad bond yields minus govt yields</td>
+</tr>
+</tbody>
+</table>
+<p><strong>References:</strong> - Adrian, Crump &amp; Moench (2013),
+“Pricing the Term Structure with Linear Regressions,” <em>Journal of
+Financial Economics</em> 110(1), 110–138. (ACM term premium model) -
+Gilchrist &amp; Zakrajsek (2012), “Credit Spreads and Business Cycle
+Fluctuations,” <em>American Economic Review</em> 102(4), 1692–1720.</p>
+<h3 id="volatility-pillar">3.3 Volatility Pillar</h3>
+<p><strong>Core question:</strong> Is the volatility regime stable, or
+are conditions ripe for a regime break?</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Source</th>
+<th>Ample Range</th>
+<th>Thin Range</th>
+<th>Breach Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VIX level</td>
+<td>FRED: VIXCLS</td>
+<td>[15, 20]</td>
+<td>[12, 35]</td>
+<td>&lt; 10 or &gt; 50</td>
+</tr>
+<tr>
+<td>VIX term structure (M2/M1)</td>
+<td>CBOE</td>
+<td>[1.00, 1.05]</td>
+<td>[0.95, 1.08]</td>
+<td>&lt; 0.90 or &gt; 1.10</td>
+</tr>
+<tr>
+<td>Realised-Implied vol gap</td>
+<td>Computed</td>
+<td>&lt; 20%</td>
+<td>&lt; 40%</td>
+<td>&gt; 60%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Volatility Risk Premium (VRP) Adjustment:</strong></p>
+<p>The VRP scales the volatility pillar to account for the variance risk
+premium (Carr &amp; Wu, 2009). v7.1 uses a Kalman filter state-space
+model as the primary estimator, falling back to the linear formula when
+filterpy/pykalman are unavailable:</p>
+<p><em>Kalman State-Space Model (primary):</em> - State equation: <span
+class="math inline">\(\text{VRP}_t = \text{VRP}_{t-1} + w_t\)</span>,
+<span class="math inline">\(w_t \sim N(0, Q)\)</span> - Observation
+equation: <span class="math inline">\(z_t = \text{VRP}_t + v_t\)</span>,
+<span class="math inline">\(v_t \sim N(0, R)\)</span> - Measurement
+inputs: vol-of-vol, skew, and excess kurtosis of returns - The filter
+optimally combines noisy observations with the random-walk prior</p>
+<p><em>Linear Fallback:</em></p>
+<p><span class="math display">\[
+\text{VRP}_t = \text{clip}\!\Big(1.05 + 0.015 \cdot
+\sigma(\Delta\text{VIX})_{252d},\; [1.05,\; 1.55]\Big)
+\]</span></p>
+<p><span class="math display">\[
+s_{\text{adj}} = 1.0 - (1.0 - s_{\text{base}}) \times \text{VRP}_t
+\]</span></p>
+<p>where <span
+class="math inline">\(\sigma(\Delta\text{VIX})_{252d}\)</span> is the
+trailing 252-day standard deviation of daily VIX changes
+(vol-of-vol).</p>
+<p><strong>Low-Volatility Persistence Penalty:</strong></p>
+<p><span class="math display">\[
+\text{penalty} = \min\!\Big(0.15,\; 0.003 \times n_{\text{consecutive
+days VIX} &lt; 15}\Big)
+\]</span></p>
+<p>Applied over a rolling 60-day window. Extended low-vol periods build
+complacency that increases fragility (Brunnermeier &amp; Pedersen,
+2009).</p>
+<p><strong>Historical proxy chain:</strong></p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 40%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr>
+<th>Era</th>
+<th>Source</th>
+<th>Proxy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1990–present</td>
+<td>FRED: VIXCLS</td>
+<td>VIX (native)</td>
+</tr>
+<tr>
+<td>1986–1990</td>
+<td>FRED: VXOCLS</td>
+<td>VXO x 0.95 (S&amp;P 100 options, r &gt; 0.95 with VIX)</td>
+</tr>
+<tr>
+<td>1971–1986</td>
+<td>FRED: NASDAQCOM</td>
+<td>21-day realised vol x 1.2 VRP adjustment</td>
+</tr>
+<tr>
+<td>1871–1971</td>
+<td>Shiller monthly prices</td>
+<td>Monthly realised vol x 1.3 VRP</td>
+</tr>
+<tr>
+<td>1802–1871</td>
+<td>Schwert (1989)</td>
+<td>Reconstructed monthly stock volatility</td>
+</tr>
+</tbody>
+</table>
+<p><strong>References:</strong> - Carr &amp; Wu (2009), “Variance Risk
+Premiums,” <em>Review of Financial Studies</em> 22(3), 1311–1341. -
+Schwert (1989), “Why Does Stock Market Volatility Change Over Time?,”
+<em>Journal of Finance</em> 44(5), 1115–1153. - Whaley (2000), “The
+Investor Fear Gauge,” <em>Journal of Portfolio Management</em> 26(3),
+12–17.</p>
+<h3 id="positioning-pillar">3.4 Positioning Pillar</h3>
+<p><strong>Core question:</strong> Is leverage manageable and
+positioning sufficiently diverse?</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 20%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Source</th>
+<th>Ample</th>
+<th>Thin</th>
+<th>Breach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Basis trade size</td>
+<td>CFTC Treasury futures</td>
+<td>&lt; $400B</td>
+<td>&lt; $700B</td>
+<td>&gt; $700B</td>
+</tr>
+<tr>
+<td>Treasury spec net (percentile)</td>
+<td>CFTC COT</td>
+<td>25th–75th</td>
+<td>10th–90th</td>
+<td>&lt; 5th or &gt; 95th</td>
+</tr>
+<tr>
+<td>SVXY AUM</td>
+<td>ETF data</td>
+<td>&lt; $500M</td>
+<td>&lt; $1B</td>
+<td>&gt; $1B</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Dynamic OI-relative threshold:</strong></p>
+<p><span class="math display">\[
+\text{basis\_pct} =
+\frac{\text{basis\_trade\_billions}}{\text{total\_treasury\_OI\_billions}}
+\times 100
+\]</span></p>
+<p>Ample: &lt; 8% of OI; Thin: 8–12%; Breach: &gt; 18%.</p>
+<p><strong>Hedge failure mechanism:</strong> When any positioning
+indicator breaches its critical threshold, the pillar composite is
+forced below 0.18, triggering the interaction penalty and reflecting the
+empirical finding that positioning breach is a necessary condition for
+Treasury hedge failure (see Section 13.1).</p>
+<p><strong>v7.1 Hedge Failure Detector:</strong> The positioning pillar
+integrates a formal <code>HedgeFailureDetector</code> module that scores
+two additional indicators when available: (1) primary dealer gross
+leverage (NY Fed data), and (2) Treasury futures Herfindahl index
+(concentration measure). These are blended into the composite as
+additional scored factors. The detector formalises the hedge failure
+definition as simultaneous 10Y return &lt; -2% and S&amp;P 500 &lt; -3%,
+and maintains a Bayesian posterior over P(severe | positioning breach)
+updated from an expanded sample of N = 9 episodes (see Section
+12.6).</p>
+<p><strong>References:</strong> - Federal Reserve Board (2024),
+“Quantifying Treasury Cash-Futures Basis Trades.” - Office of Financial
+Research (2021), “Hedge Funds and the Treasury Cash-Futures Disconnect.”
+- Federal Reserve Board (2023), “Recent Developments in Hedge Funds’
+Treasury Futures and Repo Positions.”</p>
+<h3 id="policy-pillar">3.5 Policy Pillar</h3>
+<p><strong>Core question:</strong> Does the central bank retain capacity
+to respond to stress?</p>
+<p><strong>Binding-constraint architecture:</strong> When policy
+sub-indicators are heterogeneous (max - min &gt; homogeneity threshold),
+the composite equals the <em>minimum</em> sub-indicator (bottleneck
+model). Otherwise, the composite is a weighted average.</p>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart TD
+    A["Score 5 sub-indicators"] --> B{"max - min ><br/>homogeneity<br/>threshold?"}
+    B -->|Yes: heterogeneous| C["Policy = min(sub-indicators)<br/>(binding constraint)"]
+    B -->|No: homogeneous| D["Policy = weighted average"]
+    D --> E["Inflation: 0.30<br/>Fwd Inflation: 0.15<br/>Policy Room: 0.22<br/>Balance Sheet: 0.17<br/>Fiscal Space: 0.16"]
+    C --> F["Apply era cap"]
+    D --> F
+</pre>
+</div>
+<table>
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 18%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th>Sub-Indicator</th>
+<th>Source</th>
+<th>Ample</th>
+<th>Thin</th>
+<th>Breach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Policy room (ELB distance)</td>
+<td>FRED: DFEDTARU / FEDFUNDS</td>
+<td>&gt;= 150 bps</td>
+<td>&gt;= 50 bps</td>
+<td>&lt; 25 bps</td>
+</tr>
+<tr>
+<td>Fed balance sheet (% GDP)</td>
+<td>FRED: WALCL, GDP</td>
+<td>&lt;= 25%</td>
+<td>&lt;= 35%</td>
+<td>&gt; 45%</td>
+</tr>
+<tr>
+<td>Inflation deviation (above target)</td>
+<td>FRED: PCEPILFE</td>
+<td>&lt;= 50 bps</td>
+<td>&lt;= 125 bps</td>
+<td>&gt; 200 bps</td>
+</tr>
+<tr>
+<td>Inflation deviation (below target)</td>
+<td>FRED: PCEPILFE</td>
+<td>&lt;= 75 bps</td>
+<td>&lt;= 200 bps</td>
+<td>&gt; 350 bps</td>
+</tr>
+<tr>
+<td>Forward inflation expectations</td>
+<td>TIPS 5y5y breakeven</td>
+<td>&lt;= 30 bps</td>
+<td>&lt;= 75 bps</td>
+<td>&gt; 150 bps</td>
+</tr>
+<tr>
+<td>Fiscal space (debt/GDP)</td>
+<td>FRED: GFDEBTN, GDP</td>
+<td>&lt;= 70%</td>
+<td>&lt;= 90%</td>
+<td>&gt; 120%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Homogeneity threshold</strong> defaults to 0.25 but can be
+data-driven via the 75th percentile of historical cross-indicator
+dispersions.</p>
+<p><strong>Historical era caps</strong> restrict the policy pillar to
+reflect structural constraints:</p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 52%" />
+</colgroup>
+<thead>
+<tr>
+<th>Era</th>
+<th>Cap</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pre-1913 (pre-Fed)</td>
+<td>min(0.30, 0.15 + 0.30 x gold_reserve_ratio)</td>
+<td>No central bank; gold stock only backstop</td>
+</tr>
+<tr>
+<td>1913–1934 (early Fed + gold)</td>
+<td>0.55</td>
+<td>Fed constrained by Gold Standard Act (40% reserve)</td>
+</tr>
+<tr>
+<td>1944–1971 (Bretton Woods)</td>
+<td>0.65</td>
+<td>Fixed exchange rate limits monetary autonomy</td>
+</tr>
+<tr>
+<td>Post-1971</td>
+<td>1.00</td>
+<td>Unconstrained fiat regime</td>
+</tr>
+</tbody>
+</table>
+<p><strong>References:</strong> - Taylor (1993), “Discretion Versus
+Policy Rules in Practice,” <em>Carnegie-Rochester Conference Series on
+Public Policy</em> 39, 195–214. - Eggertsson &amp; Woodford (2003), “The
+Zero Bound on Interest Rates and Optimal Monetary Policy,” <em>Brookings
+Papers on Economic Activity</em> 2003(1), 139–211.</p>
+<h3 id="contagion-pillar">3.6 Contagion Pillar</h3>
+<p><strong>Core question:</strong> Are cross-border transmission
+channels stable?</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 11%" />
+<col style="width: 20%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Source</th>
+<th>Ample</th>
+<th>Thin</th>
+<th>Stretched</th>
+<th>Critical</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cross-currency basis (EUR/USD, JPY/USD)</td>
+<td>BIS / Bloomberg</td>
+<td>|&lt; 15 bps|</td>
+<td>&lt; 30 bps</td>
+<td>&lt; 60 bps</td>
+<td>&gt; 100 bps</td>
+</tr>
+<tr>
+<td>TARGET2 imbalances (% EZ GDP)</td>
+<td>ECB</td>
+<td>&lt; 5%</td>
+<td>&lt; 10%</td>
+<td>&lt; 20%</td>
+<td>&gt; 20%</td>
+</tr>
+<tr>
+<td>EM reserve coverage (Guidotti-Greenspan)</td>
+<td>IMF</td>
+<td>&gt; 150%</td>
+<td>&gt; 125%</td>
+<td>&gt; 100%</td>
+<td>&lt; 75%</td>
+</tr>
+<tr>
+<td>Cross-border banking flows (% world GDP)</td>
+<td>BIS</td>
+<td>[-0.5%, +1.5%]</td>
+<td>+/- 3%</td>
+<td>+/- 5%</td>
+<td>&lt; -4% or &gt; +7%</td>
+</tr>
+<tr>
+<td>G-SIB CDS (regime-specific)</td>
+<td>Bloomberg</td>
+<td>&lt; 60 bps*</td>
+<td>&lt; 120 bps*</td>
+<td>&lt; 200 bps*</td>
+<td>&gt; 200 bps*</td>
+</tr>
+<tr>
+<td>BTC-SPY 60d correlation</td>
+<td>Computed</td>
+<td>&lt;= 0.30</td>
+<td>&lt;= 0.50</td>
+<td>—</td>
+<td>&gt; 0.70</td>
+</tr>
+</tbody>
+</table>
+<p>*G-SIB thresholds vary by regulatory era: pre-2010 (wider),
+2010–2014, post-2015 (tighter due to Basel III).</p>
+<p><strong>References:</strong> - Rey (2015), “Dilemma Not Trilemma: The
+Global Financial Cycle and Monetary Policy Independence,” <em>NBER
+Working Paper</em> 21162. - Guidotti, Sturzenegger &amp; Villar (2004),
+“On the Consequences of Sudden Stops,” <em>Economia</em> 4(2),
+171–214.</p>
+<h3 id="private-credit-pillar">3.7 Private Credit Pillar</h3>
+<p><strong>Core question:</strong> Is the $1.7T+ opaque private credit
+market building hidden fragilities?</p>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart LR
+    subgraph PublicProxies["Public Market Proxies"]
+        SLOOS["SLOOS Survey<br/>(quarterly)"]
+        BDC["BDC Price/NAV<br/>(daily)"]
+        LOAN["Leveraged Loan<br/>ETFs (daily)"]
+        PE["PE Firm Stocks<br/>(daily)"]
+    end
+    subgraph Decorrelation
+        PCA["5-Factor PCA<br/>Decorrelation"]
+    end
+    PublicProxies --> PCA
+    PCA --> COMP["Private Credit<br/>Composite"]
+    SLOOS --> COMP
+</pre>
+</div>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 22%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Source</th>
+<th>Normal</th>
+<th>Elevated</th>
+<th>Severe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SLOOS C&amp;I tightening (small firms)</td>
+<td>FRED: DRTSCIS</td>
+<td>&lt;= 20%</td>
+<td>&lt;= 40%</td>
+<td>&gt; 40%</td>
+</tr>
+<tr>
+<td>SLOOS C&amp;I tightening (large firms)</td>
+<td>FRED: DRTSCILM</td>
+<td>&lt;= 20%</td>
+<td>&lt;= 40%</td>
+<td>&gt; 40%</td>
+</tr>
+<tr>
+<td>SLOOS spreads widening</td>
+<td>FRED: DRISCFS</td>
+<td>&lt;= 15%</td>
+<td>&lt;= 30%</td>
+<td>&gt; 30%</td>
+</tr>
+<tr>
+<td>BDC price/NAV discount</td>
+<td>ARCC, MAIN, FSK, PSEC, GBDC</td>
+<td>[-5%, +5%]</td>
+<td>[-5%, -15%]</td>
+<td>&lt; -25%</td>
+</tr>
+<tr>
+<td>Leveraged loan ETFs (30d change)</td>
+<td>BKLN, SRLN</td>
+<td>&gt; -2%</td>
+<td>&lt; -5%</td>
+<td>&lt; -10%</td>
+</tr>
+<tr>
+<td>PE firm stocks (30d change)</td>
+<td>KKR, BX, APO, CG</td>
+<td>&gt; -5%</td>
+<td>&lt; -15%</td>
+<td>&lt; -25%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Composite weighting</strong> (when decorrelation pipeline is
+unavailable):</p>
+<p><span class="math display">\[
+\text{PC} = 0.30 \times s_{\text{SLOOS}} + 0.35 \times s_{\text{BDC}} +
+0.20 \times s_{\text{Loans}} + 0.15 \times s_{\text{PE}}
+\]</span></p>
+<p>When decorrelation time-series are available:</p>
+<p><span class="math display">\[
+\text{PC} = 0.60 \times s_{\text{decorrelated}} + 0.40 \times
+s_{\text{SLOOS}}
+\]</span></p>
+<p><strong>5-Factor PCA Decorrelation Pipeline:</strong> Input: SPX
+returns, dVIX, dHY_OAS, dMOVE, dXCCY basis. Rolling 252-day PCA extracts
+top 3 orthogonal components. BDC returns are regressed on PCs; residuals
+form the decorrelated private credit signal, capturing
+private-credit-specific stress that public factors cannot explain.</p>
+<p><strong>References:</strong> - Aramonte &amp; Avalos (2021), “The
+Rise of Private Markets,” <em>BIS Quarterly Review</em>, December. -
+Stein (2013), “Overheating in Credit Markets: Origins, Measurement, and
+Policy Responses,” speech at Federal Reserve Bank of St. Louis.</p>
+<h3 id="sentiment-pillar">3.8 Sentiment Pillar</h3>
+<p><strong>Core question:</strong> Is central-bank communication
+signalling a dovish (capacity-building) or hawkish
+(capacity-constraining) policy stance?</p>
+<p>The sentiment pillar captures forward-looking policy intent that is
+not reflected in the numerical indicators. It is the 8th pillar, scoring
+FOMC minutes, statements, and speeches on a dovish-to-hawkish
+continuum.</p>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart TD
+    subgraph TextPath["Text-Based Path (Production)"]
+        T1["FOMC Minutes<br/>(1993+)"]
+        T2["Fed Speeches<br/>(1987+)"]
+        T3["Split into<br/>sentences"]
+        T4["FinBERT scoring<br/>(ProsusAI/finbert)"]
+        T5["Aggregate:<br/>mean + uncertainty"]
+    end
+
+    subgraph ProxyPath["Rate-Proxy Path (Backtest)"]
+        P1["Fed Funds 6mo<br/>delta (sigmoid)"]
+        P2["Yield Curve Slope<br/>(10Y - 2Y)"]
+        P3["Credit Spread<br/>Momentum (BAA-AAA)"]
+        P4["Weighted combination<br/>0.50 / 0.25 / 0.25"]
+    end
+
+    subgraph Anchors["Calibration Anchors"]
+        A1["14 known FOMC dates<br/>(2007-2023)"]
+    end
+
+    T1 --> T3
+    T2 --> T3
+    T3 --> T4
+    T4 --> T5
+    T5 --> SCORE["Sentiment Score<br/>[0, 1]"]
+    P1 --> P4
+    P2 --> P4
+    P3 --> P4
+    P4 --> SCORE
+    Anchors -.-> P4
+</pre>
+</div>
+<h4 id="finbert-text-scoring-production-path">3.8.1 FinBERT Text Scoring
+(Production Path)</h4>
+<p>When FOMC texts are available, the pillar uses FinBERT (Araci, 2019),
+a BERT model fine-tuned on financial text:</p>
+<ol type="1">
+<li><strong>Sentence splitting</strong> — Each document is split at
+sentence boundaries (<code>.!?</code> followed by whitespace + capital
+letter).</li>
+<li><strong>Classification</strong> — FinBERT assigns each sentence a
+label: <code>positive</code> (dovish), <code>negative</code> (hawkish),
+or <code>neutral</code>, with a confidence score.</li>
+<li><strong>Mapping to MAC scale:</strong></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>FinBERT Label</th>
+<th>MAC Direction</th>
+<th style="text-align: center;">Mapped Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>positive</td>
+<td>Dovish (high capacity)</td>
+<td style="text-align: center;">0.8</td>
+</tr>
+<tr>
+<td>neutral</td>
+<td>Neutral</td>
+<td style="text-align: center;">0.5</td>
+</tr>
+<tr>
+<td>negative</td>
+<td>Hawkish (constrained)</td>
+<td style="text-align: center;">0.2</td>
+</tr>
+</tbody>
+</table>
+<ol start="4" type="1">
+<li><strong>Confidence weighting:</strong></li>
+</ol>
+<p><span class="math display">\[
+s_k = m_k \cdot c_k + 0.5 \cdot (1 - c_k)
+\]</span></p>
+<p>where <span class="math inline">\(m_k\)</span> is the mapped score
+and <span class="math inline">\(c_k\)</span> is FinBERT’s confidence for
+sentence <span class="math inline">\(k\)</span>.</p>
+<ol start="5" type="1">
+<li><strong>Composite with uncertainty penalty:</strong></li>
+</ol>
+<p><span class="math display">\[
+s_{\text{sentiment}} = \bar{s} - 0.10 \cdot \sigma(s_k)
+\]</span></p>
+<p>Clipped to [0, 1]. Higher sentence-level disagreement (std) reduces
+the score, reflecting genuine policy ambiguity.</p>
+<p><strong>Keyword fallback:</strong> When FinBERT dependencies
+(<code>transformers</code>, <code>torch</code>) are not installed, a
+bag-of-words classifier with curated dovish (15 terms) and hawkish (14
+terms) dictionaries is used, including bigrams (“forward guidance”,
+“balance sheet reduction”). The dovish ratio maps linearly to [0.2,
+0.8].</p>
+<h4 id="rate-change-proxy-backtest-path">3.8.2 Rate-Change Proxy
+(Backtest Path)</h4>
+<p>For the historical backtest (1960–2025), FOMC text data is not
+universally available. The sentiment proxy derives a score from three
+FRED-observable signals:</p>
+<p><strong>Signal 1 — Fed Funds Rate Change (6-month delta, weight
+0.50):</strong></p>
+<p><span class="math display">\[
+s_{\text{ff}} = \frac{1}{1 + e^{1.5 \cdot \Delta\text{FF}_{6m}}}
+\]</span></p>
+<p>where <span class="math inline">\(\Delta\text{FF}_{6m} = \text{FF}_t
+- \text{FF}_{t-180}\)</span> in percentage points. A 300 bps cut maps to
+~0.90 (dovish); a 300 bps hike maps to ~0.10 (hawkish).</p>
+<p><strong>Signal 2 — Yield Curve Slope (10Y minus 2Y, weight
+0.25):</strong></p>
+<p><span class="math display">\[
+s_{\text{yc}} = \text{clip}\!\Big(0.5 + 0.15 \cdot (r_{10Y} - r_{2Y}),\;
+[0.10, 0.90]\Big)
+\]</span></p>
+<p>A 200 bps positive slope maps to 0.80 (accommodative); a 200 bps
+inversion maps to 0.20 (restrictive).</p>
+<p><strong>Signal 3 — Credit Spread Momentum (BAA-AAA 3-month delta,
+weight 0.25):</strong></p>
+<p><span class="math display">\[
+s_{\text{cs}} = \frac{1}{1 + e^{-3.0 \cdot \Delta(\text{BAA} -
+\text{AAA})_{3m}}}
+\]</span></p>
+<p>Widening spreads signal stress, which historically triggers dovish
+policy pivots (positive for absorption capacity).</p>
+<p><strong>Combined proxy:</strong></p>
+<p><span class="math display">\[
+s_{\text{proxy}} = \text{clip}\!\Big(0.50 \cdot s_{\text{ff}} + 0.25
+\cdot s_{\text{yc}} + 0.25 \cdot s_{\text{cs}},\; [0.05, 0.95]\Big)
+\]</span></p>
+<p><strong>Calibration anchors:</strong> 14 known FOMC dates (2007–2023)
+with assigned tone scores (e.g., Lehman week 2008-09-16: 0.95 dovish;
+Taper Tantrum 2013-05-22: 0.20 hawkish) override the proxy within a
+14-day window.</p>
+<p><strong>Data coverage:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Era</th>
+<th>Method</th>
+<th style="text-align: center;">Uncertainty Tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pre-1913</td>
+<td>No Fed → neutral 0.5</td>
+<td style="text-align: center;">N/A</td>
+</tr>
+<tr>
+<td>1913–1960</td>
+<td>Limited data → neutral 0.5</td>
+<td style="text-align: center;">N/A</td>
+</tr>
+<tr>
+<td>1960–1987</td>
+<td>Rate-change proxy (FEDFUNDS, DGS10)</td>
+<td style="text-align: center;">Tier 4</td>
+</tr>
+<tr>
+<td>1987–1993</td>
+<td>Rate-change proxy + calibration anchors</td>
+<td style="text-align: center;">Tier 3</td>
+</tr>
+<tr>
+<td>1993–present</td>
+<td>FOMC minutes (text) or rate proxy</td>
+<td style="text-align: center;">Tier 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>References:</strong> - Araci, D. (2019). “FinBERT: Financial
+Sentiment Analysis with Pre-Trained Language Models.” arXiv:1908.10063.
+- Hansen, S. &amp; McMahon, M. (2016). “Shocking Language: Understanding
+the Macroeconomic Effects of Central Bank Communication.” <em>Journal of
+International Economics</em> 99, S114–S133. - Loughran, T. &amp;
+McDonald, B. (2011). “When Is a Liability Not a Liability? Textual
+Analysis, Dictionaries, and 10-Ks.” <em>Journal of Finance</em> 66(1),
+35–65. - Lucca, D. O. &amp; Trebbi, F. (2009). “Measuring Central Bank
+Communication: An Automated Approach with Application to FOMC
+Statements.” <em>NBER Working Paper</em> 15367.</p>
+<hr />
+<h2 id="composite-aggregation">4. Composite Aggregation</h2>
+<h3 id="mac-formula">4.1 MAC Formula</h3>
+<p>The MAC composite is computed in three stages:</p>
+<p><strong>Stage 1: Weighted average</strong></p>
+<p><span class="math display">\[
+\bar{S} = \sum_{i=1}^{K} w_i \cdot s_i
+\]</span></p>
+<p>where <span class="math inline">\(K = 8\)</span> pillars (when
+sentiment is active; <span class="math inline">\(K = 7\)</span>
+otherwise), <span class="math inline">\(w_i\)</span> are ML-optimised
+weights (Section 5), and <span class="math inline">\(s_i \in
+[0,1]\)</span> are individual pillar scores.</p>
+<p><strong>Stage 2: Breach interaction penalty</strong></p>
+<p><span class="math display">\[
+n = \bigl|\{i : s_i &lt; \theta_{\text{stress}}\}\bigr|, \quad
+\theta_{\text{stress}} = 0.30
+\]</span></p>
+<p><span class="math display">\[
+\pi(n) = \min\!\Big(\gamma_{\text{cap}},\; \gamma \cdot
+\ln\!\Big(\frac{f_{\text{obs}}(n)}{f_{\text{indep}}(n)}\Big)\Big)
+\]</span></p>
+<p>where: - <span class="math inline">\(\gamma = 0.043\)</span>, <span
+class="math inline">\(\gamma_{\text{cap}} = 0.15\)</span> - <span
+class="math inline">\(f_{\text{indep}}(n) = \binom{K}{n} \hat{p}^n
+(1-\hat{p})^{K-n}\)</span> with pooled breach rate <span
+class="math inline">\(\hat{p} \approx 0.125\)</span> (default), or
+per-pillar breach probabilities from the Dirichlet-multinomial model
+(Section 8.2) when the data-driven breach model is active - <span
+class="math inline">\(f_{\text{obs}}(n)\)</span> is the observed
+co-breach frequency across 14 modern crises</p>
+<p><strong>Observed excess ratios</strong> (14 modern crises,
+1998–2025):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Breaches (n)</th>
+<th style="text-align: center;"><span
+class="math inline">\(f_{\text{obs}}/f_{\text{indep}}\)</span></th>
+<th style="text-align: center;"><span
+class="math inline">\(\pi(n)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1.0</td>
+<td style="text-align: center;">0.000</td>
+</tr>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1.0</td>
+<td style="text-align: center;">0.000</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">2.1</td>
+<td style="text-align: center;">0.032</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">6.8</td>
+<td style="text-align: center;">0.082</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">17.0</td>
+<td style="text-align: center;">0.122</td>
+</tr>
+<tr>
+<td style="text-align: center;">5+</td>
+<td style="text-align: center;">35.0</td>
+<td style="text-align: center;">0.150 (cap)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sensitivity:</strong> Penalties change by &lt;= 0.02 under
+perturbation of breach threshold (0.25–0.35) and pooled probability
+(0.10–0.15).</p>
+<p><strong>Stage 3: Calibration</strong></p>
+<p><span class="math display">\[
+\text{MAC} = \text{clip}\!\Big(\alpha \cdot \max\!\big(0,\; \bar{S} -
+\pi(n)\big),\;\; [0, 1]\Big)
+\]</span></p>
+<p>where <span class="math inline">\(\alpha = 0.78 \pm 0.05\)</span> is
+the calibration factor (Section 6).</p>
+<h3 id="weight-selection">4.2 Weight Selection</h3>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart TD
+    A["Check stress<br/>condition"] --> B{"positioning < 0.3<br/>AND (vol < 0.3<br/>OR liquidity < 0.3)?"}
+    B -->|Yes| C["Use interaction-adjusted weights<br/>(8-pillar)"]
+    B -->|No| D["Use ML-optimised weights<br/>(8-pillar)"]
+    D --> SENT{"Sentiment<br/>active?"}
+    SENT -->|Yes| D8["8-pillar ML weights"]
+    SENT -->|No| D7["7-pillar ML weights"]
+</pre>
+</div>
+<p><strong>ML-optimised weights (8-pillar baseline):</strong></p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr>
+<th>Pillar</th>
+<th style="text-align: center;">7-Pillar</th>
+<th style="text-align: center;">8-Pillar</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Liquidity</td>
+<td style="text-align: center;">0.16</td>
+<td style="text-align: center;">0.14</td>
+<td>Core transmission channel</td>
+</tr>
+<tr>
+<td>Valuation</td>
+<td style="text-align: center;">0.10</td>
+<td style="text-align: center;">0.09</td>
+<td>Breaches only in extreme crises</td>
+</tr>
+<tr>
+<td>Positioning</td>
+<td style="text-align: center;">0.22</td>
+<td style="text-align: center;">0.20</td>
+<td>Highest — necessary condition for hedge failure</td>
+</tr>
+<tr>
+<td>Volatility</td>
+<td style="text-align: center;">0.15</td>
+<td style="text-align: center;">0.13</td>
+<td>Common but not predictive alone</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td style="text-align: center;">0.12</td>
+<td style="text-align: center;">0.11</td>
+<td>Elevated after binding-constraint architecture</td>
+</tr>
+<tr>
+<td>Contagion</td>
+<td style="text-align: center;">0.15</td>
+<td style="text-align: center;">0.13</td>
+<td>Key for distinguishing global vs. local stress</td>
+</tr>
+<tr>
+<td>Private Credit</td>
+<td style="text-align: center;">0.10</td>
+<td style="text-align: center;">0.09</td>
+<td>Decorrelated leading credit stress indicator</td>
+</tr>
+<tr>
+<td>Sentiment</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">0.11</td>
+<td>Forward-looking policy intent signal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Interaction-adjusted weights (8-pillar, under
+dual-stress):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Pillar</th>
+<th style="text-align: center;">7-Pillar</th>
+<th style="text-align: center;">8-Pillar</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Liquidity</td>
+<td style="text-align: center;">0.14</td>
+<td style="text-align: center;">0.12</td>
+<td>-0.02</td>
+</tr>
+<tr>
+<td>Valuation</td>
+<td style="text-align: center;">0.08</td>
+<td style="text-align: center;">0.07</td>
+<td>-0.01</td>
+</tr>
+<tr>
+<td>Positioning</td>
+<td style="text-align: center;"><strong>0.24</strong></td>
+<td style="text-align: center;"><strong>0.22</strong></td>
+<td>Boosted — forced-unwind risk</td>
+</tr>
+<tr>
+<td>Volatility</td>
+<td style="text-align: center;">0.16</td>
+<td style="text-align: center;">0.14</td>
+<td>+0.01</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td style="text-align: center;">0.09</td>
+<td style="text-align: center;">0.08</td>
+<td>-0.01</td>
+</tr>
+<tr>
+<td>Contagion</td>
+<td style="text-align: center;"><strong>0.18</strong></td>
+<td style="text-align: center;"><strong>0.16</strong></td>
+<td>Boosted — global contagion</td>
+</tr>
+<tr>
+<td>Private Credit</td>
+<td style="text-align: center;">0.11</td>
+<td style="text-align: center;">0.10</td>
+<td>-0.01</td>
+</tr>
+<tr>
+<td>Sentiment</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">0.11</td>
+<td>Orthogonal signal, unchanged</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="machine-learning-weight-optimisation">5. Machine Learning Weight
+Optimisation</h2>
+<h3 id="feature-engineering">5.1 Feature Engineering</h3>
+<p>The ML model operates on a feature vector per scenario:</p>
+<ul>
+<li><strong>Base features (8):</strong> One per-pillar score <span
+class="math inline">\(s_i \in [0,1]\)</span> (including sentiment when
+active)</li>
+<li><strong>Interaction features (6):</strong> Pairwise products of
+theoretically motivated pillar pairs</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 52%" />
+</colgroup>
+<thead>
+<tr>
+<th>Interaction Pair</th>
+<th>Financial Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Positioning x Volatility</td>
+<td>Crowded trades + vol spike = forced unwinds</td>
+</tr>
+<tr>
+<td>Positioning x Liquidity</td>
+<td>Crowded trades + illiquidity = margin spirals</td>
+</tr>
+<tr>
+<td>Policy x Contagion</td>
+<td>Policy constrained + global stress = no backstop</td>
+</tr>
+<tr>
+<td>Liquidity x Contagion</td>
+<td>Dollar illiquidity + global stress = funding squeeze</td>
+</tr>
+<tr>
+<td>Valuation x Volatility</td>
+<td>Compressed spreads + vol = sudden repricing</td>
+</tr>
+<tr>
+<td>Positioning x Contagion</td>
+<td>Crowded trades + global = coordinated deleveraging</td>
+</tr>
+</tbody>
+</table>
+<h3 id="training-procedure">5.2 Training Procedure</h3>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart TD
+    A["35 historical scenarios<br/>(1907-2025)"] --> B["Augmentation<br/>35 x 9 = 315 effective"]
+    B --> C["Feature engineering<br/>8 base + 6 interactions = 14"]
+    C --> D["StandardScaler<br/>zero-mean, unit-var"]
+    D --> E{"XGBoost<br/>available?"}
+    E -->|Yes| F["Optuna Bayesian HPO<br/>50 trials, 5-fold TSCV"]
+    E -->|No| G["sklearn GBM<br/>(fixed hyperparams)"]
+    F --> H["Extract feature<br/>importances"]
+    G --> H
+    H --> I["Normalize base<br/>importances to weights"]
+    I --> J["LOOCV on real<br/>scenarios only"]
+    J --> K["Report OOS R-sq,<br/>MAE, weight stability"]
+</pre>
+</div>
+<p><strong>XGBoost hyperparameter search space</strong> (Optuna Bayesian
+optimisation):</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Range</th>
+<th>Scale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>max_depth</td>
+<td>[2, 5]</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>learning_rate</td>
+<td>[0.01, 0.3]</td>
+<td>Log</td>
+</tr>
+<tr>
+<td>n_estimators</td>
+<td>[30, 200]</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>min_child_weight</td>
+<td>[1, 5]</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>subsample</td>
+<td>[0.6, 1.0]</td>
+<td>Uniform</td>
+</tr>
+<tr>
+<td>colsample_bytree</td>
+<td>[0.6, 1.0]</td>
+<td>Uniform</td>
+</tr>
+<tr>
+<td>reg_alpha</td>
+<td>[0.0, 1.0]</td>
+<td>Uniform</td>
+</tr>
+<tr>
+<td>reg_lambda</td>
+<td>[0.0, 1.0]</td>
+<td>Uniform</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sklearn GBM fallback</strong> (fixed configuration):</p>
+<pre><code>n_estimators=50, max_depth=2, learning_rate=0.1,
+min_samples_leaf=2, random_state=42</code></pre>
+<h3 id="synthetic-augmentation">5.3 Synthetic Augmentation</h3>
+<p>To mitigate small-sample overfitting, scenarios are augmented before
+ML training:</p>
+<ol type="1">
+<li>For each of the 35 real scenarios, generate 8 synthetic
+variants.</li>
+<li>Apply noise to pillar scores: <span
+class="math inline">\(\tilde{s}_i = s_i + \epsilon_i\)</span> where
+<span class="math inline">\(\epsilon_i = 0.5\epsilon_{\text{shared}} +
+0.5\epsilon_{\text{indep}}\)</span>, with <span
+class="math inline">\(\epsilon_{\text{shared}}, \epsilon_{\text{indep}}
+\sim \text{Uniform}(-0.05, +0.05)\)</span>.</li>
+<li>Clip <span class="math inline">\(\tilde{s}_i\)</span> to <span
+class="math inline">\([0, 1]\)</span>.</li>
+<li>CSR targets are preserved (no noise on ground truth).</li>
+<li>Augmented scenarios are excluded from LOOCV — only the 35 real
+scenarios are held out.</li>
+</ol>
+<p>Effective training set: <span class="math inline">\(35 \times (1 + 8)
+= 315\)</span> scenarios.</p>
+<h3 id="validation">5.4 Validation</h3>
+<ul>
+<li><strong>LOOCV</strong> on real scenarios only (no augmented
+scenarios in hold-out)</li>
+<li><strong>5-fold TimeSeriesSplit</strong> for hyperparameter
+selection</li>
+<li><strong>Weight stability check:</strong> If average deviation from
+equal weights &lt; 0.03, ML weights are not used (insufficient
+signal)</li>
+<li><strong>Positioning p-value:</strong> Fisher exact test on
+positioning-breach x hedge-failure contingency table: <span
+class="math inline">\(p = 0.0027\)</span></li>
+</ul>
+<p><strong>References:</strong> - Breiman (2001), “Random Forests,”
+<em>Machine Learning</em> 45(1), 5–32. - Friedman (2001), “Greedy
+Function Approximation: A Gradient Boosting Machine,” <em>Annals of
+Statistics</em> 29(5), 1189–1232. - Chen &amp; Guestrin (2016),
+“XGBoost: A Scalable Tree Boosting System,” <em>Proceedings of KDD</em>,
+785–794. - Akiba et al. (2019), “Optuna: A Next-generation
+Hyperparameter Optimization Framework,” <em>Proceedings of KDD</em>,
+2623–2631.</p>
+<hr />
+<h2 id="calibration-engine">6. Calibration Engine</h2>
+<h3 id="crisis-severity-rating-csr">6.1 Crisis Severity Rating
+(CSR)</h3>
+<p>Each historical scenario is assigned a ground-truth CSR on five
+independent dimensions, each scored [0, 1] where 0 = maximum
+severity:</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Definition</th>
+<th>Example (Lehman 2008)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Drawdown</strong></td>
+<td>Peak-to-trough S&amp;P 500 within 90 days</td>
+<td>0.10</td>
+</tr>
+<tr>
+<td><strong>Market dysfunction</strong></td>
+<td>Categorical: degree of market freeze</td>
+<td>0.10</td>
+</tr>
+<tr>
+<td><strong>Policy response</strong></td>
+<td>Intensity of official intervention</td>
+<td>0.10</td>
+</tr>
+<tr>
+<td><strong>Contagion</strong></td>
+<td>Breadth across segments/geographies</td>
+<td>0.10</td>
+</tr>
+<tr>
+<td><strong>Duration</strong></td>
+<td>Length of acute VIX-elevated phase</td>
+<td>0.10</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+\text{CSR}_{\text{composite}} = \frac{1}{5}\sum_{d=1}^{5} \text{CSR}_d
+\]</span></p>
+<h3 id="calibration-factor-alpha">6.2 Calibration Factor Alpha</h3>
+<p>The calibration factor <span class="math inline">\(\alpha\)</span>
+corrects for the systematic bias between raw MAC scores and CSR
+targets:</p>
+<p><span class="math display">\[
+\alpha^* = \arg\min_{\alpha} \sum_{j=1}^{N} \Big(\alpha \cdot
+\text{MAC}_{\text{raw},j} - \text{CSR}_j\Big)^2
+\]</span></p>
+<p>subject to <span class="math inline">\(\alpha \in [0.5,
+1.0]\)</span>.</p>
+<p><strong>Current estimate:</strong> <span class="math inline">\(\alpha
+= 0.78\)</span>, <span class="math inline">\(\sigma_\alpha =
+0.05\)</span> (from LOOCV residual variance on 6 anchor events).</p>
+<p>The calibration factor is re-estimated every 52 weeks in the
+walk-forward backtest (Section 9.2) to prevent lookahead bias.</p>
+<h3 id="era-aware-calibration">6.3 Era-Aware Calibration</h3>
+<p>The <span class="math inline">\(\alpha = 0.78\)</span> factor was
+calibrated against modern (post-2006) scenarios. For earlier eras,
+structural differences (higher Schwert vol, wider railroad spreads)
+already compress scores:</p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 52%" />
+</colgroup>
+<thead>
+<tr>
+<th>Era</th>
+<th style="text-align: center;">Calibration Factor</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2006–present</td>
+<td style="text-align: center;">0.78</td>
+<td>Full calibration</td>
+</tr>
+<tr>
+<td>1971–2006</td>
+<td style="text-align: center;">min(0.90, alpha + 0.12)</td>
+<td>Milder — structural differences partially self-correct</td>
+</tr>
+<tr>
+<td>Pre-1971</td>
+<td style="text-align: center;">1.00</td>
+<td>No calibration — proxy uncertainty dominates</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scenario-catalogue-selected">6.4 Scenario Catalogue
+(Selected)</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Date</th>
+<th style="text-align: center;">CSR Composite</th>
+<th style="text-align: center;">MAC Range</th>
+<th style="text-align: center;">Hedge Fail?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LTCM</td>
+<td>1998-09-23</td>
+<td style="text-align: center;">0.38</td>
+<td style="text-align: center;">[0.20, 0.40]</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Bear Stearns</td>
+<td>2008-03-16</td>
+<td style="text-align: center;">0.43</td>
+<td style="text-align: center;">[0.30, 0.50]</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Lehman Brothers</td>
+<td>2008-09-15</td>
+<td style="text-align: center;">0.10</td>
+<td style="text-align: center;">[0.15, 0.30]</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>COVID Dash-for-Cash</td>
+<td>2020-03-16</td>
+<td style="text-align: center;">0.12</td>
+<td style="text-align: center;">[0.10, 0.25]</td>
+<td style="text-align: center;"><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>SVB Crisis</td>
+<td>2023-03-10</td>
+<td style="text-align: center;">0.56</td>
+<td style="text-align: center;">[0.50, 0.65]</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>April 2025 Tariffs</td>
+<td>2025-04-02</td>
+<td style="text-align: center;">0.48</td>
+<td style="text-align: center;">[0.45, 0.60]</td>
+<td style="text-align: center;"><strong>Yes</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Full catalogue: 35+ events spanning 1907–2025.</p>
+<hr />
+<h2 id="confidence-intervals">7. Confidence Intervals</h2>
+<h3 id="three-sources-of-uncertainty">7.1 Three Sources of
+Uncertainty</h3>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart TD
+    subgraph Sources["Uncertainty Sources"]
+        A["1. Indicator noise<br/>sigma ~ proxy tier"]
+        B["2. Weight instability<br/>sigma ~ 0.03 * w_i"]
+        C["3. Alpha uncertainty<br/>sigma = 0.05"]
+    end
+    A --> D["Perturb pillar scores"]
+    B --> E["Perturb weights"]
+    C --> F["Perturb alpha"]
+    D --> G["Recompute MAC_b<br/>for b = 1..1000"]
+    E --> G
+    F --> G
+    G --> H["CI_80 = [P10, P90]<br/>CI_90 = [P5, P95]"]
+</pre>
+</div>
+<p><strong>Proxy uncertainty tiers</strong> (per
+<code>docs/data_quality.md</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Label</th>
+<th style="text-align: center;">Noise <span
+class="math inline">\(\sigma\)</span></th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Native</td>
+<td style="text-align: center;">0.01</td>
+<td>VIX post-1990</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Computed</td>
+<td style="text-align: center;">0.03</td>
+<td>BAA-AAA spread</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Proxy (modern)</td>
+<td style="text-align: center;">0.05</td>
+<td>VXO as VIX proxy</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Proxy (historical)</td>
+<td style="text-align: center;">0.10</td>
+<td>NBER call money rate</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Estimated</td>
+<td style="text-align: center;">0.15</td>
+<td>Basis trade size, pre-1926 volatility</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bootstrap-algorithm">7.2 Bootstrap Algorithm</h3>
+<p>For <span class="math inline">\(b = 1, \ldots,
+n_{\text{bootstrap}}\)</span> (default <span class="math inline">\(n =
+1000\)</span>):</p>
+<ol type="1">
+<li><strong>Perturb pillar scores:</strong> <span
+class="math inline">\(\tilde{s}_i^{(b)} = \text{clip}\!\big(s_i +
+\epsilon_i,\; [0,1]\big)\)</span> where <span
+class="math inline">\(\epsilon_i \sim \mathcal{N}(0,
+\sigma_{\text{tier}})\)</span></li>
+<li><strong>Perturb weights:</strong> <span
+class="math inline">\(\tilde{w}_i^{(b)} = w_i + \delta_i\)</span> where
+<span class="math inline">\(\delta_i \sim \mathcal{N}(0, 0.03 \cdot
+w_i)\)</span>; re-normalise to sum to 1</li>
+<li><strong>Perturb alpha:</strong> <span
+class="math inline">\(\tilde{\alpha}^{(b)} = \text{clip}\!\big(\alpha +
+\eta,\; [0.5, 1.0]\big)\)</span> where <span class="math inline">\(\eta
+\sim \mathcal{N}(0, 0.05)\)</span></li>
+<li><strong>Compute:</strong> <span
+class="math inline">\(\text{MAC}^{(b)} =
+\text{clip}\!\big(\tilde{\alpha}^{(b)} \cdot \max(0,\; \sum
+\tilde{w}_i^{(b)} \tilde{s}_i^{(b)} - \pi(n)),\;
+[0,1]\big)\)</span></li>
+</ol>
+<p><span class="math display">\[
+\text{CI}_{80} = \big[Q_{10}(\{\text{MAC}^{(b)}\}),\;
+Q_{90}(\{\text{MAC}^{(b)}\})\big]
+\]</span></p>
+<p><span class="math display">\[
+\text{CI}_{90} = \big[Q_{5}(\{\text{MAC}^{(b)}\}),\;
+Q_{95}(\{\text{MAC}^{(b)}\})\big]
+\]</span></p>
+<h3 id="conformal-prediction-bands">7.3 Conformal Prediction Bands</h3>
+<p>Using LOOCV absolute residuals <span
+class="math inline">\(\{|r_j|\}_{j=1}^{N}\)</span>:</p>
+<p><span class="math display">\[
+q = \text{Quantile}_{(N+1)(1-\alpha)/N}\!\big(\{|r_j|\}\big)
+\]</span></p>
+<p><span class="math display">\[
+\text{Band} = [\text{MAC} - q,\; \text{MAC} + q]
+\]</span></p>
+<p>These provide distribution-free coverage guarantees under the
+exchangeability assumption (Vovk et al., 2005).</p>
+<p><strong>References:</strong> - Efron &amp; Tibshirani (1993), <em>An
+Introduction to the Bootstrap</em>, Chapman &amp; Hall. - Vovk,
+Gammerman &amp; Shafer (2005), <em>Algorithmic Learning in a Random
+World</em>, Springer.</p>
+<hr />
+<h2 id="regime-detection">8. Regime Detection</h2>
+<h3 id="hidden-markov-model-overlay">8.1 Hidden Markov Model
+Overlay</h3>
+<p>A 2-state Gaussian HMM is fitted to the 8-dimensional pillar score
+vector:</p>
+<p><span class="math display">\[
+\mathbf{s}_t \sim \mathcal{N}(\boldsymbol{\mu}_{z_t},
+\boldsymbol{\Sigma}_{z_t}), \quad z_t \in \{0, 1\}
+\]</span></p>
+<p>with transition matrix:</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} P(\text{Normal} \to \text{Normal}) &amp;
+P(\text{Normal} \to \text{Fragile}) \\ P(\text{Fragile} \to
+\text{Normal}) &amp; P(\text{Fragile} \to \text{Fragile}) \end{pmatrix}
+\]</span></p>
+<p>The “fragile” state is identified post-estimation as the state with
+the lower mean pillar score vector.</p>
+<p><strong>Estimation:</strong> Expectation-Maximisation (Baum-Welch),
+100 iterations, full covariance.</p>
+<p><strong>Output at time <span
+class="math inline">\(t\)</span>:</strong> - <span
+class="math inline">\(P(\text{fragile}_t \mid \mathbf{s}_{1:t})\)</span>
+— posterior fragility probability - Viterbi path — most likely state
+sequence</p>
+<p><strong>Decision rule:</strong> When <span
+class="math inline">\(P(\text{fragile}) &gt; 0.6\)</span>, the decision
+matrix shifts one row toward defensive posture (e.g., “Thin” actions
+become “Stretched” actions).</p>
+<p><strong>Fallback:</strong> When <code>hmmlearn</code> is unavailable,
+a threshold classifier is used: fragile if <span
+class="math inline">\(\bar{s}_t &lt; 0.5\)</span>.</p>
+<p><strong>References:</strong> - Hamilton (1989), “A New Approach to
+the Economic Analysis of Nonstationary Time Series and the Business
+Cycle,” <em>Econometrica</em> 57(2), 357–384. - Baum et al. (1970), “A
+Maximization Technique Occurring in the Statistical Analysis of
+Probabilistic Functions of Markov Chains,” <em>Annals of Mathematical
+Statistics</em> 41(1), 164–171.</p>
+<h3 id="breach-probability-model">8.2 Breach Probability Model</h3>
+<p>The pooled breach probability <span class="math inline">\(\hat{p}
+\approx 0.125\)</span> is extended to per-pillar, per-era rates using a
+Dirichlet-multinomial model:</p>
+<p><span class="math display">\[
+(p_1, \ldots, p_K) \sim \text{Dirichlet}(\alpha_1, \ldots, \alpha_K)
+\]</span></p>
+<p><span class="math display">\[
+n_{\text{breaches}} \sim \text{Multinomial}(N, p_1, \ldots, p_K)
+\]</span></p>
+<p>This replaces the binomial independence assumption in the co-breach
+penalty with an empirical joint distribution that varies by historical
+era.</p>
+<p><strong>v7.1 Integration:</strong> The <code>PillarBreachModel</code>
+is initialised in the backtest runner and passed to
+<code>calculate_mac_with_ci()</code> at every timestep. When fitted, it
+provides data-driven co-breach penalties via
+<code>get_penalty_for_breach_count(n)</code> that replace the hardcoded
+<code>BREACH_INTERACTION_PENALTY</code> lookup table. The fitted model
+captures era-specific patterns — e.g., pre-1990 episodes show higher
+volatility-policy co-breach rates, while post-2000 episodes show higher
+positioning-liquidity clustering. Fallback to the pooled-probability
+table is automatic when insufficient scenario data is available.</p>
+<hr />
+<h2 id="backtesting-methodology">9. Backtesting Methodology</h2>
+<h3 id="standard-backtest">9.1 Standard Backtest</h3>
+<div class="mermaid-container">
+<pre class="mermaid">
+flowchart LR
+    subgraph Input
+        A["Start date<br/>(1971 or 1907)"]
+        B["End date<br/>(2024)"]
+        C["Frequency<br/>(weekly)"]
+    end
+    subgraph Loop["For each week t"]
+        D["Prefetch FRED<br/>data to t"]
+        E["Calculate 8<br/>pillar scores"]
+        F["Compute MAC<br/>with interaction penalty"]
+        G["Classify:<br/>crisis window?"]
+        H["Store MAC_t,<br/>pillar scores, flags"]
+    end
+    Input --> Loop
+    Loop --> I["Validation:<br/>TPR, FPR, FP taxonomy"]
+</pre>
+</div>
+<p><strong>Three backtest modes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Period</th>
+<th>Data Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard</td>
+<td>1971–2025</td>
+<td>FRED series only (29+ cached)</td>
+</tr>
+<tr>
+<td>Extended</td>
+<td>1962–2025</td>
+<td>FRED + Moody’s historical</td>
+</tr>
+<tr>
+<td>Full</td>
+<td>1907–2025</td>
+<td>FRED + NBER + Shiller + Schwert + BoE + FINRA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sentiment pillar integration:</strong></p>
+<p>The sentiment pillar participates in the composite from 1960 onward,
+using the rate-change proxy (Section 3.8.2). For pre-1960 dates, the
+pillar is excluded from the composite via the <code>has_data</code> gate
+(Fix A). The FRED prefetch includes a 200-day lookback buffer to support
+the 6-month rate-change signal.</p>
+<h3 id="walk-forward-discipline">9.2 Walk-Forward Discipline</h3>
+<p>To eliminate lookahead bias, all model parameters are re-estimated on
+an expanding window:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Frequency</th>
+<th>Training Window</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ML pillar weights</td>
+<td>Every 52 weeks</td>
+<td>Expanding (min 104 weeks)</td>
+</tr>
+<tr>
+<td>Calibration factor <span class="math inline">\(\alpha\)</span></td>
+<td>Every 52 weeks</td>
+<td>Expanding</td>
+</tr>
+<tr>
+<td>SVAR estimates</td>
+<td>Every 52 weeks</td>
+<td>Expanding</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Walk-forward protocol:</strong></p>
+<div class="mermaid-container">
+<pre class="mermaid">
+sequenceDiagram
+    participant T as Time t
+    participant W as Training Window [0, t-1]
+    participant M as Model Parameters
+    participant P as Prediction at t
+
+    T->>W: Collect data through t-1
+    W->>M: Re-fit ML weights (if refit interval)
+    W->>M: Re-estimate alpha (if refit interval)
+    M->>P: Compute MAC_t using current parameters
+    P->>T: Store prediction, advance to t+1
+</pre>
+</div>
+<p><strong>Outputs:</strong> - Rolling TPR/FPR over time - Weight
+stability: mean, std, max deviation per pillar - Alpha stability: mean
+<span class="math inline">\(\bar{\alpha}\)</span>, std <span
+class="math inline">\(\sigma_\alpha\)</span> across refitting epochs</p>
+<hr />
+<h2 id="precision-recall-framework">10. Precision-Recall Framework</h2>
+<h3 id="classification-setup">10.1 Classification Setup</h3>
+<table>
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 26%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Crisis window</td>
+<td>+/- 6 weeks around event date</td>
+<td>v6 Section 15.6</td>
+</tr>
+<tr>
+<td>Lead time</td>
+<td>8 weeks early (still counts as TP)</td>
+<td>v6 Section 15.6</td>
+</tr>
+<tr>
+<td>Threshold sweep</td>
+<td><span class="math inline">\(\tau = 0.10, 0.11, \ldots, 0.80\)</span>
+(71 points)</td>
+<td>v6 Section 15.6</td>
+</tr>
+<tr>
+<td>Total crisis events</td>
+<td>56 (1907–2025)</td>
+<td>Expanded crisis catalogue (v7)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Classification at threshold <span
+class="math inline">\(\tau\)</span>:</strong> - <strong>True Positive
+(TP):</strong> MAC &lt; <span class="math inline">\(\tau\)</span> during
+a crisis window (or within 8-week lead) - <strong>False Positive
+(FP):</strong> MAC &lt; <span class="math inline">\(\tau\)</span>
+outside any crisis window - <strong>False Negative (FN):</strong> MAC
+&gt;= <span class="math inline">\(\tau\)</span> during a crisis window -
+<strong>True Negative (TN):</strong> MAC &gt;= <span
+class="math inline">\(\tau\)</span> outside any crisis window</p>
+<h3 id="client-specific-operating-points">10.2 Client-Specific Operating
+Points</h3>
+<p>The <span class="math inline">\(F_\beta\)</span> score balances
+precision and recall via the <span class="math inline">\(\beta\)</span>
+parameter:</p>
+<p><span class="math display">\[
+F_\beta = (1 + \beta^2) \cdot \frac{\text{Precision} \times
+\text{Recall}}{\beta^2 \cdot \text{Precision} + \text{Recall}}
+\]</span></p>
+<table>
+<colgroup>
+<col style="width: 48%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>Client Archetype</th>
+<th style="text-align: center;"><span
+class="math inline">\(\beta\)</span></th>
+<th style="text-align: center;">Optimal <span
+class="math inline">\(\tau^*\)</span></th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sovereign Wealth Fund</td>
+<td style="text-align: center;">2.0</td>
+<td style="text-align: center;">~0.55</td>
+<td>Recall (better safe than sorry)</td>
+</tr>
+<tr>
+<td>Central Bank / Reserve Manager</td>
+<td style="text-align: center;">1.0</td>
+<td style="text-align: center;">~0.50</td>
+<td>Balanced</td>
+</tr>
+<tr>
+<td>Macro Hedge Fund</td>
+<td style="text-align: center;">0.5</td>
+<td style="text-align: center;">~0.40</td>
+<td>Precision (avoid false signals)</td>
+</tr>
+<tr>
+<td>Insurance / Pension</td>
+<td style="text-align: center;">1.5</td>
+<td style="text-align: center;">~0.52</td>
+<td>Moderate recall bias</td>
+</tr>
+</tbody>
+</table>
+<h3 id="false-positive-taxonomy">10.3 False-Positive Taxonomy</h3>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 32%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr>
+<th>Category</th>
+<th>Definition</th>
+<th>Cost Treatment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Near-miss</strong></td>
+<td>FP within 90 days of an actual crisis</td>
+<td>Low (genuine stress that didn’t escalate)</td>
+</tr>
+<tr>
+<td><strong>Regime artefact</strong></td>
+<td>FP before 1971-08-15 (Bretton Woods structural effects)</td>
+<td>Zero (expected model limitation)</td>
+</tr>
+<tr>
+<td><strong>Pure false</strong></td>
+<td>All other FPs</td>
+<td>Full (30 bps hedge cost per FP week)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="economic-cost-analysis">10.4 Economic Cost Analysis</h3>
+<p><span class="math display">\[
+\text{Cost}(\tau) = 30\text{ bps} \times n_{\text{FP weeks}}(\tau) +
+1500\text{ bps} \times n_{\text{FN crises}}(\tau)
+\]</span></p>
+<p><span class="math display">\[
+\text{Net EV}(\tau) = \text{FN cost avoided} - \text{FP cost incurred}
+\]</span></p>
+<p>The optimal operating point maximises Net EV (or equivalently,
+maximises the after-cost Sharpe ratio of a hedged portfolio).</p>
+<h3 id="standard-operating-points">10.5 Standard Operating Points</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th style="text-align: center;">Threshold <span
+class="math inline">\(\tau\)</span></th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Conservative</td>
+<td style="text-align: center;">0.30</td>
+<td>Only strongest signals; minimises FP</td>
+</tr>
+<tr>
+<td>Moderate</td>
+<td style="text-align: center;">0.40</td>
+<td>Balanced false-positive/false-negative</td>
+</tr>
+<tr>
+<td>Default</td>
+<td style="text-align: center;">0.50</td>
+<td>General-purpose</td>
+</tr>
+<tr>
+<td>Sensitive</td>
+<td style="text-align: center;">0.60</td>
+<td>Higher recall; accepts more FPs</td>
+</tr>
+<tr>
+<td>Maximum recall</td>
+<td style="text-align: center;">0.70</td>
+<td>Catch nearly all crises; high FP rate</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="data-sources-and-proxy-construction">11. Data Sources and Proxy
+Construction</h2>
+<h3 id="primary-data-sources">11.1 Primary Data Sources</h3>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 10%" />
+<col style="width: 34%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>Source</th>
+<th style="text-align: center;">Series Count</th>
+<th>Coverage</th>
+<th>Access</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FRED</strong> (Federal Reserve Economic Data)</td>
+<td style="text-align: center;">41+</td>
+<td>1919–present</td>
+<td>API (key required)</td>
+</tr>
+<tr>
+<td><strong>NBER Macrohistory</strong></td>
+<td style="text-align: center;">21 CSV files</td>
+<td>1857–1989</td>
+<td>Static download</td>
+</tr>
+<tr>
+<td><strong>Shiller Online Data</strong></td>
+<td style="text-align: center;">S&amp;P 500, CAPE, CPI, yields</td>
+<td>1871–present</td>
+<td>XLS download</td>
+</tr>
+<tr>
+<td><strong>Schwert (1989)</strong></td>
+<td style="text-align: center;">Monthly realised volatility</td>
+<td>1802–1987</td>
+<td>Published dataset</td>
+</tr>
+<tr>
+<td><strong>Bank of England Research</strong></td>
+<td style="text-align: center;">GBP/USD, Bank Rate</td>
+<td>1694–1995</td>
+<td>CSV download</td>
+</tr>
+<tr>
+<td><strong>MeasuringWorth</strong></td>
+<td style="text-align: center;">US nominal GDP</td>
+<td>1790–present</td>
+<td>CSV download</td>
+</tr>
+<tr>
+<td><strong>FINRA/NYSE</strong></td>
+<td style="text-align: center;">Margin debt</td>
+<td>1918–present</td>
+<td>CSV download</td>
+</tr>
+<tr>
+<td><strong>CFTC</strong></td>
+<td style="text-align: center;">Commitments of Traders</td>
+<td>1962–present</td>
+<td>Weekly reports</td>
+</tr>
+<tr>
+<td><strong>BIS</strong></td>
+<td style="text-align: center;">Cross-border flows, xccy basis</td>
+<td>1990–present</td>
+<td>Quarterly</td>
+</tr>
+<tr>
+<td><strong>IMF</strong></td>
+<td style="text-align: center;">Reserves, external debt</td>
+<td>1990–present</td>
+<td>IFS database</td>
+</tr>
+<tr>
+<td><strong>ECB</strong></td>
+<td style="text-align: center;">TARGET2 balances</td>
+<td>2008–present</td>
+<td>Statistical warehouse</td>
+</tr>
+<tr>
+<td><strong>Federal Reserve</strong></td>
+<td style="text-align: center;">FOMC minutes, statements</td>
+<td>1993–present</td>
+<td>Website (public)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fred-series-inventory">11.2 FRED Series Inventory</h3>
+<p><strong>Funding / Liquidity:</strong> <code>SOFR</code>,
+<code>IORB</code>, <code>IOER</code>, <code>TEDRATE</code>,
+<code>DFF</code>, <code>FEDFUNDS</code>, <code>TB3MS</code>,
+<code>DCPF3M</code>, <code>DCPN3M</code>, <code>DTB3</code></p>
+<p><strong>Credit Spreads (Modern):</strong> <code>BAMLC0A0CM</code> (IG
+OAS), <code>BAMLH0A0HYM2</code> (HY OAS)</p>
+<p><strong>Credit Spreads (Historical):</strong> <code>AAA</code>,
+<code>BAA</code>, <code>AAA10Y</code>, <code>BAA10Y</code></p>
+<p><strong>Volatility:</strong> <code>VIXCLS</code>,
+<code>VXOCLS</code>, <code>NASDAQCOM</code>,
+<code>SPASTT01USM661N</code></p>
+<p><strong>Policy / Macro:</strong> <code>DFEDTARU</code>,
+<code>WALCL</code>, <code>GDP</code>, <code>PCEPILFE</code>,
+<code>BOGMBASE</code>, <code>M2SL</code>, <code>GDPA</code></p>
+<p><strong>Treasury Yields:</strong> <code>DGS1MO</code>,
+<code>DGS3MO</code>, <code>DGS6MO</code>, <code>DGS1</code>,
+<code>DGS2</code>, <code>DGS5</code>, <code>DGS10</code>,
+<code>DGS30</code></p>
+<p><strong>Term Premium:</strong> <code>THREEFYTP10</code> (ACM 10-year
+term premium)</p>
+<p><strong>Historical:</strong> <code>INTDSRUSM193N</code> (Fed Discount
+Rate, 1913+), <code>IRLTLT01USM156N</code> (Long-term govt yield,
+1920+)</p>
+<p><strong>Private Credit:</strong> <code>DRTSCIS</code>,
+<code>DRTSCILM</code>, <code>DRISCFS</code>, <code>DRISCFLM</code></p>
+<h3 id="proxy-construction-methods">11.3 Proxy Construction Methods</h3>
+<p><strong>IG OAS proxy (1919–1996):</strong></p>
+<p><span class="math display">\[
+\widehat{\text{IG OAS}} = \max\!\big(50,\; (\text{BAA} - \text{DGS10})
+\times 100 - 40\big) \text{ bps}
+\]</span></p>
+<p>The 40 bps offset corrects for the fact that Moody’s Baa includes
+more credit-risky issuers than the ICE BofA IG index (Gilchrist &amp;
+Zakrajsek, 2012).</p>
+<p><strong>HY OAS proxy (1919–1996):</strong></p>
+<p><span class="math display">\[
+\widehat{\text{HY OAS}} = \max\!\big(250,\; (\text{BAA} - \text{AAA})
+\times 100 \times 4.5\big) \text{ bps}
+\]</span></p>
+<p>The 4.5x multiplier maps the Baa-Aaa spread (~100 bps typical) to HY
+levels (~450 bps typical).</p>
+<p><strong>VIX proxy (1971–1986):</strong></p>
+<p><span class="math display">\[
+\widehat{\text{VIX}} = 1.2 \times \text{RV}_{21d} \times 100
+\]</span></p>
+<p>where <span class="math inline">\(\text{RV}_{21d}\)</span> is the
+annualised 21-day rolling standard deviation of daily NASDAQ returns.
+The 1.2x factor approximates the variance risk premium (Carr &amp; Wu,
+2009).</p>
+<p><strong>Pre-1971 VIX proxy:</strong></p>
+<p><span class="math display">\[
+\widehat{\text{VIX}} = 1.3 \times \text{RV}_{\text{monthly}}
+\]</span></p>
+<p>using Shiller monthly S&amp;P 500 returns; 1.3x for higher
+uncertainty in monthly estimation.</p>
+<p><strong>Sentiment proxy (1960–present):</strong></p>
+<p><span class="math display">\[
+s_{\text{proxy}} = 0.50 \cdot \sigma\!\left(\frac{1}{1 + e^{1.5 \cdot
+\Delta\text{FF}_{6m}}}\right) + 0.25 \cdot s_{\text{YC}} + 0.25 \cdot
+s_{\text{CS}}
+\]</span></p>
+<p>Using FRED: <code>FEDFUNDS</code>/<code>DFF</code> (rate change),
+<code>DGS10</code>/<code>DGS2</code> (yield curve),
+<code>BAA</code>/<code>AAA</code> (credit spreads). See Section 3.8.2
+for full derivation.</p>
+<h3 id="proxy-reliability-by-era">11.4 Proxy Reliability by Era</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr>
+<th>Era</th>
+<th style="text-align: center;">Liquidity</th>
+<th style="text-align: center;">Valuation</th>
+<th style="text-align: center;">Volatility</th>
+<th style="text-align: center;">Positioning</th>
+<th style="text-align: center;">Policy</th>
+<th style="text-align: center;">Contagion</th>
+<th style="text-align: center;">Priv Credit</th>
+<th style="text-align: center;">Sentiment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1850–1913</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 5</td>
+<td style="text-align: center;">Tier 5</td>
+<td style="text-align: center;">Tier 5</td>
+<td style="text-align: center;">Tier 5</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">N/A</td>
+</tr>
+<tr>
+<td>1913–1960</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">N/A</td>
+</tr>
+<tr>
+<td>1960–1986</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 2</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">Tier 4</td>
+</tr>
+<tr>
+<td>1986–2000</td>
+<td style="text-align: center;">Tier 2</td>
+<td style="text-align: center;">Tier 2</td>
+<td style="text-align: center;">Tier 1–2</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 1–2</td>
+<td style="text-align: center;">Tier 3</td>
+<td style="text-align: center;">Tier 4</td>
+<td style="text-align: center;">Tier 3</td>
+</tr>
+<tr>
+<td>2000–present</td>
+<td style="text-align: center;">Tier 1</td>
+<td style="text-align: center;">Tier 1</td>
+<td style="text-align: center;">Tier 1</td>
+<td style="text-align: center;">Tier 1–2</td>
+<td style="text-align: center;">Tier 1</td>
+<td style="text-align: center;">Tier 1–2</td>
+<td style="text-align: center;">Tier 2–3</td>
+<td style="text-align: center;">Tier 2</td>
+</tr>
+</tbody>
+</table>
+<p><em>Tier 1 = Native (sigma = 0.01); Tier 5 = Estimated (sigma =
+0.15). See <code>docs/data_quality.md</code> for full matrix.</em></p>
+<hr />
+<h2 id="validation-results">12. Validation Results</h2>
+<h3 id="standard-backtest-19712025-8-pillar-model-v7.1-fully-wired">12.1
+Standard Backtest (1971–2025, 8-Pillar Model, v7.1 Fully Wired)</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: center;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data points (weekly)</td>
+<td style="text-align: center;">2,813</td>
+</tr>
+<tr>
+<td>Crises evaluated</td>
+<td style="text-align: center;">39</td>
+</tr>
+<tr>
+<td>Crises with warning (TP)</td>
+<td style="text-align: center;">36</td>
+</tr>
+<tr>
+<td><strong>True Positive Rate</strong></td>
+<td style="text-align: center;"><strong>92.3%</strong></td>
+</tr>
+<tr>
+<td>Average MAC (overall)</td>
+<td style="text-align: center;">0.471</td>
+</tr>
+<tr>
+<td>Average MAC (crisis periods)</td>
+<td style="text-align: center;">0.425</td>
+</tr>
+<tr>
+<td>Average MAC (non-crisis)</td>
+<td style="text-align: center;">0.485</td>
+</tr>
+<tr>
+<td>MAC range</td>
+<td style="text-align: center;">[0.000, 0.854]</td>
+</tr>
+<tr>
+<td>Crisis-period separation</td>
+<td style="text-align: center;">0.060 (statistically significant)</td>
+</tr>
+<tr>
+<td>Mean bootstrap std</td>
+<td style="text-align: center;">0.036</td>
+</tr>
+<tr>
+<td>Mean 80% CI width</td>
+<td style="text-align: center;">0.093</td>
+</tr>
+<tr>
+<td>Mean 90% CI width</td>
+<td style="text-align: center;">0.118</td>
+</tr>
+</tbody>
+</table>
+<h3 id="per-era-detection-rates">12.2 Per-Era Detection Rates</h3>
+<table>
+<thead>
+<tr>
+<th>Era</th>
+<th style="text-align: center;">Crises (N)</th>
+<th style="text-align: center;">Detected</th>
+<th style="text-align: center;">TPR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Post-Bretton Woods (1971–1990)</td>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;"><strong>87.5%</strong></td>
+</tr>
+<tr>
+<td>Modern (1990–2025)</td>
+<td style="text-align: center;">31</td>
+<td style="text-align: center;">29</td>
+<td style="text-align: center;"><strong>93.5%</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="progressive-improvement-7-pillar-to-v7.1-fully-wired">12.3
+Progressive Improvement: 7-Pillar to v7.1 Fully Wired</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: center;">7-Pillar (v7.0)</th>
+<th style="text-align: center;">8-Pillar (v7.1 base)</th>
+<th style="text-align: center;">8-Pillar (v7.1 wired)</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Overall TPR</td>
+<td style="text-align: center;">84.6%</td>
+<td style="text-align: center;">89.7%</td>
+<td style="text-align: center;"><strong>92.3%</strong></td>
+<td>+7.7pp</td>
+</tr>
+<tr>
+<td>Crises detected</td>
+<td style="text-align: center;">33/39</td>
+<td style="text-align: center;">35/39</td>
+<td style="text-align: center;"><strong>36/39</strong></td>
+<td>+3</td>
+</tr>
+<tr>
+<td>Modern-era TPR</td>
+<td style="text-align: center;">87.1%</td>
+<td style="text-align: center;">93.5%</td>
+<td style="text-align: center;"><strong>93.5%</strong></td>
+<td>+6.4pp</td>
+</tr>
+<tr>
+<td>Avg MAC (crisis)</td>
+<td style="text-align: center;">0.449</td>
+<td style="text-align: center;">0.442</td>
+<td style="text-align: center;"><strong>0.425</strong></td>
+<td>-0.024 (better separation)</td>
+</tr>
+<tr>
+<td>Avg MAC (non-crisis)</td>
+<td style="text-align: center;">0.518</td>
+<td style="text-align: center;">0.502</td>
+<td style="text-align: center;"><strong>0.485</strong></td>
+<td>-0.033</td>
+</tr>
+<tr>
+<td>Bootstrap CI (80%)</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;"><strong>0.093</strong></td>
+<td>new</td>
+</tr>
+<tr>
+<td>HMM P(fragile) mean</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;"><strong>0.559</strong></td>
+<td>new</td>
+</tr>
+</tbody>
+</table>
+<p>The v7.1 fully-wired improvements come from three sources: (1)
+Kalman-filtered VRP produces smoother, more responsive volatility
+estimates that improve early detection, (2) adaptive valuation bands
+avoid false negatives from structural regime shifts in spread levels,
+and (3) the data-driven breach model (Dirichlet-multinomial) generates
+more accurate co-breach penalties than the pooled-probability
+approximation.</p>
+<h3 id="data-quality-distribution">12.4 Data Quality Distribution</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Quality Tier</th>
+<th style="text-align: center;">Points</th>
+<th style="text-align: center;">Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Excellent (2018+)</td>
+<td style="text-align: center;">352</td>
+<td style="text-align: center;">12.5%</td>
+</tr>
+<tr>
+<td style="text-align: center;">Good (2011–2018)</td>
+<td style="text-align: center;">339</td>
+<td style="text-align: center;">12.1%</td>
+</tr>
+<tr>
+<td style="text-align: center;">Fair (1990–2011)</td>
+<td style="text-align: center;">1,135</td>
+<td style="text-align: center;">40.3%</td>
+</tr>
+<tr>
+<td style="text-align: center;">Poor (1971–1990)</td>
+<td style="text-align: center;">987</td>
+<td style="text-align: center;">35.1%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multi-country-sovereign-proxy-validation">12.5 Multi-Country
+Sovereign Proxy Validation</h3>
+<p>The MAC sovereign spread proxy was validated against Reinhart &amp;
+Rogoff (2009) crisis dates for four countries:</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th style="text-align: center;">Crises (N)</th>
+<th style="text-align: center;">Detected</th>
+<th style="text-align: center;">Detection Rate</th>
+<th style="text-align: center;">Mean Separation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>United Kingdom</td>
+<td style="text-align: center;">11</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Germany</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>France</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Japan</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+</tbody>
+</table>
+<p><em>Values computed from synthetic proxies for demonstration;
+production validation requires country-specific historical
+data.</em></p>
+<h3 id="hedge-failure-analysis">12.6 Hedge Failure Analysis</h3>
+<p>Based on N = 9 documented episodes where 10Y Treasury return &lt; -2%
+and S&amp;P 500 &lt; -3%:</p>
+<ul>
+<li>6 of 9 episodes had positioning breach</li>
+<li><strong>2 of 2 severe episodes</strong> had positioning breach AND
+basis trade unwind</li>
+<li>0 of 3 non-breach episodes were severe</li>
+<li>Positioning breach is <strong>necessary but not sufficient</strong>
+for severe hedge failure</li>
+</ul>
+<p><strong>Bayesian posterior</strong> (Beta-Binomial with uninformative
+prior):</p>
+<p><span class="math display">\[
+P(\text{severe} \mid \text{positioning breach}) = \text{Beta}(3, 5)
+\implies \hat{p} = 0.375
+\]</span></p>
+<p><span class="math display">\[
+\text{90% Credible Interval:}\; [0.12,\; 0.67]
+\]</span></p>
+<p><strong>Caveat:</strong> The wide CI reflects small N. See
+<code>docs/hedge_failure_caveat.md</code> for full statistical
+limitations.</p>
+<p><strong>References:</strong> - Reinhart &amp; Rogoff (2009), <em>This
+Time Is Different: Eight Centuries of Financial Folly</em>, Princeton
+University Press.</p>
+<hr />
+<h2 id="limitations">13. Limitations</h2>
+<h3 id="small-training-sample">13.1 Small Training Sample</h3>
+<p>The framework is calibrated on N = 35 historical scenarios. While
+augmentation expands the effective training set to ~315, the diversity
+of genuine stress episodes is limited. The bootstrap CI framework
+(Section 7) is designed to propagate this uncertainty honestly.</p>
+<h3 id="proxy-degradation-pre-1926">13.2 Proxy Degradation Pre-1926</h3>
+<p>All pillars rely on Tier 4–5 proxies before 1926. MAC scores before
+1926 should be interpreted with wide error bars. The policy pillar
+enforces hard caps (pre-Fed &lt;= 0.30) that dominate proxy uncertainty
+in this era.</p>
+<h3 id="private-credit-opacity">13.3 Private Credit Opacity</h3>
+<p>The private credit pillar relies on public-market proxies (BDCs,
+leveraged loan ETFs) that may lag true private credit stress by 3–6
+months. PIK provisions and sponsor support can further delay distress
+recognition.</p>
+<h3 id="positioning-data-limitations">13.4 Positioning Data
+Limitations</h3>
+<p>Basis trade size is estimated indirectly from CFTC Treasury futures
+positioning. The true gross notional of basis trades is not publicly
+reported and may differ substantially from estimates.</p>
+<h3 id="regime-dependence">13.5 Regime Dependence</h3>
+<p>Threshold calibrations (e.g., IG OAS “ample” = 100–180 bps) reflect
+post-2000 market structure. Structural changes in market microstructure,
+regulation, or central bank policy could shift these ranges.</p>
+<h3 id="survivorship-bias">13.6 Survivorship Bias</h3>
+<p>Historical data series only include surviving entities, potentially
+understating true stress levels in pre-1950 periods.</p>
+<h3 id="sentiment-pillar-limitations">13.7 Sentiment Pillar
+Limitations</h3>
+<p>The sentiment pillar has several specific limitations:</p>
+<ol type="1">
+<li><strong>Rate-proxy is backward-looking.</strong> The rate-change
+proxy captures <em>realised</em> policy actions, not
+<em>forward-looking</em> communications. True forward guidance can only
+be captured by the FinBERT text path, which requires
+<code>transformers</code> and <code>torch</code> dependencies.</li>
+<li><strong>No FOMC text corpus for historical backtest.</strong> The
+rate proxy is a reduced-form approximation. Production deployments
+should use actual FOMC minutes (1993+) for higher fidelity.</li>
+<li><strong>FinBERT domain mismatch.</strong> ProsusAI/finbert was
+trained on financial news, not central bank communications. A
+domain-specific fine-tuning step (e.g., on FOMC transcripts) would
+improve accuracy.</li>
+<li><strong>Calibration anchors are subjective.</strong> The 14 FOMC
+tone scores are expert-assigned, not derived from an independent
+source.</li>
+<li><strong>Quarterly signal in a weekly framework.</strong> FOMC
+meetings occur 8 times per year; between meetings, the proxy
+interpolates from rate data, creating temporal smoothing.</li>
+</ol>
+<hr />
+<h2 id="references">14. References</h2>
+<h3 id="academic-literature">Academic Literature</h3>
+<ul>
+<li>Adrian, T., Crump, R. K. &amp; Moench, E. (2013). “Pricing the Term
+Structure with Linear Regressions.” <em>Journal of Financial
+Economics</em>, 110(1), 110–138.</li>
+<li>Akiba, T., Sano, S., Yanase, T., Ohta, T. &amp; Koyama, M. (2019).
+“Optuna: A Next-generation Hyperparameter Optimization Framework.”
+<em>Proceedings of KDD</em>, 2623–2631.</li>
+<li>Araci, D. (2019). “FinBERT: Financial Sentiment Analysis with
+Pre-Trained Language Models.” arXiv:1908.10063.</li>
+<li>Aramonte, S. &amp; Avalos, F. (2021). “The Rise of Private Markets.”
+<em>BIS Quarterly Review</em>, December.</li>
+<li>Bao, J., Pan, J. &amp; Wang, J. (2011). “The Illiquidity of
+Corporate Bonds.” <em>Journal of Finance</em>, 66(3), 911–946.</li>
+<li>Baum, L. E., Petrie, T., Soules, G. &amp; Weiss, N. (1970). “A
+Maximization Technique Occurring in the Statistical Analysis of
+Probabilistic Functions of Markov Chains.” <em>Annals of Mathematical
+Statistics</em>, 41(1), 164–171.</li>
+<li>Breiman, L. (2001). “Random Forests.” <em>Machine Learning</em>,
+45(1), 5–32.</li>
+<li>Brunnermeier, M. K. &amp; Pedersen, L. H. (2009). “Market Liquidity
+and Funding Liquidity.” <em>Review of Financial Studies</em>, 22(6),
+2201–2238.</li>
+<li>Carr, P. &amp; Wu, L. (2009). “Variance Risk Premiums.” <em>Review
+of Financial Studies</em>, 22(3), 1311–1341.</li>
+<li>Chen, T. &amp; Guestrin, C. (2016). “XGBoost: A Scalable Tree
+Boosting System.” <em>Proceedings of KDD</em>, 785–794.</li>
+<li>Efron, B. &amp; Tibshirani, R. J. (1993). <em>An Introduction to the
+Bootstrap</em>. Chapman &amp; Hall/CRC.</li>
+<li>Eggertsson, G. B. &amp; Woodford, M. (2003). “The Zero Bound on
+Interest Rates and Optimal Monetary Policy.” <em>Brookings Papers on
+Economic Activity</em>, 2003(1), 139–211.</li>
+<li>Friedman, J. H. (2001). “Greedy Function Approximation: A Gradient
+Boosting Machine.” <em>Annals of Statistics</em>, 29(5), 1189–1232.</li>
+<li>Gilchrist, S. &amp; Zakrajsek, E. (2012). “Credit Spreads and
+Business Cycle Fluctuations.” <em>American Economic Review</em>, 102(4),
+1692–1720.</li>
+<li>Guidotti, P. E., Sturzenegger, F. &amp; Villar, A. (2004). “On the
+Consequences of Sudden Stops.” <em>Economia</em>, 4(2), 171–214.</li>
+<li>Hamilton, J. D. (1989). “A New Approach to the Economic Analysis of
+Nonstationary Time Series and the Business Cycle.”
+<em>Econometrica</em>, 57(2), 357–384.</li>
+<li>Hansen, S. &amp; McMahon, M. (2016). “Shocking Language:
+Understanding the Macroeconomic Effects of Central Bank Communication.”
+<em>Journal of International Economics</em>, 99, S114–S133.</li>
+<li>Loughran, T. &amp; McDonald, B. (2011). “When Is a Liability Not a
+Liability? Textual Analysis, Dictionaries, and 10-Ks.” <em>Journal of
+Finance</em>, 66(1), 35–65.</li>
+<li>Lucca, D. O. &amp; Trebbi, F. (2009). “Measuring Central Bank
+Communication: An Automated Approach with Application to FOMC
+Statements.” <em>NBER Working Paper</em> 15367.</li>
+<li>Reinhart, C. M. &amp; Rogoff, K. S. (2009). <em>This Time Is
+Different: Eight Centuries of Financial Folly</em>. Princeton University
+Press.</li>
+<li>Rey, H. (2015). “Dilemma Not Trilemma: The Global Financial Cycle
+and Monetary Policy Independence.” <em>NBER Working Paper</em>
+21162.</li>
+<li>Schwert, G. W. (1989). “Why Does Stock Market Volatility Change Over
+Time?” <em>Journal of Finance</em>, 44(5), 1115–1153.</li>
+<li>Stein, J. C. (2013). “Overheating in Credit Markets: Origins,
+Measurement, and Policy Responses.” Speech at Federal Reserve Bank of
+St. Louis.</li>
+<li>Taylor, J. B. (1993). “Discretion Versus Policy Rules in Practice.”
+<em>Carnegie-Rochester Conference Series on Public Policy</em>, 39,
+195–214.</li>
+<li>Vovk, V., Gammerman, A. &amp; Shafer, G. (2005). <em>Algorithmic
+Learning in a Random World</em>. Springer.</li>
+<li>Whaley, R. E. (2000). “The Investor Fear Gauge.” <em>Journal of
+Portfolio Management</em>, 26(3), 12–17.</li>
+</ul>
+<h3 id="regulatory-and-policy-sources">Regulatory and Policy
+Sources</h3>
+<ul>
+<li>Federal Reserve Board (2023). “Recent Developments in Hedge Funds’
+Treasury Futures and Repo Positions.” <em>FEDS Notes</em>.</li>
+<li>Federal Reserve Board (2024). “Quantifying Treasury Cash-Futures
+Basis Trades.” <em>FEDS Notes</em>.</li>
+<li>Office of Financial Research (2021). “Hedge Funds and the Treasury
+Cash-Futures Disconnect.” <em>OFR Brief Series</em> 21-01.</li>
+</ul>
+<h3 id="data-sources">Data Sources</h3>
+<ul>
+<li>Federal Reserve Bank of St. Louis. <em>FRED Economic Data</em>.
+https://fred.stlouisfed.org/</li>
+<li>National Bureau of Economic Research. <em>NBER Macrohistory
+Database</em>.
+https://www.nber.org/research/data/nber-macrohistory-online</li>
+<li>Shiller, R. J. <em>Online Data</em>.
+http://www.econ.yale.edu/~shiller/data.htm</li>
+<li>Bank for International Settlements. <em>Statistics</em>.
+https://www.bis.org/statistics/</li>
+<li>European Central Bank. <em>TARGET2 Balances</em>.
+https://www.ecb.europa.eu/</li>
+<li>Commodity Futures Trading Commission. <em>Commitments of
+Traders</em>.
+https://www.cftc.gov/MarketReports/CommitmentsofTraders/</li>
+<li>Schwert, G. W. (1989). Stock volatility dataset. Published with “Why
+Does Stock Market Volatility Change Over Time?”</li>
+<li>Bank of England. <em>Research Datasets</em>.
+https://www.bankofengland.co.uk/statistics/research-datasets</li>
+<li>MeasuringWorth. <em>US GDP</em>.
+https://www.measuringworth.com/</li>
+<li>FINRA. <em>Margin Statistics</em>.
+https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics</li>
+<li>Board of Governors of the Federal Reserve System. <em>FOMC
+Minutes</em>.
+https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm</li>
+</ul>
+<hr />
+<p><em>Document generated from MAC Framework v7.1 codebase. All
+formulas, thresholds, and constants verified against source code.
+8-pillar backtest (fully wired): 2,813 weekly observations, 92.3% TPR,
+36/39 crises detected. Bootstrap CI, HMM regime overlay, and data-driven
+breach model active.</em></p>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#e8f4fd',
+      primaryBorderColor: '#2980b9',
+      secondaryColor: '#fdf2e9',
+      tertiaryColor: '#eafaf1',
+      fontFamily: '"Helvetica Neue", Arial, sans-serif',
+      fontSize: '13px'
+    },
+    flowchart: { curve: 'basis', padding: 15 },
+    sequence: { actorMargin: 50, messageMargin: 40 }
+  });
+</script>
+
+</body>
+</html>

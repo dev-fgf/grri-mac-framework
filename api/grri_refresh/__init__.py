@@ -15,6 +15,7 @@ import os
 from datetime import datetime
 import azure.functions as func
 import logging
+from typing import Any
 
 # Add shared module path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 # G20 countries ISO3 codes
 G20_COUNTRIES = {
     "ARG": "Argentina",
-    "AUS": "Australia", 
+    "AUS": "Australia",
     "BRA": "Brazil",
     "CAN": "Canada",
     "CHN": "China",
@@ -79,9 +80,9 @@ ISO2_TO_ISO3 = {v: k for k, v in ISO3_TO_ISO2.items()}
 def fetch_imf_weo_data() -> dict:
     """Fetch economic indicators from IMF WEO DataMapper API."""
     import requests
-    
+
     BASE_URL = "https://www.imf.org/external/datamapper/api/v1"
-    
+
     indicators = {
         "inflation": "PCPIPCH",
         "fiscal_balance": "GGXCNL_NGDP",
@@ -89,27 +90,27 @@ def fetch_imf_weo_data() -> dict:
         "gdp_growth": "NGDP_RPCH",
         "unemployment": "LUR",
     }
-    
-    result = {
+
+    result: dict[str, Any] = {
         "source": "IMF_WEO",
         "timestamp": datetime.utcnow().isoformat(),
         "status": "success",
         "indicators": {},
         "errors": []
     }
-    
+
     countries = list(G20_COUNTRIES.keys())
-    
+
     for name, code in indicators.items():
         try:
             url = f"{BASE_URL}/indicators/{code}"
             response = requests.get(url, timeout=30)
             response.raise_for_status()
-            
+
             data = response.json()
             values_data = data.get("values", {}).get(code, {})
-            
-            indicator_data = {}
+
+            indicator_data: dict[str, Any] = {}
             for country in countries:
                 if country in values_data:
                     # Get last 5 years
@@ -119,29 +120,29 @@ def fetch_imf_weo_data() -> dict:
                             country_values[year] = float(value)
                     if country_values:
                         indicator_data[country] = country_values
-            
+
             result["indicators"][name] = {
                 "code": code,
                 "countries": len(indicator_data),
                 "data": indicator_data
             }
-            
+
         except Exception as e:
             result["errors"].append(f"{name}: {str(e)}")
             logger.warning(f"IMF WEO {name} fetch failed: {e}")
-    
+
     if result["errors"]:
         result["status"] = "partial"
-    
+
     return result
 
 
 def fetch_world_bank_wgi_data() -> dict:
     """Fetch governance indicators from World Bank API."""
     import requests
-    
+
     BASE_URL = "https://api.worldbank.org/v2"
-    
+
     indicators = {
         "rule_of_law": "RL.EST",
         "government_effectiveness": "GE.EST",
@@ -150,78 +151,78 @@ def fetch_world_bank_wgi_data() -> dict:
         "control_of_corruption": "CC.EST",
         "voice_accountability": "VA.EST",
     }
-    
-    result = {
+
+    result: dict[str, Any] = {
         "source": "World_Bank_WGI",
         "timestamp": datetime.utcnow().isoformat(),
         "status": "success",
         "indicators": {},
         "errors": []
     }
-    
+
     # World Bank uses ISO2 codes
     countries_iso3 = list(G20_COUNTRIES.keys())
     countries_iso2 = [ISO3_TO_ISO2.get(c, c) for c in countries_iso3]
     countries_str = ";".join(countries_iso2)
     current_year = datetime.now().year
-    
+
     for name, code in indicators.items():
         try:
             url = f"{BASE_URL}/country/{countries_str}/indicator/{code}"
-            params = {
+            params: dict[str, Any] = {
                 "format": "json",
                 "per_page": 500,
                 "date": f"2018:{current_year}"
             }
-            
+
             response = requests.get(url, params=params, timeout=30)
             response.raise_for_status()
-            
+
             data = response.json()
             if len(data) < 2 or not data[1]:
                 result["errors"].append(f"{name}: No data returned")
                 continue
-            
-            indicator_data = {}
+
+            indicator_data: dict[str, Any] = {}
             for record in data[1]:
                 country_iso2 = record.get("country", {}).get("id")
                 # Convert back to ISO3 for consistency with IMF data
                 country = ISO2_TO_ISO3.get(country_iso2, country_iso2)
                 year = record.get("date")
                 value = record.get("value")
-                
+
                 if country and year and value is not None:
                     if country not in indicator_data:
                         indicator_data[country] = {}
                     indicator_data[country][year] = float(value)
-            
+
             result["indicators"][name] = {
                 "code": code,
                 "countries": len(indicator_data),
                 "data": indicator_data
             }
-            
+
         except Exception as e:
             result["errors"].append(f"{name}: {str(e)}")
             logger.warning(f"World Bank WGI {name} fetch failed: {e}")
-    
+
     if result["errors"]:
         result["status"] = "partial"
-    
+
     return result
 
 
 def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
     """
     Calculate GRRI pillar scores from raw indicator data.
-    
+
     Normalization: Min-max scaling where higher = higher risk
     """
     scores = {}
     current_year = str(datetime.now().year - 1)  # Most recent complete year
-    
+
     for country_code, country_name in G20_COUNTRIES.items():
-        country_scores = {
+        country_scores: dict[str, Any] = {
             "country_code": country_code,
             "country_name": country_name,
             "year": int(current_year),
@@ -229,12 +230,12 @@ def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
             "timestamp": datetime.utcnow().isoformat(),
             "data_source": "IMF_WEO,World_Bank_WGI",
         }
-        
+
         # === Political Pillar (from WGI) ===
         political_raw = []
         wgi_indicators = wgi_data.get("indicators", {})
-        
-        for ind_name in ["rule_of_law", "government_effectiveness", "regulatory_quality", 
+
+        for ind_name in ["rule_of_law", "government_effectiveness", "regulatory_quality",
                          "political_stability", "control_of_corruption"]:
             ind_data = wgi_indicators.get(ind_name, {}).get("data", {})
             country_ind = ind_data.get(country_code, {})
@@ -249,14 +250,14 @@ def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
                     risk_score = max(0, min(100, risk_score))
                     political_raw.append(risk_score)
                     break
-        
+
         if political_raw:
             country_scores["political_score"] = round(sum(political_raw) / len(political_raw), 2)
-        
+
         # === Economic Pillar (from IMF WEO) ===
         economic_raw = []
         imf_indicators = imf_data.get("indicators", {})
-        
+
         # Inflation risk (higher inflation = higher risk)
         inflation_data = imf_indicators.get("inflation", {}).get("data", {}).get(country_code, {})
         for year in sorted(inflation_data.keys(), reverse=True):
@@ -275,7 +276,7 @@ def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
                     risk = min(100, 90 + inf_val - 10)
                 economic_raw.append(risk)
                 break
-        
+
         # Fiscal balance risk (larger deficit = higher risk)
         fiscal_data = imf_indicators.get("fiscal_balance", {}).get("data", {}).get(country_code, {})
         for year in sorted(fiscal_data.keys(), reverse=True):
@@ -292,7 +293,7 @@ def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
                     risk = min(100, 80 + abs(fiscal_val + 6) * 5)
                 economic_raw.append(risk)
                 break
-        
+
         # GDP growth (negative growth = higher risk)
         gdp_data = imf_indicators.get("gdp_growth", {}).get("data", {}).get(country_code, {})
         for year in sorted(gdp_data.keys(), reverse=True):
@@ -308,7 +309,7 @@ def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
                     risk = min(100, 70 + abs(gdp_val) * 10)
                 economic_raw.append(risk)
                 break
-        
+
         # Unemployment (higher = higher risk)
         unemp_data = imf_indicators.get("unemployment", {}).get("data", {}).get(country_code, {})
         for year in sorted(unemp_data.keys(), reverse=True):
@@ -324,46 +325,47 @@ def calculate_pillar_scores(imf_data: dict, wgi_data: dict) -> dict:
                     risk = min(100, 80 + (unemp_val - 10) * 2)
                 economic_raw.append(risk)
                 break
-        
+
         if economic_raw:
             country_scores["economic_score"] = round(sum(economic_raw) / len(economic_raw), 2)
-        
+
         # === Social & Environmental Pillars ===
         # These require additional data sources (UNDP, EM-DAT, etc.)
         # For now, estimate from available data or set to None
         country_scores["social_score"] = None  # Requires HDI, UNHCR, V-Dem data
         country_scores["environmental_score"] = None  # Requires EM-DAT, IMF climate data
-        
+
         # === Composite Score ===
-        available_scores = [v for k, v in country_scores.items() 
-                          if k.endswith("_score") and v is not None]
+        available_scores = [v for k, v in country_scores.items()
+                            if k.endswith("_score") and v is not None]
         if available_scores:
-            country_scores["composite_score"] = round(sum(available_scores) / len(available_scores), 2)
+            country_scores["composite_score"] = round(
+                sum(available_scores) / len(available_scores), 2)
         else:
             country_scores["composite_score"] = None
-        
+
         scores[country_code] = country_scores
-    
+
     return scores
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """
     Refresh GRRI data from external sources and store in Azure Tables.
-    
+
     Called by GitHub Actions (quarterly schedule or manual trigger).
     """
     start_time = datetime.utcnow()
     db = get_database()
-    
-    result = {
+
+    result: dict[str, Any] = {
         "timestamp": start_time.isoformat(),
         "sources": {},
         "scores_calculated": 0,
         "scores_saved": 0,
         "success": True,
     }
-    
+
     # === Fetch IMF WEO Data ===
     logger.info("Fetching IMF WEO data...")
     import time as _time
@@ -420,13 +422,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             record_health(db, "WORLD_BANK", make_down_report("WORLD_BANK", str(e)))
         except Exception:
             pass
-    
+
     # === Calculate GRRI Scores ===
     logger.info("Calculating GRRI scores...")
     try:
         scores = calculate_pillar_scores(imf_data, wgi_data)
         result["scores_calculated"] = len(scores)
-        
+
         # === Save to Azure Tables ===
         if db.connected:
             saved = 0
@@ -438,24 +440,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         else:
             result["db_connected"] = False
             logger.warning("Database not connected - scores not persisted")
-            
+
     except Exception as e:
         logger.error(f"Score calculation failed: {e}")
         result["calculation_error"] = str(e)
         result["success"] = False
-    
+
     # === Summary ===
     elapsed = (datetime.utcnow() - start_time).total_seconds()
     result["elapsed_seconds"] = round(elapsed, 2)
-    
+
     # Include sample scores in response
     result["sample_scores"] = {
-        country: scores[country] 
+        country: scores[country]
         for country in list(scores.keys())[:3]
     } if scores else {}
-    
+
     status_code = 200 if result["success"] else 207
-    
+
     return func.HttpResponse(
         json.dumps(result, indent=2),
         status_code=status_code,

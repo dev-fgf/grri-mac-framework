@@ -15,13 +15,13 @@ Three indices are monitored:
 
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # === MAC Source Specifications ===
 
-MAC_SOURCE_SPECS = {
+MAC_SOURCE_SPECS: dict[str, dict[str, Any]] = {
     "FRED": {
         "display_name": "FRED API",
         "update_frequency": "daily",
@@ -113,7 +113,7 @@ MAC_SOURCE_SPECS = {
 
 # === GRRI Source Specifications ===
 
-GRRI_SOURCE_SPECS = {
+GRRI_SOURCE_SPECS: dict[str, dict[str, Any]] = {
     "WORLD_BANK": {
         "display_name": "World Bank WGI + Development",
         "update_frequency": "annual",
@@ -200,7 +200,7 @@ MRFI_SOURCE_INVENTORY = {
 }
 
 # Combined specs for backward compat (used by validate_source)
-SOURCE_SPECS = {**MAC_SOURCE_SPECS, **GRRI_SOURCE_SPECS}
+SOURCE_SPECS: dict[str, dict[str, Any]] = {**MAC_SOURCE_SPECS, **GRRI_SOURCE_SPECS}
 
 
 def validate_source(source_name: str, returned_indicators: dict) -> dict:
@@ -314,7 +314,7 @@ def get_health_summary(db) -> dict:
 
         status = report.get("status", "unknown")
         spec = MAC_SOURCE_SPECS[source_name]
-        max_hours = spec.get("max_staleness_hours")
+        max_hours: float | None = spec.get("max_staleness_hours")
         last_success = report.get("last_success")
 
         if max_hours and last_success:

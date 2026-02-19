@@ -28,7 +28,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import Any, TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     from grri_mac.data.fred import FREDClient
@@ -64,7 +64,7 @@ class SentimentTextCorpus:
 
 # Key FOMC dates with known hawkish/dovish tone for calibration.
 # tone_score: 0.0 = maximally hawkish, 1.0 = maximally dovish
-CALIBRATION_FOMC_DATES = {
+CALIBRATION_FOMC_DATES: Dict[datetime, Dict[str, Any]] = {
     datetime(2007, 8, 17): {
         "tone": "dovish",
         "tone_score": 0.85,

@@ -1,11 +1,12 @@
 """MAC scoring logic with calibrated thresholds."""
 
+from typing import Any
 import logging
 
 logger = logging.getLogger(__name__)
 
 # Calibrated thresholds from backtesting
-THRESHOLDS = {
+THRESHOLDS: dict[str, Any] = {
     "liquidity": {
         "sofr_iorb": {"ample": 2, "thin": 8, "breach": 15},
         "cp_treasury": {"ample": 15, "thin": 40, "breach": 80},
@@ -194,7 +195,7 @@ def score_positioning_with_details(
     try:
         # Handle both Azure Functions context and standalone execution
         try:
-            from shared.cftc_client import (  # type: ignore
+            from shared.cftc_client import (
                 get_cftc_client,
                 COT_REPORTS_AVAILABLE,
             )
@@ -250,7 +251,7 @@ def score_positioning_with_details(
             return 0.55, "THIN", {"source": "fallback", "reason": "no_data"}
 
         # Build metadata showing what data was used
-        metadata = {
+        metadata: dict[str, Any] = {
             "source": "CFTC_COT",
             "contracts": {},
         }
@@ -580,7 +581,7 @@ def calculate_mac(indicators: dict) -> dict:
     con_score, con_status = score_contagion(indicators)
     pc_score, pc_status = score_private_credit(indicators)
 
-    pillar_scores = {
+    pillar_scores: dict[str, dict[str, Any]] = {
         "liquidity": {"score": round(liq_score, 3), "status": liq_status},
         "valuation": {"score": round(val_score, 3), "status": val_status},
         "positioning": {"score": round(pos_score, 3), "status": pos_status},

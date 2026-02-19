@@ -36,15 +36,15 @@ COUNTRY_NAMES = {
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """Handle GRRI data requests."""
-    
+
     db = get_database()
     action = req.route_params.get('action', '')
-    
+
     # Query parameters
     country = req.params.get('country')
     year = req.params.get('year')
     quarter = req.params.get('quarter')
-    
+
     # Route handling
     if action == 'summary':
         return get_summary(db)
@@ -66,9 +66,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 def get_country_data(db, country_code: str) -> func.HttpResponse:
     """Get GRRI data for a specific country."""
     country_code = country_code.upper()
-    
+
     data = db.get_grri_by_country(country_code)
-    
+
     return func.HttpResponse(
         json.dumps({
             "country_code": country_code,
@@ -84,9 +84,9 @@ def get_country_data(db, country_code: str) -> func.HttpResponse:
 
 def get_year_data(db, year: int, quarter: str = None) -> func.HttpResponse:
     """Get GRRI data for all countries in a specific year."""
-    
+
     data = db.get_grri_by_year(year, quarter)
-    
+
     return func.HttpResponse(
         json.dumps({
             "year": year,
@@ -102,14 +102,14 @@ def get_year_data(db, year: int, quarter: str = None) -> func.HttpResponse:
 
 def get_all_current(db) -> func.HttpResponse:
     """Get current GRRI data for all G20 countries."""
-    
+
     current_year = datetime.now().year - 1  # Most recent complete year
     data = db.get_grri_by_year(current_year)
-    
+
     # If no data for last year, try current year
     if not data:
         data = db.get_grri_by_year(datetime.now().year)
-    
+
     return func.HttpResponse(
         json.dumps({
             "year": current_year,
@@ -125,33 +125,33 @@ def get_all_current(db) -> func.HttpResponse:
 
 def get_summary(db) -> func.HttpResponse:
     """Get GRRI summary with rankings and pillar breakdowns."""
-    
+
     current_year = datetime.now().year - 1
     data = db.get_grri_by_year(current_year)
-    
+
     if not data:
         data = db.get_grri_by_year(datetime.now().year)
-    
+
     # Calculate rankings
     rankings = sorted(
         [d for d in data if d.get("composite_score") is not None],
         key=lambda x: x.get("composite_score", 0),
         reverse=True
     )
-    
+
     # Pillar averages
     pillar_avgs = {}
     for pillar in ["political", "economic", "social", "environmental"]:
         scores = [d.get(f"{pillar}_score") for d in data if d.get(f"{pillar}_score") is not None]
         if scores:
             pillar_avgs[pillar] = round(sum(scores) / len(scores), 2)
-    
+
     # Top risk countries
     top_risk = rankings[:5] if rankings else []
-    
-    # Lowest risk countries  
+
+    # Lowest risk countries
     lowest_risk = rankings[-5:][::-1] if len(rankings) >= 5 else rankings[::-1]
-    
+
     return func.HttpResponse(
         json.dumps({
             "year": current_year,

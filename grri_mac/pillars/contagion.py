@@ -10,7 +10,7 @@ Sub-indicators:
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 from ..mac.scorer import score_indicator_simple
 
@@ -62,7 +62,7 @@ class ContagionPillar:
     """International Contagion pillar calculator."""
 
     # Thresholds from specification
-    THRESHOLDS = {
+    THRESHOLDS: dict[str, Any] = {
         "cross_currency_basis": {
             # Absolute deviation from zero (symmetric around 0)
             "ample": 15,    # < 15 bps absolute
@@ -292,7 +292,8 @@ class ContagionPillar:
                 return 0.35 + 0.30 * frac
             elif flow_pct_gdp >= t["critical_low"]:
                 # Critical: -2.0% to -4.0% → score 0.65-1.0
-                frac = (t["stretched_low"] - flow_pct_gdp) / (t["stretched_low"] - t["critical_low"])
+                frac = (t["stretched_low"] - flow_pct_gdp) / \
+                        (t["stretched_low"] - t["critical_low"])
                 return 0.65 + 0.35 * frac
             else:
                 # Sudden stop: < -4.0% → score 1.0
@@ -310,7 +311,8 @@ class ContagionPillar:
                 return 0.35 + 0.30 * frac
             elif flow_pct_gdp <= t["critical_high"]:
                 # Critical: +5.0% to +7.0% → score 0.65-1.0
-                frac = (flow_pct_gdp - t["stretched_high"]) / (t["critical_high"] - t["stretched_high"])
+                frac = (flow_pct_gdp - t["stretched_high"]) / \
+                        (t["critical_high"] - t["stretched_high"])
                 return 0.65 + 0.35 * frac
             else:
                 # Unsustainable boom: > +7.0% → score 1.0
@@ -345,9 +347,9 @@ class ContagionPillar:
 
     def score_gsib_stress(
         self,
-        financial_oas: float = None,
-        bkx_volatility: float = None,
-        date_str: str = None,
+        financial_oas: Optional[float] = None,
+        bkx_volatility: Optional[float] = None,
+        date_str: Optional[str] = None,
         use_bkx_fallback: bool = False,
     ) -> float:
         """
@@ -437,7 +439,7 @@ class ContagionPillar:
         if (indicators.target2_imbalance_eur_billions is not None and
                 indicators.eurozone_gdp_eur_trillions is not None):
             imbalance_pct = (indicators.target2_imbalance_eur_billions /
-                           (indicators.eurozone_gdp_eur_trillions * 1000) * 100)
+                             (indicators.eurozone_gdp_eur_trillions * 1000) * 100)
             scores.target2 = self.score_target2(imbalance_pct)
             scored_count += 1
 
@@ -446,7 +448,7 @@ class ContagionPillar:
                 indicators.short_term_external_debt_usd_billions is not None and
                 indicators.short_term_external_debt_usd_billions > 0):
             coverage_ratio = (indicators.fx_reserves_usd_billions /
-                            indicators.short_term_external_debt_usd_billions * 100)
+                              indicators.short_term_external_debt_usd_billions * 100)
             scores.reserve_coverage = self.score_reserve_coverage(coverage_ratio)
             scored_count += 1
 
@@ -455,7 +457,7 @@ class ContagionPillar:
                 indicators.world_gdp_trillions is not None and
                 indicators.world_gdp_trillions > 0):
             flow_pct = (indicators.cross_border_flow_change_billions /
-                       (indicators.world_gdp_trillions * 1000) * 100)
+                        (indicators.world_gdp_trillions * 1000) * 100)
             scores.cross_border_flows = self.score_cross_border_flows(flow_pct)
             scored_count += 1
 

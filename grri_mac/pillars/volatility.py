@@ -18,7 +18,7 @@ VRP Architecture (v7):
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 import math
 import logging
 
@@ -80,7 +80,7 @@ class VolatilityPillar:
     """Volatility pillar calculator."""
 
     # Thresholds from specification
-    THRESHOLDS = {
+    THRESHOLDS: dict[str, dict[str, Any]] = {
         "vix_level": {
             # VIX 15-20 is ample (stable)
             # < 12 or 20-35 is thin

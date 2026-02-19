@@ -1,7 +1,6 @@
 """ETF data client for volatility and positioning proxies."""
 
 from datetime import datetime, timedelta
-from typing import Optional
 import pandas as pd
 
 try:
@@ -317,8 +316,10 @@ class ETFClient:
                 r_foreign = foreign_rates.get(ccy, 0) / 100
 
                 # Theoretical forward (CIP)
-                theoretical = spot * (1 + r_usd * days_to_expiry / 360) / \
-                              (1 + r_foreign * days_to_expiry / 360)
+                theoretical = (
+                    spot * (1 + r_usd * days_to_expiry / 360)
+                    / (1 + r_foreign * days_to_expiry / 360)
+                )
 
                 # Basis in bps
                 basis = (futures - theoretical) / spot * (360 / days_to_expiry) * 10000

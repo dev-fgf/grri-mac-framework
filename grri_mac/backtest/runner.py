@@ -26,7 +26,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional, List
 from dataclasses import dataclass
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 
 from ..data.fred import FREDClient
 from ..pillars.liquidity import LiquidityPillar, LiquidityIndicators
@@ -42,9 +42,8 @@ from ..pillars.private_credit import (
 from ..pillars.sentiment import SentimentPillar
 from ..data.fomc_text import FOMCTextSource
 from ..mac.composite import (
-    calculate_mac, calculate_mac_with_ci, get_mac_interpretation,
-    ML_OPTIMIZED_WEIGHTS, ML_OPTIMIZED_WEIGHTS_8,
-    INTERACTION_ADJUSTED_WEIGHTS_8,
+    calculate_mac_with_ci, get_mac_interpretation, ML_OPTIMIZED_WEIGHTS,
+    ML_OPTIMIZED_WEIGHTS_8,
 )
 from ..mac.momentum import calculate_momentum
 from .crisis_events import CRISIS_EVENTS, get_crisis_for_date
@@ -192,13 +191,13 @@ class BacktestRunner:
             # Private Credit pillar
             "DRTSCIS", "DRISCFS",
         ]))
-        
+
         # Add buffer for lookback calculations
         # (larger for sentiment proxy 6-month rate change)
         buffer_start = start_date - timedelta(days=200)
-        
+
         self.fred.prefetch_series(series_to_fetch, buffer_start, end_date)
-        
+
         # Enable backtest mode to prevent API calls during iteration
         self.fred.set_backtest_mode(True)
 
@@ -423,13 +422,13 @@ class BacktestRunner:
             DataFrame with backtest results
         """
         results = []
-        
+
         # Clear historical MACs for fresh momentum calculation
         self._historical_macs = []
-        
+
         # Track which warnings have been shown to avoid spam
         self._warnings_shown: set[str] = set()
-        
+
         # Pre-fetch all required FRED series for efficiency
         self._prefetch_fred_data(start_date, end_date)
 
@@ -446,17 +445,17 @@ class BacktestRunner:
         # Calculate total points for progress tracking
         total_days = (end_date - start_date).days
         total_points = total_days // delta.days + 1
-        
+
         current_date = start_date
         point_count = 0
         last_progress = -1
-        
+
         while current_date <= end_date:
             try:
                 point = self.calculate_mac_for_date(current_date)
                 results.append(point)
                 point_count += 1
-                
+
                 # Progress bar (update every 5%)
                 progress = (point_count * 100) // total_points
                 if progress >= last_progress + 5:
@@ -477,7 +476,7 @@ class BacktestRunner:
                     pass  # Silently skip expected missing data
 
             current_date += delta
-        
+
         print()  # New line after progress bar
 
         # Convert to DataFrame
@@ -650,12 +649,12 @@ class BacktestRunner:
     ) -> PrivateCreditIndicators:
         """
         Fetch private credit indicators for a date.
-        
+
         Note: BDC data requires yfinance, SLOOS data is quarterly from FRED.
         For historical backtest, we use SLOOS as primary signal.
         """
         indicators = PrivateCreditIndicators()
-        
+
         # Fetch SLOOS data (quarterly, so use most recent available)
         # Use longer lookback since SLOOS is quarterly
         try:
@@ -664,30 +663,30 @@ class BacktestRunner:
             ci_small = self.fred.get_value_for_date("DRTSCIS", date, lookback_days=100)
             if ci_small is not None:
                 sloos.ci_standards_small = ci_small
-            
+
             # Spreads to small firms
             spreads_small = self.fred.get_value_for_date(
                 "DRISCFS", date, lookback_days=100,
             )
             if spreads_small is not None:
                 sloos.spreads_small = spreads_small
-            
+
             # Also get large/mid for validation
             ci_large = self.fred.get_value_for_date("DRTSCILM", date, lookback_days=100)
             if ci_large is not None:
                 sloos.ci_standards_large = ci_large
-            
+
             sloos.observation_date = date
             indicators.sloos = sloos
-            
+
         except Exception as e:
             print(f"Warning: Could not fetch SLOOS data for {date}: {e}")
-        
+
         # BDC and leveraged loan data would require yfinance
         # For now, use synthetic estimates based on date/crisis periods
         # This is a placeholder - full implementation would use yahoo_client
         indicators.bdc = BDCData(observation_date=date)
-        
+
         return indicators
 
     def _score_sentiment(self, date: datetime):
@@ -808,10 +807,10 @@ class BacktestRunner:
                 level_warn = (warning_window["mac_score"] < 0.5).any()
                 momentum_warn = False
                 if "momentum_4w" in warning_window.columns:
-                    momentum_warn = (
+                    momentum_warn = bool((
                         (warning_window["mac_score"] < 0.6)
                         & (warning_window["momentum_4w"].fillna(0) < -0.04)
-                    ).any()
+                    ).any())
                 if level_warn or momentum_warn:
                     warnings += 1
 
@@ -866,10 +865,10 @@ class BacktestRunner:
                         lev = (win["mac_score"] < 0.5).any()
                         mom = False
                         if "momentum_4w" in win.columns:
-                            mom = (
+                            mom = bool((
                                 (win["mac_score"] < 0.6)
                                 & (win["momentum_4w"].fillna(0) < -0.04)
-                            ).any()
+                            ).any())
                         if lev or mom:
                             era_detected += 1
 

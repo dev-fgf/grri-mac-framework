@@ -2,7 +2,7 @@
 
 Core Pillars:
 - Liquidity: Market liquidity and funding conditions
-- Valuation: Asset price stretched metrics  
+- Valuation: Asset price stretched metrics
 - Positioning: Leverage and crowding indicators
 - Volatility: Market stress and vol regime
 - Policy: Central bank policy space

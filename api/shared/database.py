@@ -3,7 +3,7 @@
 import os
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 import json
 import uuid
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Check if azure-data-tables is available
 try:
-    from azure.data.tables import TableServiceClient, TableClient
+    from azure.data.tables import TableServiceClient
     from azure.core.exceptions import ResourceExistsError
     TABLE_STORAGE_AVAILABLE = True
 except ImportError:
@@ -63,11 +63,11 @@ class MACDatabase:
 
     def save_indicators(self, indicators: dict, source: str = "FRED") -> bool:
         """Save raw market indicators to the cache table.
-        
+
         Args:
             indicators: Dict of indicator name -> value
             source: Data source name (FRED, CFTC, etc.)
-        
+
         Returns:
             True if saved successfully
         """
@@ -79,41 +79,41 @@ class MACDatabase:
                 **indicators
             }
             return True
-        
+
         try:
             now = datetime.utcnow()
             # Use "CURRENT" partition for latest data, date partition for history
-            entity = {
+            entity: dict[str, Any] = {
                 "PartitionKey": "CURRENT",
                 "RowKey": source,
                 "timestamp": now.isoformat(),
                 "updated_at": now.isoformat(),
             }
-            
+
             # Add each indicator as a column
             for key, value in indicators.items():
                 if value is not None:
                     entity[key] = float(value) if isinstance(value, (int, float)) else str(value)
-            
+
             # Upsert (create or update)
             self._indicators_table.upsert_entity(entity, mode="replace")
-            
+
             # Also save to historical partition
             hist_entity = entity.copy()
             hist_entity["PartitionKey"] = now.strftime("%Y-%m-%d")
             hist_entity["RowKey"] = f"{source}_{now.strftime('%H%M%S')}"
             self._indicators_table.upsert_entity(hist_entity, mode="replace")
-            
+
             logger.info(f"Saved {len(indicators)} indicators from {source}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to save indicators: {e}")
             return False
 
     def get_cached_indicators(self, source: str = "FRED") -> Optional[dict]:
         """Get the most recent cached indicators.
-        
+
         Returns:
             Dict with indicators and metadata, or None if not available
         """
@@ -122,57 +122,67 @@ class MACDatabase:
             if self._indicators_cache:
                 return self._indicators_cache
             return None
-        
+
         try:
             # Get from CURRENT partition
             entity = self._indicators_table.get_entity("CURRENT", source)
-            
+
             # Extract indicators (exclude metadata columns)
             metadata_keys = {"PartitionKey", "RowKey", "timestamp", "updated_at", "etag"}
             indicators = {
-                k: v for k, v in entity.items() 
+                k: v for k, v in entity.items()
                 if k not in metadata_keys and not k.startswith("odata")
             }
-            
+
             return {
                 "timestamp": entity.get("timestamp"),
                 "source": source,
                 "indicators": indicators,
-                "age_seconds": (datetime.utcnow() - datetime.fromisoformat(entity.get("timestamp", datetime.utcnow().isoformat()))).total_seconds()
+                "age_seconds": (
+                    datetime.utcnow() - datetime.fromisoformat(
+                        entity.get(
+                            "timestamp",
+                            datetime.utcnow().isoformat()
+                        )
+                    )
+                ).total_seconds()
             }
-            
+
         except Exception as e:
             logger.warning(f"No cached indicators for {source}: {e}")
             return None
 
-    def get_all_cached_indicators(self) -> dict:
+    def get_all_cached_indicators(self) -> Optional[dict]:
         """Get all cached indicators from all sources combined."""
-        result = {
+        result: dict[str, Any] = {
             "timestamp": None,
             "indicators": {},
             "sources": {},
         }
-        
+
+        indicators: dict = result["indicators"]
+        sources: dict = result["sources"]
+
         for source in ["FRED", "CFTC"]:
             cached = self.get_cached_indicators(source)
             if cached:
-                result["indicators"].update(cached.get("indicators", {}))
-                result["sources"][source] = {
+                indicators.update(cached.get("indicators", {}))
+                sources[source] = {
                     "timestamp": cached.get("timestamp"),
                     "age_seconds": cached.get("age_seconds"),
                 }
                 # Use most recent timestamp
                 if not result["timestamp"] or cached.get("timestamp", "") > result["timestamp"]:
                     result["timestamp"] = cached.get("timestamp")
-        
-        return result if result["indicators"] else None
+
+        return result if indicators else None
 
     def is_cache_fresh(self, source: str = "FRED", max_age_hours: int = 6) -> bool:
         """Check if cached data is fresh enough."""
         cached = self.get_cached_indicators(source)
         if not cached:
             return False
-        
+
         age_seconds = cached.get("age_seconds", float("inf"))
         return age_seconds < (max_age_hours * 3600)
 
@@ -666,13 +676,15 @@ class MACDatabase:
                 })
 
             # Sort by year-quarter descending (most recent first)
-            results.sort(key=lambda x: x["RowKey"] if "RowKey" in x else f"{x['year']}-{x['quarter']}", reverse=True)
+            results.sort(
+                key=lambda x: x["RowKey"] if "RowKey" in x else f"{x['year']} -{x['quarter']} ",
+                reverse=True)
             return results
         except Exception as e:
             logger.error(f"Failed to get GRRI for {country_code}: {e}")
             return []
 
-    def get_grri_by_year(self, year: int, quarter: str = None) -> list:
+    def get_grri_by_year(self, year: int, quarter: Optional[str] = None) -> list:
         """Get GRRI data for all countries in a specific year/quarter."""
         table = self._get_grri_table()
         if not table:
@@ -792,11 +804,11 @@ class MACDatabase:
 
     def save_backtest_cache(self, backtest_response: dict, cache_key: str = "default") -> bool:
         """Save pre-computed backtest results to cache.
-        
+
         Args:
             backtest_response: Full backtest API response to cache
             cache_key: Cache identifier (e.g., "default", "2006-2026")
-        
+
         Returns:
             True if saved successfully
         """
@@ -806,7 +818,7 @@ class MACDatabase:
 
         try:
             now = datetime.utcnow()
-            
+
             # Store as JSON since response is complex
             entity = {
                 "PartitionKey": "CACHE",
@@ -828,7 +840,7 @@ class MACDatabase:
 
     def get_backtest_cache(self, cache_key: str = "default") -> Optional[dict]:
         """Get cached backtest results.
-        
+
         Returns:
             Dict with cached response and metadata, or None if not available
         """
@@ -838,12 +850,12 @@ class MACDatabase:
 
         try:
             entity = table.get_entity("CACHE", cache_key)
-            
+
             response_json = entity.get("response_json", "{}")
             timestamp = entity.get("timestamp", datetime.utcnow().isoformat())
-            
+
             age_seconds = (datetime.utcnow() - datetime.fromisoformat(timestamp)).total_seconds()
-            
+
             return {
                 "timestamp": timestamp,
                 "age_seconds": age_seconds,
@@ -858,29 +870,29 @@ class MACDatabase:
         cached = self.get_backtest_cache(cache_key)
         if not cached:
             return False
-        
+
         return cached.get("age_seconds", float("inf")) < (max_age_hours * 3600)
 
     def save_backtest_cache_chunked(self, backtest_data: dict) -> bool:
         """Save backtest results using chunked storage pattern.
-        
+
         Stores summary in CACHE/summary and time_series in TIMESERIES/chunk_* partitions.
         Uses 100 points per chunk to stay under Azure Table 64KB entity limit.
-        
+
         Args:
             backtest_data: Full backtest response dict with time_series
-            
+
         Returns:
             True if save succeeded, False otherwise
         """
         table = self._get_backtest_cache_table()
         if not table:
             return False
-            
+
         try:
             # Extract time series for chunked storage
             time_series = backtest_data.pop("time_series", [])
-            
+
             # 1. Save summary (without time_series)
             summary_entity = {
                 "PartitionKey": "CACHE",
@@ -891,19 +903,19 @@ class MACDatabase:
                 "chunks": (len(time_series) + 49) // 50  # Ceiling division
             }
             table.upsert_entity(summary_entity)
-            
+
             # 2. Delete old chunks first
             old_chunks = list(table.query_entities("PartitionKey eq 'TIMESERIES'"))
             for chunk in old_chunks:
                 table.delete_entity(chunk["PartitionKey"], chunk["RowKey"])
-            
+
             # 3. Save new chunks (50 points each to stay under 64KB limit)
             # Each point has ~500 chars of JSON, 50 points = ~25KB (safe margin)
             chunk_size = 50
             for i in range(0, len(time_series), chunk_size):
                 chunk_data = time_series[i:i + chunk_size]
                 chunk_index = i // chunk_size
-                
+
                 chunk_entity = {
                     "PartitionKey": "TIMESERIES",
                     "RowKey": f"chunk_{chunk_index:04d}",
@@ -913,22 +925,26 @@ class MACDatabase:
                     "timestamp": datetime.utcnow().isoformat()
                 }
                 table.upsert_entity(chunk_entity)
-            
+
             # Restore time_series to original dict
             backtest_data["time_series"] = time_series
-            
-            logger.info(f"Saved backtest cache: {len(time_series)} points in {(len(time_series) + 49) // 50} chunks")
+
+            n_chunks = (len(time_series) + 49) // 50
+            logger.info(
+                f"Saved backtest cache: {len(time_series)}"
+                f" points in {n_chunks} chunks"
+            )
             return True
-            
+
         except Exception as e:
             logger.exception(f"Failed to save chunked backtest cache: {e}")
             return False
 
     def get_backtest_cache_chunked(self) -> Optional[dict]:
         """Get cached backtest results stored in chunked format.
-        
+
         Reads summary from CACHE/summary and time_series from TIMESERIES/chunk_* partitions.
-        
+
         Returns:
             Full backtest response dict or None if not available
         """
@@ -941,29 +957,32 @@ class MACDatabase:
             summary_entity = table.get_entity("CACHE", "summary")
             summary_json = summary_entity.get("response_json", "{}")
             response = json.loads(summary_json)
-            
+
             timestamp = summary_entity.get("timestamp", datetime.utcnow().isoformat())
             age_seconds = (datetime.utcnow() - datetime.fromisoformat(timestamp)).total_seconds()
-            
+
             # 2. Get time series chunks
             time_series = []
             chunk_entities = list(table.query_entities("PartitionKey eq 'TIMESERIES'"))
-            
+
             # Sort by chunk index
             chunk_entities.sort(key=lambda x: x.get("chunk_index", 0))
-            
+
             for chunk_entity in chunk_entities:
                 chunk_data = json.loads(chunk_entity.get("data_json", "[]"))
                 time_series.extend(chunk_data)
-            
+
             # 3. Combine
             response["time_series"] = time_series
             response["data_source"] = "Cached (Azure Table)"
             response["cache_age_seconds"] = age_seconds
-            
-            logger.info(f"Loaded backtest cache: {len(time_series)} points from {len(chunk_entities)} chunks")
+
+            logger.info(
+                f"Loaded backtest cache: {len(time_series)}"
+                f" points from {len(chunk_entities)} chunks"
+            )
             return response
-            
+
         except Exception as e:
             logger.warning(f"Failed to get chunked backtest cache: {e}")
             return None
@@ -991,17 +1010,17 @@ class MACDatabase:
 
     def save_fred_series(self, series_id: str, data: dict) -> bool:
         """Save a FRED time series to Azure Table Storage.
-        
+
         Uses chunked storage pattern:
         - PartitionKey: series_id (e.g., "VIXCLS")
         - RowKey: "metadata" for series info, "chunk_XXXX" for data chunks
-        
+
         Data is stored in 1000-point chunks to stay under Azure Table 64KB limit.
-        
+
         Args:
             series_id: FRED series identifier
             data: Dict with 'dates' list and 'values' list
-            
+
         Returns:
             True if save succeeded
         """
@@ -1012,18 +1031,18 @@ class MACDatabase:
         try:
             dates = data.get('dates', [])
             values = data.get('values', [])
-            
+
             if not dates or not values or len(dates) != len(values):
                 logger.error(f"Invalid data format for {series_id}")
                 return False
-            
+
             now = datetime.utcnow()
-            
+
             # 1. Delete old data for this series first
             old_entities = list(table.query_entities(f"PartitionKey eq '{series_id}'"))
             for entity in old_entities:
                 table.delete_entity(series_id, entity["RowKey"])
-            
+
             # 2. Save metadata
             metadata_entity = {
                 "PartitionKey": series_id,
@@ -1035,14 +1054,14 @@ class MACDatabase:
                 "chunks": (len(dates) + 999) // 1000,  # Ceiling division
             }
             table.upsert_entity(metadata_entity)
-            
+
             # 3. Save data chunks (1000 points each for efficiency)
             chunk_size = 1000
             for i in range(0, len(dates), chunk_size):
                 chunk_dates = dates[i:i + chunk_size]
                 chunk_values = values[i:i + chunk_size]
                 chunk_index = i // chunk_size
-                
+
                 chunk_entity = {
                     "PartitionKey": series_id,
                     "RowKey": f"chunk_{chunk_index:04d}",
@@ -1053,20 +1072,24 @@ class MACDatabase:
                     "timestamp": now.isoformat(),
                 }
                 table.upsert_entity(chunk_entity)
-            
-            logger.info(f"Saved FRED series {series_id}: {len(dates)} points in {(len(dates) + 999) // 1000} chunks")
+
+            n_chunks = (len(dates) + 999) // 1000
+            logger.info(
+                f"Saved FRED series {series_id}:"
+                f" {len(dates)} points in {n_chunks} chunks"
+            )
             return True
-            
+
         except Exception as e:
             logger.exception(f"Failed to save FRED series {series_id}: {e}")
             return False
 
     def get_fred_series(self, series_id: str) -> Optional[dict]:
         """Retrieve a FRED time series from Azure Table Storage.
-        
+
         Args:
             series_id: FRED series identifier
-            
+
         Returns:
             Dict with 'dates', 'values', and 'metadata' or None if not found
         """
@@ -1077,25 +1100,25 @@ class MACDatabase:
         try:
             # 1. Get metadata
             metadata = table.get_entity(series_id, "metadata")
-            
+
             # 2. Get all chunks
             chunk_entities = list(table.query_entities(
                 f"PartitionKey eq '{series_id}' and RowKey ne 'metadata'"
             ))
-            
+
             if not chunk_entities:
                 return None
-            
+
             # Sort by chunk index
             chunk_entities.sort(key=lambda x: x.get("chunk_index", 0))
-            
+
             # Combine chunks
             dates = []
             values = []
             for chunk in chunk_entities:
                 dates.extend(json.loads(chunk.get("dates_json", "[]")))
                 values.extend(json.loads(chunk.get("values_json", "[]")))
-            
+
             return {
                 "series_id": series_id,
                 "dates": dates,
@@ -1105,14 +1128,14 @@ class MACDatabase:
                 "end_date": metadata.get("end_date"),
                 "timestamp": metadata.get("timestamp"),
             }
-            
+
         except Exception as e:
             logger.warning(f"Failed to get FRED series {series_id}: {e}")
             return None
 
     def list_fred_series(self) -> list:
         """List all available FRED series in storage.
-        
+
         Returns:
             List of dicts with series_id, total_points, start_date, end_date
         """
@@ -1123,7 +1146,7 @@ class MACDatabase:
         try:
             # Query only metadata rows
             entities = table.query_entities("RowKey eq 'metadata'")
-            
+
             results = []
             for entity in entities:
                 results.append({
@@ -1133,9 +1156,9 @@ class MACDatabase:
                     "end_date": entity.get("end_date", ""),
                     "timestamp": entity.get("timestamp", ""),
                 })
-            
+
             return sorted(results, key=lambda x: x["series_id"])
-            
+
         except Exception as e:
             logger.error(f"Failed to list FRED series: {e}")
             return []
@@ -1160,13 +1183,13 @@ class MACDatabase:
 
     def save_backtest_results_batch(self, results: list, batch_size: int = 100) -> int:
         """Save multiple backtest results efficiently.
-        
+
         Stores each week's MAC score and pillar breakdown for API retrieval.
-        
+
         Args:
             results: List of dicts with date, mac_score, pillar scores, etc.
             batch_size: Number to save per batch (for progress reporting)
-            
+
         Returns:
             Count of successfully saved records
         """
@@ -1180,10 +1203,10 @@ class MACDatabase:
                 date_str = result.get("date", "")
                 if not date_str:
                     continue
-                
+
                 # PartitionKey: year for efficient range queries
                 year = date_str[:4]
-                
+
                 entity = {
                     "PartitionKey": year,
                     "RowKey": date_str,
@@ -1203,14 +1226,14 @@ class MACDatabase:
                     "trend_direction": result.get("trend_direction", ""),
                     "is_deteriorating": result.get("is_deteriorating", False),
                 }
-                
+
                 table.upsert_entity(entity)
                 saved += 1
-                
+
             except Exception as e:
                 logger.warning(f"Failed to save backtest point {result.get('date')}: {e}")
                 continue
-        
+
         return saved
 
 

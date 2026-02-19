@@ -9,10 +9,8 @@ No API key needed. Semi-annual data, ~6-month lag.
 """
 
 import logging
-from io import StringIO
 from typing import Optional
 
-import pandas as pd
 import requests
 
 logger = logging.getLogger(__name__)
@@ -48,7 +46,7 @@ def _fetch_bis_latest(key: str) -> Optional[float]:
         # BIS CSV has metadata header rows followed by data rows
         # Data rows start with "BIS,WS_OTC_DERIV2"
         lines = resp.text.splitlines()
-        data_lines = [l for l in lines if l.startswith('"BIS,WS_OTC_DERIV2')]
+        data_lines = [line for line in lines if line.startswith('"BIS,WS_OTC_DERIV2')]
 
         if not data_lines:
             logger.warning("No data rows in BIS response for key %s", key)

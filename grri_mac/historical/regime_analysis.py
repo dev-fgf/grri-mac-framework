@@ -10,30 +10,30 @@ We must normalize within regimes or use z-scores relative to regime means.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, List, Dict, Tuple
+from typing import Any, Optional, List, Dict
 
 
 @dataclass
 class MarketRegime:
     """A distinct period in market structure history."""
-    
+
     name: str
     start_date: datetime
     end_date: Optional[datetime]  # None = ongoing
-    
+
     # Regulatory environment
     reg_t_margin: str  # Regulation T margin requirement
     market_access: str  # Who could trade
-    
+
     # Structural characteristics
     description: str
     key_events: List[str]
-    
+
     # Threshold adjustments (multipliers vs modern baseline)
     margin_debt_baseline: float  # Expected "normal" margin/market-cap %
     credit_spread_baseline: float  # Expected "normal" BAA-AAA spread
     vol_baseline: float  # Expected "normal" realized vol
-    
+
     # Crisis events in this regime
     crises: List[Dict]
 
@@ -64,7 +64,7 @@ REGIME_PERIODS = [
             {"date": "1949-06", "name": "1949 Recession", "severity": "mild"},
         ]
     ),
-    
+
     MarketRegime(
         name="Eisenhower Prosperity",
         start_date=datetime(1954, 1, 1),
@@ -91,7 +91,7 @@ REGIME_PERIODS = [
              "description": "Dow fell 5.7% in one day, 27% from December peak"},
         ]
     ),
-    
+
     MarketRegime(
         name="Go-Go Years",
         start_date=datetime(1962, 6, 1),
@@ -120,7 +120,7 @@ REGIME_PERIODS = [
              "description": "First major commercial paper default, $200M"},
         ]
     ),
-    
+
     MarketRegime(
         name="Stagflation Era",
         start_date=datetime(1970, 6, 1),
@@ -155,7 +155,7 @@ REGIME_PERIODS = [
              "description": "Sovereign default fears, banking stress"},
         ]
     ),
-    
+
     MarketRegime(
         name="Reagan Bull Market",
         start_date=datetime(1982, 8, 1),
@@ -184,7 +184,7 @@ REGIME_PERIODS = [
              "description": "Dow fell 22.6% in one day, largest single-day drop ever"},
         ]
     ),
-    
+
     MarketRegime(
         name="Early Modern Era",
         start_date=datetime(1987, 11, 1),
@@ -192,7 +192,7 @@ REGIME_PERIODS = [
         reg_t_margin="50%",
         market_access="Discount brokers (Schwab), online trading begins late 90s",
         description="""
-        Post-crash recovery. S&L crisis. Gulf War recession. 
+        Post-crash recovery. S&L crisis. Gulf War recession.
         Greenspan put established. Internet boom. VIX created (1993).
         LTCM crisis (1998).
         """,
@@ -220,7 +220,7 @@ REGIME_PERIODS = [
              "description": "Fed-orchestrated bailout of hedge fund"},
         ]
     ),
-    
+
     MarketRegime(
         name="Modern Era",
         start_date=datetime(2000, 1, 1),
@@ -265,7 +265,7 @@ def get_regime_for_date(date: datetime) -> Optional[MarketRegime]:
 
 def get_regime_thresholds(date: datetime) -> Dict[str, float]:
     """Get era-adjusted thresholds for a specific date.
-    
+
     These are multipliers to apply to modern baselines.
     """
     regime = get_regime_for_date(date)
@@ -275,7 +275,7 @@ def get_regime_thresholds(date: datetime) -> Dict[str, float]:
             "credit_spread_baseline": 0.6,
             "vol_baseline": 17.0,
         }
-    
+
     return {
         "margin_debt_baseline": regime.margin_debt_baseline,
         "credit_spread_baseline": regime.credit_spread_baseline,
@@ -289,21 +289,21 @@ def calculate_z_score(
     window: int = 52,  # ~1 year of weekly data
 ) -> float:
     """Calculate z-score (standard deviations from rolling mean).
-    
+
     This normalizes indicators across regimes by measuring deviation
     from recent history rather than absolute levels.
     """
     if len(series) < window:
         return 0.0
-        
+
     recent = series[-window:]
     mean = sum(recent) / len(recent)
     variance = sum((x - mean) ** 2 for x in recent) / len(recent)
     std = variance ** 0.5
-    
+
     if std < 0.0001:  # Avoid division by zero
         return 0.0
-        
+
     return (value - mean) / std
 
 
@@ -324,7 +324,7 @@ def get_crisis_events_in_range(
                     crisis_date = datetime.strptime(date_str, "%Y-%m-%d")
                 else:
                     continue
-                    
+
                 if start_date <= crisis_date <= end_date:
                     events.append({
                         "date": crisis_date,
@@ -335,12 +335,12 @@ def get_crisis_events_in_range(
                     })
             except ValueError:
                 continue
-                
+
     return sorted(events, key=lambda x: x["date"])
 
 
 # Regulation T Historical Changes
-REG_T_HISTORY = [
+REG_T_HISTORY: List[Dict[str, Any]] = [
     {"date": "1934-10-01", "margin": 45, "note": "Initial Reg T"},
     {"date": "1936-04-01", "margin": 55, "note": "Increased"},
     {"date": "1937-11-01", "margin": 40, "note": "Reduced for recession"},

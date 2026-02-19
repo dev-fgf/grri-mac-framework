@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 

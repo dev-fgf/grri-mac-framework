@@ -42,7 +42,7 @@ class MACRegime(Enum):
     """MAC regime states."""
     AMPLE = "ample"         # MAC > 0.65
     THIN = "thin"           # 0.50 < MAC <= 0.65
-    STRETCHED = "stretched" # 0.35 < MAC <= 0.50
+    STRETCHED = "stretched"  # 0.35 < MAC <= 0.50
     BREACH = "breach"       # MAC <= 0.35
 
 
@@ -512,14 +512,14 @@ def format_regime_comparison(analysis: RegimeImpactAnalysis) -> str:
     lines.append("=" * 70)
     lines.append("")
     lines.append(f"Shock: {analysis.shock_scenario.magnitude_std}std "
-                f"{analysis.shock_scenario.shock_type.value}")
+                 f"{analysis.shock_scenario.shock_type.value}")
     lines.append(f"Simulations per regime: {analysis.n_simulations}")
     lines.append("")
 
     lines.append("IMPACT BY REGIME")
     lines.append("-" * 70)
     lines.append(f"{'Regime':<12} {'Init MAC':>10} {'MAC Chg':>10} "
-                f"{'Drawdown':>10} {'Hedge Fail':>12} {'Recovery':>10}")
+                 f"{'Drawdown':>10} {'Hedge Fail':>12} {'Recovery':>10}")
     lines.append("-" * 70)
 
     for regime_name, results in [
@@ -541,7 +541,7 @@ def format_regime_comparison(analysis: RegimeImpactAnalysis) -> str:
     lines.append("KEY INSIGHTS")
     lines.append("-" * 70)
     lines.append(f"Amplification Factor (Breach vs Ample): "
-                f"{analysis.amplification_factor:.1f}x")
+                 f"{analysis.amplification_factor:.1f}x")
     lines.append(f"Non-linearity Score: {analysis.nonlinearity_score:+.2f}")
     lines.append("")
 
@@ -564,7 +564,7 @@ def format_regime_comparison(analysis: RegimeImpactAnalysis) -> str:
     # Hedge failure comparison
     ample_hf = analysis.ample_results["mean_hedge_failure_prob"]
     breach_hf = analysis.breach_results["mean_hedge_failure_prob"]
-    lines.append(f"Hedge Failure Probability:")
+    lines.append("Hedge Failure Probability:")
     lines.append(f"  - AMPLE regime:  {ample_hf:>6.1%}")
     lines.append(f"  - BREACH regime: {breach_hf:>6.1%}")
     lines.append(f"  - Increase:      {breach_hf/ample_hf if ample_hf > 0 else 0:.1f}x")

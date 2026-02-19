@@ -311,7 +311,7 @@ class TestDecorrelation:
 
     def _make_synthetic_data(self, n=252, signal_strength=0.0):
         """Generate synthetic data: BDC = β·SPX + β·VIX + ε + signal.
-        
+
         signal_strength: additional private-credit-specific shock in σ units
         """
         import random

@@ -1,6 +1,5 @@
 """MAC adjustment for China leverage activation."""
 
-from typing import Optional
 from ..mac.composite import MACResult
 
 

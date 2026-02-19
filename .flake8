@@ -1,4 +1,17 @@
 [flake8]
-max-line-length = 88
+max-line-length = 100
+exclude =
+    .venv,
+    data,
+    docs,
+    __pycache__
 per-file-ignores =
     grri_mac/backtest/crisis_events.py:E501
+    api/*:E402
+    test_*.py:E402
+    analyze_*.py:E402
+    generate_*.py:E402
+    seed_*.py:E402
+    upload_*.py:E402
+    fetch_*.py:E402
+    grri_mac/historical/proof_of_concept.py:E402

@@ -329,7 +329,7 @@ class ContagionDataClient:
             raise ValueError(f"Insufficient overlapping data for correlation at {date}")
 
         # Filter to dates <= target date
-        df = df[df.index.tz_localize(None) <= date]
+        df = df[df.index.tz_localize(None) <= date]  # type: ignore[attr-defined, assignment]
 
         # Calculate returns
         returns = df.pct_change().dropna()
@@ -345,11 +345,11 @@ class ContagionDataClient:
 
         # Average of off-diagonal elements (pairwise correlations)
         n = len(corr_matrix)
-        total_corr = 0
+        total_corr: float = 0.0
         count = 0
         for i in range(n):
             for j in range(i + 1, n):
-                total_corr += corr_matrix.iloc[i, j]
+                total_corr += float(corr_matrix.iloc[i, j])  # type: ignore[arg-type]
                 count += 1
 
         return total_corr / count if count > 0 else 0.5

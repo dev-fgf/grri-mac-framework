@@ -9,7 +9,6 @@ Key insight: Every time Treasuries failed as a hedge, Positioning pillar was bre
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 from ..mac.composite import calculate_mac, MACResult
 from ..mac.multiplier import mac_to_multiplier

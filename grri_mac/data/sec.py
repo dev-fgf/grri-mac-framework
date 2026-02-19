@@ -129,7 +129,7 @@ class SECClient:
         """
         submissions = self.get_company_submissions(cik)
 
-        filings = []
+        filings: list[dict[str, str]] = []
         recent = submissions.get("filings", {}).get("recent", {})
 
         forms = recent.get("form", [])
@@ -198,7 +198,6 @@ class SECClient:
         if ciks is None:
             ciks = list(self.MAJOR_INSTITUTIONS.keys())
 
-        total_exposure = 0.0
         institution_data = []
 
         for cik in ciks:
@@ -210,7 +209,7 @@ class SECClient:
                         "name": self.MAJOR_INSTITUTIONS.get(cik, "Unknown"),
                         "latest_filing": filings[0]["filing_date"],
                     })
-            except Exception as e:
+            except Exception:
                 continue
 
         return {

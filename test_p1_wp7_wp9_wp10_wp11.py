@@ -955,7 +955,7 @@ class TestValidationReportStructure(unittest.TestCase):
 
     def test_report_has_era_detection(self):
         """generate_validation_report returns per_era_detection."""
-        import pandas as pd  # type: ignore[import-untyped]
+        import pandas as pd
         # Minimal mock backtest DataFrame
         dates = pd.date_range("2020-01-01", periods=10, freq="W")
         df = pd.DataFrame({
@@ -974,7 +974,7 @@ class TestValidationReportStructure(unittest.TestCase):
 
     def test_fixes_applied_all_six(self):
         """Fixes A through F are all documented."""
-        import pandas as pd  # type: ignore[import-untyped]
+        import pandas as pd
         dates = pd.date_range("2020-01-01", periods=5, freq="W")
         df = pd.DataFrame({
             "mac_score": [0.60] * 5,

@@ -14,10 +14,9 @@ This addresses the critique that static models miss the dynamic
 nature of crisis propagation.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, Dict
 from enum import Enum
-import math
 
 
 class InterventionType(Enum):
@@ -137,7 +136,7 @@ class ShockPropagationModel:
         decay_rate: float = 0.1,
         intervention_strength: float = 0.3,
         svar_transmission: Optional[Dict[str, Dict[str, float]]] = None,
-        svar_acceleration: Optional["AccelerationFactors"] = None,
+        svar_acceleration: Optional[Dict[str, float]] = None,
     ):
         """Initialize propagation model.
 
@@ -386,7 +385,7 @@ class ShockPropagationModel:
             cascade_by_mac[f"MAC={target_mac:.2f}"] = cascade_count / n_simulations
 
         # Count primary transmission channels
-        channel_counts = {}
+        channel_counts: Dict[str, int] = {}
         for ch in channels_triggered:
             channel_counts[ch] = channel_counts.get(ch, 0) + 1
 
@@ -398,7 +397,7 @@ class ShockPropagationModel:
 
         # Identify stabilizing factors (pillars that rarely breach)
         stabilizing = [p for p in ["policy", "valuation"]
-                      if channel_counts.get(p, 0) < len(severities) * 0.2]
+                       if channel_counts.get(p, 0) < len(severities) * 0.2]
 
         return CascadeAnalysis(
             critical_threshold=0.45,  # MAC level where cascade prob > 50%

@@ -90,8 +90,8 @@ def score_indicator(
 
     # Case 2: Two-sided thresholds (value should be in a range)
     elif thresholds.ample_low is not None and thresholds.ample_high is not None:
-        ample_mid = (thresholds.ample_low + thresholds.ample_high) / 2
-        ample_half = (thresholds.ample_high - thresholds.ample_low) / 2
+        (thresholds.ample_low + thresholds.ample_high) / 2
+        (thresholds.ample_high - thresholds.ample_low) / 2
 
         thin_low = thresholds.thin_low if thresholds.thin_low else thresholds.ample_low * 0.5
         thin_high = thresholds.thin_high if thresholds.thin_high else thresholds.ample_high * 1.5

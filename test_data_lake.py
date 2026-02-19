@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch  # noqa: F401
 
 import numpy as np
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 
 from grri_mac.data.blob_store import (
     BlobStore,

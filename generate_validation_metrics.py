@@ -245,16 +245,19 @@ def generate_validation_report(df):
 def generate_latex_table(warning_df, tpr, lead_time):
     """Generate LaTeX table for academic paper."""
 
-    latex = r"""
-\begin{table}[h]
-\centering
-\caption{Crisis Prediction Performance (2004-2024)}
-\label{tab:crisis_prediction}
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Crisis Event} & \textbf{Date} & \textbf{Severity} & \textbf{Warning} & \textbf{Lead Time (days)} \\
-\midrule
-"""
+    latex = (
+        r"\begin{table}[h]" "\n"
+        r"\centering" "\n"
+        r"\caption{Crisis Prediction Performance (2004-2024)}"
+        "\n"
+        r"\label{tab:crisis_prediction}" "\n"
+        r"\begin{tabular}{lcccc}" "\n"
+        r"\toprule" "\n"
+        r"\textbf{Crisis Event} & \textbf{Date}"
+        r" & \textbf{Severity} & \textbf{Warning}"
+        r" & \textbf{Lead Time (days)} \\" "\n"
+        r"\midrule" "\n"
+    )
 
     for _, row in warning_df.iterrows():
         crisis_name = row['crisis'].replace('/', r'\slash ')[:40]  # Truncate long names

@@ -10,7 +10,7 @@ from ..pillars.valuation import ValuationPillar, ValuationIndicators
 from ..pillars.positioning import PositioningPillar, PositioningIndicators
 from ..pillars.volatility import VolatilityPillar, VolatilityIndicators
 from ..pillars.policy import PolicyPillar, PolicyIndicators
-from ..mac.composite import calculate_mac, MACResult
+from ..mac.composite import calculate_mac
 from ..mac.multiplier import mac_to_multiplier
 
 

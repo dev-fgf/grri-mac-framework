@@ -26,7 +26,6 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +150,7 @@ class FPCostAnalyser:
         Returns:
             FPCostResult with taxonomy and cost curves.
         """
-        cfg = self.config
+        self.config
 
         # Build crisis windows
         windows = self._build_windows(crisis_events)
@@ -243,7 +242,7 @@ class FPCostAnalyser:
         ] = None,
     ) -> List[ClassifiedFP]:
         """Classify all false positives at given tau."""
-        cfg = self.config
+        self.config
         fps: List[ClassifiedFP] = []
 
         for week in weekly_data:

@@ -18,7 +18,7 @@ Usage:
     print(format_blind_results(results))
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
 from enum import Enum
@@ -345,7 +345,7 @@ class BlindBacktester:
             prediction_type=PredictionType.BREACH_PILLARS,
             predicted_value=",".join(sorted(breaches)) if breaches else "none",
             confidence=0.75,
-            reasoning=f"Pillars below 0.2 threshold",
+            reasoning="Pillars below 0.2 threshold",
         ))
 
         # Prediction 4: Severity Level
@@ -426,7 +426,8 @@ class BlindBacktester:
 
         elif prediction.prediction_type == PredictionType.BREACH_PILLARS:
             actual_breach_str = ",".join(sorted(actual_breaches)) if actual_breaches else "none"
-            predicted_set = set(prediction.predicted_value.split(",")) if prediction.predicted_value != "none" else set()
+            predicted_set = set(prediction.predicted_value.split(
+                ",")) if prediction.predicted_value != "none" else set()
             actual_set = set(actual_breaches)
 
             # Consider correct if sets match or significant overlap
@@ -530,17 +531,20 @@ class BlindBacktester:
 
         # Calculate accuracies
         mac_acc = type_correct[PredictionType.MAC_REGIME] / type_total[PredictionType.MAC_REGIME]
-        hedge_acc = type_correct[PredictionType.HEDGE_OUTCOME] / type_total[PredictionType.HEDGE_OUTCOME]
-        breach_acc = type_correct[PredictionType.BREACH_PILLARS] / type_total[PredictionType.BREACH_PILLARS]
-        severity_acc = type_correct[PredictionType.SEVERITY_LEVEL] / type_total[PredictionType.SEVERITY_LEVEL]
+        hedge_acc = type_correct[PredictionType.HEDGE_OUTCOME] / \
+            type_total[PredictionType.HEDGE_OUTCOME]
+        breach_acc = type_correct[PredictionType.BREACH_PILLARS] / \
+            type_total[PredictionType.BREACH_PILLARS]
+        severity_acc = type_correct[PredictionType.SEVERITY_LEVEL] / \
+            type_total[PredictionType.SEVERITY_LEVEL]
 
         # Calculate false positives/negatives for hedge prediction
         hedge_predictions = [p for p in all_predictions
-                           if p.prediction_type == PredictionType.HEDGE_OUTCOME]
+                             if p.prediction_type == PredictionType.HEDGE_OUTCOME]
         hedge_outcomes = [o for o in all_outcomes
-                        if any(p.prediction_type == PredictionType.HEDGE_OUTCOME
-                              and p.scenario_name == o.scenario_name
-                              for p in all_predictions)]
+                          if any(p.prediction_type == PredictionType.HEDGE_OUTCOME
+                                 and p.scenario_name == o.scenario_name
+                                 for p in all_predictions)]
 
         false_positives = sum(
             1 for p, o in zip(hedge_predictions, hedge_outcomes)
@@ -562,9 +566,9 @@ class BlindBacktester:
         ]
 
         mean_conf_correct = (sum(correct_confidences) / len(correct_confidences)
-                           if correct_confidences else 0)
+                             if correct_confidences else 0)
         mean_conf_incorrect = (sum(incorrect_confidences) / len(incorrect_confidences)
-                             if incorrect_confidences else 0)
+                               if incorrect_confidences else 0)
 
         # Calculate positioning-hedge correlation
         # Correlation of 1.0 means perfect prediction: pos breach -> fail, no breach -> work
@@ -664,8 +668,8 @@ def format_blind_results(result: BlindBacktestResult) -> str:
 
         status = "[OK]" if outcome.prediction_correct else "[X]"
         lines.append(f"  {pred.prediction_type.value:15}: "
-                    f"Pred={pred.predicted_value:10} "
-                    f"Actual={outcome.actual_value:10} {status}")
+                     f"Pred={pred.predicted_value:10} "
+                     f"Actual={outcome.actual_value:10} {status}")
 
     lines.append("")
     lines.append("=" * 70)

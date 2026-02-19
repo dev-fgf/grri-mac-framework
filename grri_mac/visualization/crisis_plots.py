@@ -13,13 +13,12 @@ Or programmatically:
 
 import os
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
+from typing import Any, Optional
 
 # Try to import matplotlib, provide fallback message if not available
 try:
     import matplotlib.pyplot as plt
-    import matplotlib.dates as mdates
     from matplotlib.patches import Rectangle
     from matplotlib.lines import Line2D
     MATPLOTLIB_AVAILABLE = True
@@ -27,7 +26,7 @@ except ImportError:
     MATPLOTLIB_AVAILABLE = False
     print("Warning: matplotlib not installed. Run: pip install matplotlib")
 
-from ..backtest.scenarios import KNOWN_EVENTS, HistoricalScenario
+from ..backtest.scenarios import KNOWN_EVENTS
 from ..backtest.calibrated_engine import CalibratedBacktestEngine
 
 
@@ -134,9 +133,9 @@ class CrisisVisualizer:
             "vix": "#ff7f0e",      # Orange
             "ample": "#2ca02c",    # Green
             "thin": "#ffbb00",     # Yellow
-            "stretched": "#ff7f0e", # Orange
+            "stretched": "#ff7f0e",  # Orange
             "breach": "#d62728",   # Red
-            "hedge_fail": "#9467bd", # Purple
+            "hedge_fail": "#9467bd",  # Purple
         }
 
         # Pillar colors
@@ -168,39 +167,35 @@ class CrisisVisualizer:
         This illustrates the key advantage: MAC captures stress dimensions VIX misses.
         """
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-        fig.suptitle("MAC vs VIX: Capturing Different Stress Dimensions", fontsize=14, fontweight='bold')
+        fig.suptitle("MAC vs VIX: Capturing Different Stress Dimensions",
+                     fontsize=14, fontweight='bold')
 
         # Define scenarios to plot
         scenarios = [
-            {
-                "title": "Lehman 2008: Both Signals Aligned",
-                "mac_series": [0.65, 0.55, 0.40, 0.25, 0.14, 0.18, 0.25, 0.35],
-                "vix_series": [25, 35, 45, 60, 81, 70, 55, 40],
-                "ax": axes[0, 0],
-                "note": "Systemic crisis: MAC and VIX both spike",
-            },
-            {
-                "title": "Repo Spike 2019: MAC Detects, VIX Misses",
-                "mac_series": [0.75, 0.70, 0.63, 0.55, 0.63, 0.68, 0.72, 0.75],
-                "vix_series": [14, 15, 16, 19, 17, 15, 14, 13],
-                "ax": axes[0, 1],
-                "note": "Funding crisis: MAC catches liquidity stress\nVIX stays calm (equity markets stable)",
-            },
-            {
-                "title": "COVID-19 2020: Hedge Failure Warning",
-                "mac_series": [0.70, 0.55, 0.35, 0.15, 0.20, 0.35, 0.50, 0.60],
-                "vix_series": [15, 30, 55, 83, 65, 45, 30, 22],
-                "ax": axes[1, 0],
-                "note": "Positioning breach -> Treasury hedge FAILED\nMAC warned of the structural break",
-            },
-            {
-                "title": "Flash Crash 2010: VIX Spike, MAC Moderate",
-                "mac_series": [0.60, 0.55, 0.45, 0.42, 0.50, 0.58, 0.62, 0.65],
-                "vix_series": [18, 22, 35, 42, 28, 22, 19, 17],
-                "ax": axes[1, 1],
-                "note": "Technical event: VIX spiked briefly\nMAC showed limited systemic stress",
-            },
-        ]
+            {"title": "Lehman 2008: Both Signals Aligned",
+             "mac_series": [0.65, 0.55, 0.40, 0.25, 0.14, 0.18, 0.25, 0.35],
+             "vix_series": [25, 35, 45, 60, 81, 70, 55, 40],
+             "ax": axes[0, 0],
+             "note": "Systemic crisis: MAC and VIX both spike", },
+            {"title": "Repo Spike 2019: MAC Detects, VIX Misses",
+             "mac_series": [0.75, 0.70, 0.63, 0.55, 0.63, 0.68, 0.72, 0.75],
+             "vix_series": [14, 15, 16, 19, 17, 15, 14, 13],
+             "ax": axes[0, 1],
+             "note":
+             "Funding crisis: MAC catches liquidity"
+             " stress\nVIX stays calm"
+             " (equity markets stable)", },
+            {"title": "COVID-19 2020: Hedge Failure Warning",
+             "mac_series": [0.70, 0.55, 0.35, 0.15, 0.20, 0.35, 0.50, 0.60],
+             "vix_series": [15, 30, 55, 83, 65, 45, 30, 22],
+             "ax": axes[1, 0],
+             "note":
+             "Positioning breach -> Treasury hedge FAILED\nMAC warned of the structural break", },
+            {"title": "Flash Crash 2010: VIX Spike, MAC Moderate",
+             "mac_series": [0.60, 0.55, 0.45, 0.42, 0.50, 0.58, 0.62, 0.65],
+             "vix_series": [18, 22, 35, 42, 28, 22, 19, 17],
+             "ax": axes[1, 1],
+             "note": "Technical event: VIX spiked briefly\nMAC showed limited systemic stress", },]
 
         for scenario in scenarios:
             ax = scenario["ax"]
@@ -210,18 +205,18 @@ class CrisisVisualizer:
             ax2 = ax.twinx()
 
             line1 = ax.plot(days, scenario["mac_series"],
-                          color=self.colors["mac"], linewidth=2.5,
-                          marker='o', markersize=6, label="MAC Score")
+                            color=self.colors["mac"], linewidth=2.5,
+                            marker='o', markersize=6, label="MAC Score")
             ax.axhline(y=0.2, color=self.colors["breach"], linestyle='--',
-                      alpha=0.7, label="MAC Breach Level")
+                       alpha=0.7, label="MAC Breach Level")
             ax.fill_between(days, 0, 0.2, color=self.colors["breach"], alpha=0.1)
 
             # Plot VIX
             line2 = ax2.plot(days, scenario["vix_series"],
-                           color=self.colors["vix"], linewidth=2.5,
-                           marker='s', markersize=6, label="VIX")
+                             color=self.colors["vix"], linewidth=2.5,
+                             marker='s', markersize=6, label="VIX")
             ax2.axhline(y=30, color=self.colors["vix"], linestyle=':',
-                       alpha=0.5, label="VIX Warning (30)")
+                        alpha=0.5, label="VIX Warning (30)")
 
             ax.set_title(scenario["title"], fontsize=11, fontweight='bold')
             ax.set_xlabel("Days from Crisis Start")
@@ -236,12 +231,12 @@ class CrisisVisualizer:
 
             # Add annotation
             ax.text(0.02, 0.02, scenario["note"], transform=ax.transAxes,
-                   fontsize=8, verticalalignment='bottom',
-                   bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                    fontsize=8, verticalalignment='bottom',
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
             # Combined legend
             lines = line1 + line2
-            labels = [l.get_label() for l in lines]
+            labels = [line.get_label() for line in lines]
             ax.legend(lines, labels, loc='upper right', fontsize=8)
 
         plt.tight_layout()
@@ -284,7 +279,7 @@ class CrisisVisualizer:
 
         # Add breach threshold line
         ax.axvline(x=0.2, color=self.colors["breach"], linestyle='--',
-                  linewidth=2, label="Breach Threshold (0.2)")
+                   linewidth=2, label="Breach Threshold (0.2)")
 
         # Color bars below breach threshold
         for bar, score, pillar in zip(bars, scores, pillars):
@@ -297,14 +292,14 @@ class CrisisVisualizer:
         for bar, score in zip(bars, scores):
             width = bar.get_width()
             ax.text(width + 0.02, bar.get_y() + bar.get_height()/2,
-                   f'{score:.3f}', va='center', fontsize=10, fontweight='bold')
+                    f'{score:.3f}', va='center', fontsize=10, fontweight='bold')
 
         ax.set_xlabel("Pillar Score (0 = Breached, 1 = Ample)", fontsize=11)
         ax.set_title(f"MAC Pillar Breakdown: {scenario.name}\n"
-                    f"Date: {scenario.date.strftime('%Y-%m-%d')} | "
-                    f"MAC: {result.mac_score:.3f} | "
-                    f"Hedge: {'Worked' if scenario.treasury_hedge_worked else 'FAILED'}",
-                    fontsize=12, fontweight='bold')
+                     f"Date: {scenario.date.strftime('%Y-%m-%d')} | "
+                     f"MAC: {result.mac_score:.3f} | "
+                     f"Hedge: {'Worked' if scenario.treasury_hedge_worked else 'FAILED'}",
+                     fontsize=12, fontweight='bold')
 
         ax.set_xlim(0, 1.15)
         ax.legend(loc='lower right')
@@ -358,13 +353,13 @@ class CrisisVisualizer:
             size = 200 if not hedge_worked else 120
 
             ax.scatter(vix, mac, c=color, s=size, marker=marker,
-                      edgecolors='black', linewidth=1.5, zorder=5)
+                       edgecolors='black', linewidth=1.5, zorder=5)
 
             # Label
             label = scenario.name.replace(" ", "\n")[:25]
             ax.annotate(label, (vix, mac),
-                       xytext=(8, 8), textcoords='offset points',
-                       fontsize=8, alpha=0.8)
+                        xytext=(8, 8), textcoords='offset points',
+                        fontsize=8, alpha=0.8)
 
         # Add quadrant lines
         ax.axhline(y=0.35, color='gray', linestyle='--', alpha=0.5)
@@ -372,13 +367,13 @@ class CrisisVisualizer:
 
         # Quadrant labels
         ax.text(15, 0.7, "Low VIX, High MAC\n(Hidden Fragility)",
-               ha='center', fontsize=9, style='italic', alpha=0.7)
+                ha='center', fontsize=9, style='italic', alpha=0.7)
         ax.text(60, 0.7, "High VIX, High MAC\n(Transient Shock)",
-               ha='center', fontsize=9, style='italic', alpha=0.7)
+                ha='center', fontsize=9, style='italic', alpha=0.7)
         ax.text(15, 0.15, "Low VIX, Low MAC\n(Rare)",
-               ha='center', fontsize=9, style='italic', alpha=0.7)
+                ha='center', fontsize=9, style='italic', alpha=0.7)
         ax.text(60, 0.15, "High VIX, Low MAC\n(Systemic Crisis)",
-               ha='center', fontsize=9, style='italic', alpha=0.7)
+                ha='center', fontsize=9, style='italic', alpha=0.7)
 
         # Add breach zone
         ax.axhspan(0, 0.2, alpha=0.15, color='red')
@@ -387,8 +382,8 @@ class CrisisVisualizer:
         ax.set_xlabel("VIX Level", fontsize=12)
         ax.set_ylabel("MAC Score", fontsize=12)
         ax.set_title("MAC vs VIX Across 14 Crisis Events (1998-2025)\n"
-                    "X = Treasury Hedge Failed | O = Hedge Worked",
-                    fontsize=13, fontweight='bold')
+                     "X = Treasury Hedge Failed | O = Hedge Worked",
+                     fontsize=13, fontweight='bold')
 
         ax.set_xlim(0, 100)
         ax.set_ylim(0, 0.85)
@@ -425,7 +420,7 @@ class CrisisVisualizer:
         fig, ax = plt.subplots(figsize=(12, 7))
 
         # Collect data
-        scenarios_data = []
+        scenarios_data: list[dict[str, Any]] = []
         for key, scenario in KNOWN_EVENTS.items():
             result = self.engine.run_scenario(scenario)
             pos_score = result.pillar_scores.get("positioning", 0.5)
@@ -448,11 +443,11 @@ class CrisisVisualizer:
             size = 200 if not data["hedge_worked"] else 150
 
             ax.scatter(i, data["positioning"], c=color, s=size, marker=marker,
-                      edgecolors='black', linewidth=2, zorder=5)
+                       edgecolors='black', linewidth=2, zorder=5)
 
         # Add breach threshold
         ax.axhline(y=0.2, color=self.colors["breach"], linestyle='--',
-                  linewidth=2, label="Breach Threshold (0.2)")
+                   linewidth=2, label="Breach Threshold (0.2)")
         ax.fill_between(x_positions, 0, 0.2, color=self.colors["breach"], alpha=0.15)
 
         # Connect points with line
@@ -462,13 +457,13 @@ class CrisisVisualizer:
         # Labels
         ax.set_xticks(x_positions)
         ax.set_xticklabels([d["date"].strftime("%Y") + "\n" + d["name"][:15]
-                          for d in scenarios_data],
-                         rotation=45, ha='right', fontsize=8)
+                            for d in scenarios_data],
+                           rotation=45, ha='right', fontsize=8)
 
         ax.set_ylabel("Positioning Pillar Score", fontsize=12)
         ax.set_title("Key Insight: Positioning Breach Predicts Treasury Hedge Failure\n"
-                    "100% Correlation in Historical Sample (1998-2025)",
-                    fontsize=13, fontweight='bold')
+                     "100% Correlation in Historical Sample (1998-2025)",
+                     fontsize=13, fontweight='bold')
 
         ax.set_ylim(0, 1)
 
@@ -476,12 +471,13 @@ class CrisisVisualizer:
         for i, data in enumerate(scenarios_data):
             if not data["hedge_worked"]:
                 ax.annotate(
-                    f"HEDGE\nFAILED",
+                    "HEDGE\nFAILED",
                     (i, data["positioning"]),
                     xytext=(0, -40), textcoords='offset points',
                     ha='center', fontsize=8, fontweight='bold',
                     color=self.colors["hedge_fail"],
-                    bbox=dict(boxstyle='round', facecolor='white', edgecolor=self.colors["hedge_fail"]),
+                    bbox=dict(boxstyle='round', facecolor='white',
+                              edgecolor=self.colors["hedge_fail"]),
                     arrowprops=dict(arrowstyle='->', color=self.colors["hedge_fail"])
                 )
 
@@ -515,8 +511,9 @@ class CrisisVisualizer:
         Create heatmap showing pillar scores across all crisis events.
         """
         # Collect data
-        scenarios = []
-        pillar_names = ["liquidity", "valuation", "positioning", "volatility", "policy", "contagion"]
+        scenarios: list[dict[str, Any]] = []
+        pillar_names = ["liquidity", "valuation",
+                        "positioning", "volatility", "policy", "contagion"]
 
         for key, scenario in KNOWN_EVENTS.items():
             result = self.engine.run_scenario(scenario)
@@ -549,23 +546,23 @@ class CrisisVisualizer:
             weight = 'normal' if s["hedge"] else 'bold'
             suffix = "" if s["hedge"] else " [HEDGE FAILED]"
             ax.text(-0.5, i, f"{s['name']}{suffix}", ha='right', va='center',
-                   fontsize=9, color=color, fontweight=weight)
+                    fontsize=9, color=color, fontweight=weight)
 
         # Add cell values
         for i in range(len(scenarios)):
             for j in range(len(pillar_names)):
                 value = data[i][j]
                 color = 'white' if value < 0.3 or value > 0.7 else 'black'
-                text = ax.text(j, i, f'{value:.2f}', ha='center', va='center',
-                              color=color, fontsize=8)
+                ax.text(j, i, f'{value:.2f}', ha='center', va='center',
+                        color=color, fontsize=8)
                 # Add breach marker
                 if value < 0.2:
                     ax.add_patch(Rectangle((j-0.5, i-0.5), 1, 1,
-                                          fill=False, edgecolor='red', linewidth=2))
+                                           fill=False, edgecolor='red', linewidth=2))
 
         ax.set_title("MAC Pillar Scores Across 14 Crisis Events (1998-2025)\n"
-                    "Red boxes indicate breaching pillars",
-                    fontsize=13, fontweight='bold')
+                     "Red boxes indicate breaching pillars",
+                     fontsize=13, fontweight='bold')
 
         # Colorbar
         cbar = plt.colorbar(im, ax=ax, shrink=0.8)

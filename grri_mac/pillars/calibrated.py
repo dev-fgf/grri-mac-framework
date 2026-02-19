@@ -124,7 +124,7 @@ VOLATILITY_THRESHOLDS = {
         "thin_low": 0.92,    # (was 0.95)
         "thin_high": 1.06,   # (was 1.08)
         "breach_low": 0.88,  # (was 0.90)
-        "breach_high": 1.08, # (was 1.10)
+        "breach_high": 1.08,  # (was 1.10)
     },
     "rv_iv_gap": {
         "ample": 15,    # (was 20)

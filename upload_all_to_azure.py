@@ -28,7 +28,6 @@ import json
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -40,7 +39,8 @@ PROJECT_ROOT = Path(__file__).parent
 FRED_CACHE = PROJECT_ROOT / "data" / "fred_cache" / "fred_series_cache.pkl"
 HISTORICAL_DIR = PROJECT_ROOT / "data" / "historical"
 BACKTEST_CSV = PROJECT_ROOT / "data" / "backtest_results" / "backtest_full_1971_2025.csv"
-BACKTEST_VALIDATION = PROJECT_ROOT / "data" / "backtest_results" / "backtest_full_1971_2025.validation.json"
+BACKTEST_VALIDATION = PROJECT_ROOT / "data" / \
+    "backtest_results" / "backtest_full_1971_2025.validation.json"
 
 
 def series_to_upload_dict(dates, values):
@@ -53,7 +53,8 @@ def series_to_upload_dict(dates, values):
         else:
             d_str = str(d)
         clean_dates.append(d_str)
-        clean_values.append(None if (v is None or (isinstance(v, float) and np.isnan(v))) else float(v))
+        clean_values.append(None if (v is None or (
+            isinstance(v, float) and np.isnan(v))) else float(v))
     return {"dates": clean_dates, "values": clean_values}
 
 
@@ -116,7 +117,10 @@ HISTORICAL_SERIES = {
     "NBER_M13036": ("nber/m13036.csv", "date", "value", "Corporate Bonds Lowest Rating"),
     "NBER_M14076": ("nber/m14076.csv", "date", "value", "US Monetary Gold Stock"),
     # Schwert
-    "SCHWERT_VOL": ("schwert/schwert_volatility.csv", "date", "volatility", "Schwert Realized Volatility"),
+    "SCHWERT_VOL": (
+        "schwert/schwert_volatility.csv",
+        "date", "volatility", "Schwert Realized Volatility",
+    ),
     # BoE
     "BOE_GBPUSD": ("boe/boe_gbpusd.csv", "date", "rate", "GBP/USD Exchange Rate"),
     "BOE_BANKRATE": ("boe/boe_bankrate.csv", "date", "rate", "BoE Official Bank Rate"),
@@ -152,7 +156,8 @@ def upload_historical(db, dry_run=False):
 
         dates = df[date_col].astype(str).tolist()
         values = df[val_col].tolist()
-        non_null = sum(1 for v in values if v is not None and not (isinstance(v, float) and np.isnan(v)))
+        non_null = sum(1 for v in values if v is not None and not (
+            isinstance(v, float) and np.isnan(v)))
 
         if dry_run:
             print(f"  [DRY] {series_id}: {non_null} pts — {desc}")
@@ -272,7 +277,12 @@ def verify(db):
     if fred_count > 0:
         series_list = db.list_fred_series()
         for s in series_list[:10]:
-            print(f"    {s['series_id']:25s} {s['total_points']:>6d} pts  ({s['start_date']} to {s['end_date']})")
+            print(
+                f"    {s['series_id']:25s}"
+                f" {s['total_points']:>6d} pts"
+                f"  ({s['start_date']}"
+                f" to {s['end_date']})"
+            )
         if len(series_list) > 10:
             print(f"    ... and {len(series_list) - 10} more")
 

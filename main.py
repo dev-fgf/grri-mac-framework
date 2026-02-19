@@ -12,18 +12,17 @@ Usage:
 """
 
 import argparse
-import sys
-from datetime import datetime, timedelta
 
 
 def run_demo():
     """Run framework with demo data."""
     from grri_mac.mac.composite import calculate_mac, get_mac_interpretation
     from grri_mac.mac.multiplier import mac_to_multiplier
-    from grri_mac.china.activation import ChinaActivationScore, ChinaVectorIndicators, ActivationLevel
+    from grri_mac.china.activation import (
+        ChinaActivationScore, ChinaVectorIndicators, ActivationLevel,
+    )
     from grri_mac.china.adjustment import adjust_mac_for_china
     from grri_mac.grri.modifier import calculate_grri, GRRIPillars, calculate_full_impact
-    from grri_mac.dashboard.daily import DailyDashboard, DashboardReport
     from grri_mac.dashboard.alerts import AlertSystem
 
     print("=" * 60)
@@ -43,7 +42,14 @@ def run_demo():
     print("PILLAR SCORES (Demo Data)")
     print("-" * 40)
     for pillar, score in pillar_scores.items():
-        status = "AMPLE" if score >= 0.8 else "THIN" if score >= 0.5 else "STRETCHED" if score >= 0.2 else "BREACH"
+        if score >= 0.8:
+            status = "AMPLE"
+        elif score >= 0.5:
+            status = "THIN"
+        elif score >= 0.2:
+            status = "STRETCHED"
+        else:
+            status = "BREACH"
         print(f"  {pillar.capitalize():12} {score:.3f}  [{status}]")
     print()
 
@@ -159,7 +165,6 @@ def run_db_demo():
     """Run demo with database storage."""
     from grri_mac.service import MACService
     from grri_mac.china.activation import ChinaVectorIndicators, ActivationLevel
-    from grri_mac.db import get_db, MACRepository
 
     print("=" * 60)
     print("GRRI-MAC DATABASE DEMO")
@@ -243,7 +248,7 @@ def run_db_demo():
 
 def run_history():
     """Show historical data from database."""
-    from grri_mac.db import get_db, MACRepository
+    from grri_mac.db import MACRepository
 
     print("=" * 60)
     print("MAC HISTORICAL DATA")

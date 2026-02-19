@@ -10,7 +10,7 @@ Indicators:
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 from ..mac.scorer import score_indicator_simple
 
@@ -40,7 +40,7 @@ class LiquidityPillar:
     """Liquidity pillar calculator."""
 
     # Thresholds from specification (in basis points)
-    THRESHOLDS = {
+    THRESHOLDS: dict[str, Any] = {
         "sofr_iorb": {
             "ample": 5,    # < 5 bps
             "thin": 25,    # 5-25 bps
@@ -49,17 +49,17 @@ class LiquidityPillar:
         "cp_treasury": {
             "ample": 20,   # < 20 bps
             "thin": 50,    # 20-50 bps
-            "breach": 100, # > 50 bps
+            "breach": 100,  # > 50 bps
         },
         "cross_currency": {
             "ample": -30,   # > -30 bps (less negative is better)
             "thin": -75,    # -30 to -75 bps
-            "breach": -120, # < -75 bps
+            "breach": -120,  # < -75 bps
         },
         "bid_ask": {
             "ample": 1.0,  # < 1/32
             "thin": 2.0,   # 1-2/32
-            "breach": 4.0, # > 2/32
+            "breach": 4.0,  # > 2/32
         },
     }
 
