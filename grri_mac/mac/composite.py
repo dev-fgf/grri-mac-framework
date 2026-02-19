@@ -15,6 +15,13 @@ class MACResult:
     multiplier: Optional[float] = None
     interaction_penalty: float = 0.0  # Non-linear breach penalty applied
     raw_score: Optional[float] = None  # Score before interaction adjustment
+    # Bootstrap confidence intervals (v7)
+    ci_80: Optional[tuple[float, float]] = None  # 80% CI (10th-90th)
+    ci_90: Optional[tuple[float, float]] = None  # 90% CI (5th-95th)
+    bootstrap_std: Optional[float] = None
+    # HMM regime overlay (v7)
+    hmm_fragile_prob: Optional[float] = None
+    hmm_regime: Optional[str] = None
 
 
 DEFAULT_WEIGHTS_5_PILLAR = {
@@ -52,13 +59,13 @@ DEFAULT_WEIGHTS_7_PILLAR = {
 # =============================================================================
 
 ML_OPTIMIZED_WEIGHTS = {
-    "liquidity": 0.16,      # Slightly reduced for 7-pillar model
-    "valuation": 0.10,      # Lower - only breaches in extreme crises (2/14)
-    "positioning": 0.22,    # HIGHEST - necessary condition for hedge failure (3/3, p=0.0027)
-    "volatility": 0.15,     # Moderate - ubiquitous (9/14) but not predictive alone
-    "policy": 0.12,         # Elevated after binding-constraint rewrite (was 0.09)
-    "contagion": 0.15,      # Moderate - critical for global vs local distinction
-    "private_credit": 0.10, # Decorrelated signal, leading indicator for credit stress
+    "liquidity": 0.16,  # Slightly reduced for 7-pillar model
+    "valuation": 0.10,  # Lower - only breaches in extreme crises (2/14)
+    "positioning": 0.22,  # Highest; hedge failure necessary (p=0.0027)
+    "volatility": 0.15,  # Moderate; common but not predictive alone
+    "policy": 0.12,  # Elevated after binding-constraint rewrite
+    "contagion": 0.15,  # Moderate; key for global vs local distinction
+    "private_credit": 0.10,  # Decorrelated leading credit stress indicator
 }
 
 # Interaction-adjusted weights
@@ -74,7 +81,44 @@ INTERACTION_ADJUSTED_WEIGHTS = {
     "volatility": 0.16,
     "policy": 0.09,         # Elevated after binding-constraint rewrite
     "contagion": 0.18,      # Boosted - global contagion amplifies all stress
-    "private_credit": 0.11, # Decorrelated leading indicator
+    "private_credit": 0.11,  # Decorrelated leading indicator
+}
+
+DEFAULT_WEIGHTS_8_PILLAR = {
+    "liquidity": 1/8,
+    "valuation": 1/8,
+    "positioning": 1/8,
+    "volatility": 1/8,
+    "policy": 1/8,
+    "contagion": 1/8,
+    "private_credit": 1/8,
+    "sentiment": 1/8,
+}
+
+# ML-optimized weights for 8-pillar model
+# Sentiment absorbs weight proportionally from all other pillars
+# and carries its own signal from FOMC rate-change proxy (1960+)
+ML_OPTIMIZED_WEIGHTS_8 = {
+    "liquidity": 0.14,
+    "valuation": 0.09,
+    "positioning": 0.20,
+    "volatility": 0.13,
+    "policy": 0.11,
+    "contagion": 0.13,
+    "private_credit": 0.09,
+    "sentiment": 0.11,   # Forward-looking policy intent signal
+}
+
+# Interaction-adjusted weights for 8-pillar model
+INTERACTION_ADJUSTED_WEIGHTS_8 = {
+    "liquidity": 0.12,
+    "valuation": 0.07,
+    "positioning": 0.22,  # Boosted — forced-unwind risk
+    "volatility": 0.14,
+    "policy": 0.08,
+    "contagion": 0.16,    # Boosted — global contagion
+    "private_credit": 0.10,
+    "sentiment": 0.11,    # Unchanged — orthogonal signal
 }
 
 # Default to 7-pillar framework with equal weights
@@ -169,8 +213,8 @@ def derive_breach_interaction_penalties(
 
 
 def validate_breach_penalty_sensitivity(
-    threshold_perturbations: list[float] = None,
-    prob_perturbations: list[float] = None,
+    threshold_perturbations: Optional[list[float]] = None,
+    prob_perturbations: Optional[list[float]] = None,
 ) -> dict:
     """
     Validate that breach penalties are robust to parameter perturbation.
@@ -365,7 +409,7 @@ def calculate_mac_ml(
         cont_stressed = pillars.get("contagion", 1.0) < 0.3
 
         # Use interaction weights when amplification conditions exist
-        # Key insight: positioning + (vol OR liquidity OR contagion) = forced unwind risk
+        # Key insight: positioning plus (vol/liquidity/contagion) -> forced unwind risk
         if pos_stressed and (vol_stressed or liq_stressed or cont_stressed):
             weights = INTERACTION_ADJUSTED_WEIGHTS
         else:
@@ -374,6 +418,55 @@ def calculate_mac_ml(
         weights = ML_OPTIMIZED_WEIGHTS
 
     return calculate_mac(pillars, weights=weights, breach_threshold=breach_threshold)
+
+
+def calculate_mac_with_ci(
+    pillars: dict[str, float],
+    weights: Optional[dict[str, float]] = None,
+    breach_threshold: float = 0.2,
+    n_bootstrap: int = 1000,
+    alpha_mean: float = 0.78,
+    alpha_std: float = 0.05,
+) -> MACResult:
+    """Calculate MAC score with bootstrap confidence intervals.
+
+    Wraps calculate_mac() and adds 80%/90% CIs from bootstrapping
+    indicator noise, weight instability, and calibration factor variance.
+
+    Args:
+        pillars: Dict mapping pillar names to scores (0-1)
+        weights: Optional custom weights
+        breach_threshold: Threshold for breach detection
+        n_bootstrap: Number of bootstrap iterations
+        alpha_mean: Mean calibration factor (from LOOCV)
+        alpha_std: Std of calibration factor (from LOOCV)
+
+    Returns:
+        MACResult with ci_80, ci_90, and bootstrap_std populated
+    """
+    # First, compute the point estimate
+    result = calculate_mac(pillars, weights=weights, breach_threshold=breach_threshold)
+
+    # Then compute CIs
+    try:
+        from .confidence import bootstrap_mac_ci
+
+        effective_weights = weights or {p: 1.0 / len(pillars) for p in pillars}
+        ci_result = bootstrap_mac_ci(
+            pillar_scores=pillars,
+            weights=effective_weights,
+            n_bootstrap=n_bootstrap,
+            alpha_mean=alpha_mean,
+            alpha_std=alpha_std,
+            interaction_penalty=result.interaction_penalty,
+        )
+        result.ci_80 = ci_result.ci_80
+        result.ci_90 = ci_result.ci_90
+        result.bootstrap_std = ci_result.bootstrap_std
+    except ImportError:
+        pass  # confidence module not available
+
+    return result
 
 
 def get_recommended_weights(pillars: dict[str, float]) -> tuple[dict[str, float], str]:

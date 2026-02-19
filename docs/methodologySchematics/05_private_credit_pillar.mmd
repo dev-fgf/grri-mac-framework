@@ -1,0 +1,33 @@
+%% MAC Framework — Private Credit Pillar Pipeline
+%% Section 3.7 of methodology.md
+
+flowchart LR
+    subgraph PublicProxies["Public Market Proxies"]
+        SLOOS["SLOOS Survey<br/>(quarterly)"]
+        BDC["BDC Price/NAV<br/>(daily)"]
+        LOAN["Leveraged Loan<br/>ETFs (daily)"]
+        PE["PE Firm Stocks<br/>(daily)"]
+    end
+
+    subgraph Decorrelation
+        PCA["5-Factor PCA<br/>Decorrelation"]
+    end
+
+    subgraph Factors["PCA Input Factors"]
+        F1["SPX returns"]
+        F2["dVIX"]
+        F3["dHY_OAS"]
+        F4["dMOVE"]
+        F5["dXCCY basis"]
+    end
+
+    Factors --> PCA
+    PublicProxies --> PCA
+    PCA --> COMP["Private Credit<br/>Composite"]
+    SLOOS --> COMP
+
+    COMP --> SCORE{"Stress Level"}
+    SCORE -->|"> 0.55"| BEN["BENIGN"]
+    SCORE -->|"0.40 - 0.55"| EME["EMERGING"]
+    SCORE -->|"0.25 - 0.40"| ELE["ELEVATED"]
+    SCORE -->|"< 0.25"| SEV["SEVERE"]

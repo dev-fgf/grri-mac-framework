@@ -104,9 +104,18 @@ class BlobStore:
         connection_string: Optional[str] = None,
         local_root: Optional[Path] = None,
     ) -> None:
-        self._conn_str = connection_string or os.environ.get(
-            "AZURE_STORAGE_CONNECTION_STRING"
+        prefer_local = local_root is not None
+        self._conn_str = (
+            connection_string
+            if not prefer_local
+            else connection_string  # ignore env when caller supplies root
         )
+
+        if self._conn_str is None and not prefer_local:
+            self._conn_str = os.environ.get(
+                "AZURE_STORAGE_CONNECTION_STRING"
+            )
+
         _root = (
             local_root
             or os.environ.get(

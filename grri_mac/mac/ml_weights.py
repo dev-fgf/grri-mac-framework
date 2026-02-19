@@ -15,7 +15,6 @@ References:
 """
 
 from dataclasses import dataclass
-from typing import Optional
 import numpy as np
 
 try:
@@ -23,24 +22,26 @@ try:
     from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
     from sklearn.preprocessing import StandardScaler
     from sklearn.model_selection import LeaveOneOut, cross_val_score
-    from sklearn.inspection import permutation_importance
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
 
 
 # Pillar names in standard order
-PILLAR_NAMES = ["liquidity", "valuation", "positioning", "volatility", "policy", "contagion"]
+PILLAR_NAMES = [
+    "liquidity", "valuation", "positioning",
+    "volatility", "policy", "contagion",
+]
 
 # Interaction pairs of theoretical interest
 # These capture known amplification mechanisms
 INTERACTION_PAIRS = [
-    ("positioning", "volatility"),    # Crowded trades + vol spike = forced unwind
-    ("positioning", "liquidity"),     # Positioning + illiquidity = margin calls
-    ("policy", "contagion"),          # Policy constraints + global stress = limited response
-    ("liquidity", "contagion"),       # Liquidity stress + global = dollar squeeze
-    ("valuation", "volatility"),      # Compressed spreads + vol = repricing
-    ("positioning", "contagion"),     # Positioning + global = coordinated unwind
+    ("positioning", "volatility"),   # Crowded + vol spike = forced unwind
+    ("positioning", "liquidity"),    # Positioning + illiquid = margin calls
+    ("policy", "contagion"),         # Policy constrained + global stress
+    ("liquidity", "contagion"),      # Liquidity + global = dollar squeeze
+    ("valuation", "volatility"),     # Compressed spreads + vol = repricing
+    ("positioning", "contagion"),    # Positioning + global = coordinated
 ]
 
 
@@ -416,7 +417,12 @@ class MLWeightOptimizer:
         key = (p1, p2) if (p1, p2) in interpretations else (p2, p1)
         base = interpretations.get(key, f"Interaction between {p1} and {p2}")
 
-        strength_label = "strong" if strength > 0.15 else "moderate" if strength > 0.08 else "weak"
+        if strength > 0.15:
+            strength_label = "strong"
+        elif strength > 0.08:
+            strength_label = "moderate"
+        else:
+            strength_label = "weak"
         return f"[{strength_label.upper()}] {base}"
 
     def _generate_optimization_notes(
@@ -434,7 +440,10 @@ class MLWeightOptimizer:
         elif cv_score > 0.4:
             notes.append(f"Moderate predictive power (R² = {cv_score:.2f})")
         else:
-            notes.append(f"Limited predictive power (R² = {cv_score:.2f}) - equal weights may suffice")
+            notes.append(
+                f"Limited predictive power (R² = {cv_score:.2f})"
+                " - equal weights may suffice"
+            )
 
         # Identify dominant pillars
         sorted_weights = sorted(weights.items(), key=lambda x: x[1], reverse=True)
@@ -449,7 +458,10 @@ class MLWeightOptimizer:
             )
             top_interaction, top_strength = sorted_interactions[0]
             if top_strength > 0.05:
-                notes.append(f"Key interaction: {top_interaction} (importance: {top_strength:.2f})")
+                notes.append(
+                    f"Key interaction: {top_interaction}"
+                    f" (importance: {top_strength:.2f})"
+                )
 
         # Compare to equal weights
         equal_weight = 1 / len(PILLAR_NAMES)
@@ -529,14 +541,27 @@ class MLWeightOptimizer:
         }
 
 
-def run_optimization_on_scenarios() -> dict:
+def run_optimization_on_scenarios(
+    method: str = "gradient_boosting",
+    use_augmentation: bool = False,
+    augmentation_noise_pct: float = 0.10,
+    augmentation_n: int = 8,
+) -> dict:
     """
-    Run ML optimization on the 14 historical scenarios.
+    Run ML optimization on historical scenarios.
+
+    Now supports all scenarios in KNOWN_EVENTS (N~35 with v7 expansion)
+    and optional synthetic augmentation for improved ML stability.
+
+    Args:
+        method: "gradient_boosting" (sklearn), "xgboost" (requires xgboost+optuna)
+        use_augmentation: Whether to apply synthetic data augmentation
+        augmentation_noise_pct: Noise level for augmentation (default 10%)
+        augmentation_n: Number of synthetic variants per real scenario
 
     Returns:
         Dict with optimization results and recommendations
     """
-    from ..backtest.scenarios import KNOWN_EVENTS
     from ..backtest.calibrated_engine import CalibratedBacktestEngine
 
     # Run backtest to get pillar scores
@@ -553,24 +578,65 @@ def run_optimization_on_scenarios() -> dict:
         expected_macs.append(sum(result.expected_mac_range) / 2)  # Midpoint
         hedge_failed.append(not result.treasury_hedge_worked)
 
-    # Run optimization
-    optimizer = MLWeightOptimizer()
+    # Apply synthetic augmentation if requested
+    if use_augmentation:
+        try:
+            from ..backtest.augmentation import augment_scenarios, AugmentationConfig
+
+            aug_config = AugmentationConfig(
+                noise_pct=augmentation_noise_pct,
+                n_augmented=augmentation_n,
+            )
+            scenario_dicts = [
+                {
+                    "pillar_scores": ps,
+                    "expected_mac": em,
+                    "hedge_failed": hf,
+                    "scenario_name": f"scenario_{i}",
+                }
+                for i, (ps, em, hf) in enumerate(
+                    zip(pillar_scores, expected_macs, hedge_failed)
+                )
+            ]
+            augmented = augment_scenarios(scenario_dicts, config=aug_config)
+
+            # Separate back into parallel lists
+            pillar_scores = [s["pillar_scores"] for s in augmented]
+            expected_macs = [s["expected_mac"] for s in augmented]
+            hedge_failed = [s["hedge_failed"] for s in augmented]
+        except ImportError:
+            pass  # Augmentation module not available
+
+    # Select optimizer based on method
+    if method == "xgboost":
+        try:
+            from .ml_weights_xgb import XGBWeightOptimizer
+            optimizer = XGBWeightOptimizer()
+        except ImportError:
+            optimizer = MLWeightOptimizer()
+            method = "gradient_boosting"
+    else:
+        optimizer = MLWeightOptimizer()
 
     # Optimize for severity prediction
     severity_result = optimizer.optimize_for_severity(
-        pillar_scores, expected_macs, method="gradient_boosting"
+        pillar_scores, expected_macs, method=method
     )
 
     # Optimize for hedge failure prediction
     hedge_result = optimizer.optimize_for_hedge_failure(
-        pillar_scores, hedge_failed, method="gradient_boosting"
+        pillar_scores, hedge_failed, method=method
     )
 
-    # Detect interactions
-    interactions = optimizer.detect_interactions(pillar_scores, expected_macs)
+    # Detect interactions (always use base MLWeightOptimizer for this)
+    if isinstance(optimizer, MLWeightOptimizer):
+        base_optimizer = optimizer
+    else:
+        base_optimizer = MLWeightOptimizer()
+    interactions = base_optimizer.detect_interactions(pillar_scores, expected_macs)
 
     # Compare weighting schemes
-    comparison = optimizer.compare_weighting_schemes(pillar_scores, expected_macs)
+    comparison = base_optimizer.compare_weighting_schemes(pillar_scores, expected_macs)
 
     return {
         "severity_optimization": {
@@ -596,4 +662,6 @@ def run_optimization_on_scenarios() -> dict:
         ],
         "comparison": comparison,
         "n_scenarios": len(pillar_scores),
+        "method": method,
+        "augmented": use_augmentation,
     }

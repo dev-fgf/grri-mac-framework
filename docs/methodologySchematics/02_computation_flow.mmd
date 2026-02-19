@@ -1,0 +1,12 @@
+%% MAC Framework — Per-Timestep Computation Flow (v7.1, 8 Pillars)
+%% Section 2.2 of methodology.md
+
+flowchart LR
+    A["Fetch indicators<br/>for date t"] --> B["Score 8<br/>pillars [0,1]"]
+    B --> C["Select weights<br/>(ML-8 or equal)"]
+    C --> D["Weighted avg<br/>= sum w_i * s_i"]
+    D --> E["Count breaches<br/>n = |s_i &lt; 0.3|"]
+    E --> F["Subtract penalty<br/>pi(n)"]
+    F --> G["Multiply by<br/>alpha = 0.78"]
+    G --> H["Clip to [0,1]<br/>= MAC_t"]
+    H --> I["Bootstrap CI<br/>+ HMM overlay"]

@@ -11,28 +11,27 @@ for validation.  Supports three modes:
 All results are stored persistently in data/backtest_results/.
 """
 
+import argparse
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
-import argparse
-
-# Load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    print("Warning: python-dotenv not installed.")
-    print("Install with: pip install python-dotenv")
-
-# Add project root to path
-PROJECT_ROOT = Path(__file__).parent
-sys.path.insert(0, str(PROJECT_ROOT))
-
-# Results directory for all backtest outputs
-RESULTS_DIR = PROJECT_ROOT / "data" / "backtest_results"
+import sys
 
 from grri_mac.backtest.runner import BacktestRunner
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None  # type: ignore[assignment]
+
+PROJECT_ROOT = Path(__file__).parent
+RESULTS_DIR = PROJECT_ROOT / "data" / "backtest_results"
+
+if load_dotenv is not None:
+    load_dotenv()
+else:
+    print("Warning: python-dotenv not installed.")
+    print("Install with: pip install python-dotenv")
 
 
 def get_output_path(output_file: str) -> Path:
@@ -67,12 +66,18 @@ def main():
     parser.add_argument(
         "--extended",
         action="store_true",
-        help="Run extended backtest from 1907 (requires historical data downloads)"
+        help=(
+            "Run extended backtest from 1907 "
+            "(requires historical data downloads)"
+        )
     )
     parser.add_argument(
         "--era-weights",
         action="store_true",
-        help="Use era-specific pillar weights (recommended for pre-1971 backtest)"
+        help=(
+            "Use era-specific pillar weights "
+            "(recommended for pre-1971 backtest)"
+        )
     )
     parser.add_argument(
         "--frequency",
@@ -90,7 +95,10 @@ def main():
     parser.add_argument(
         "--fresh",
         action="store_true",
-        help="Clear cache and fetch fresh data from FRED (ensures data integrity)"
+        help=(
+            "Clear cache and fetch fresh data from FRED "
+            "(ensures data integrity)"
+        )
     )
     parser.add_argument(
         "--validate",
@@ -127,9 +135,12 @@ def main():
 
     # Check for FRED API key
     if not os.environ.get("FRED_API_KEY"):
-        print("⚠️  WARNING: FRED_API_KEY environment variable not set!")
+        print("WARNING: FRED_API_KEY environment variable not set!")
         print("   The backtest will fail without a valid FRED API key.")
-        print("   Get your free API key at: https://fred.stlouisfed.org/docs/api/api_key.html")
+        print(
+            "   Get your free API key at: "
+            "https://fred.stlouisfed.org/docs/api/api_key.html"
+        )
         print()
         response = input("Continue anyway? (y/N): ")
         if response.lower() != 'y':
@@ -141,18 +152,18 @@ def main():
         from grri_mac.data.fred import CACHE_FILE
         if CACHE_FILE.exists():
             CACHE_FILE.unlink()
-            print("🗑️  Cleared FRED data cache. Will fetch fresh data.")
+            print("Cleared FRED data cache. Will fetch fresh data.")
         else:
             print("Cache already clear.")
 
     # Handle --validate flag to check data integrity
     if args.validate:
         from grri_mac.data.fred import FREDClient, CACHE_FILE
-        print("\n🔍 VALIDATING CACHED DATA INTEGRITY\n")
+        print("\nVALIDATING CACHED DATA INTEGRITY\n")
         print(f"Cache file: {CACHE_FILE}")
         
         if not CACHE_FILE.exists():
-            print("❌ No cache file found. Run without --validate to build cache.")
+            print("[ERROR] No cache file found. Run without --validate to build cache.")
             return 1
         
         fred = FREDClient()
@@ -170,7 +181,11 @@ def main():
         
         print(f"\nCached series: {len(cache)}")
         print("-" * 75)
-        print(f"{'SERIES':<20} | {'DATE RANGE':<25} | {'OBS':>6} | {'NULLS':>5} | STATUS")
+        header = (
+            f"{'SERIES':<20} | {'DATE RANGE':<25} | "
+            f"{'OBS':>6} | {'NULLS':>5} | STATUS"
+        )
+        print(header)
         print("-" * 75)
         
         all_valid = True
@@ -185,38 +200,51 @@ def main():
                 covers_1971 = min_date <= datetime(1971, 1, 1).date()
                 
                 if covers_1971:
-                    status = "✓ Full coverage"
+                    status = "[OK] Full coverage"
                 elif series_id in PROXY_INFO:
-                    status = "◐ Has proxy"
+                    status = "[~] Has proxy"
                 else:
-                    status = "⚠ Limited"
+                    status = "[!] Limited"
                 
-                print(f"{series_id:<20} | {min_date} to {max_date} | {obs_count:6} | {nulls:5} | {status}")
+                row = (
+                    f"{series_id:<20} | {min_date} to {max_date} | "
+                    f"{obs_count:6} | {nulls:5} | {status}"
+                )
+                print(row)
                 
                 # Show proxy info if applicable
                 if series_id in PROXY_INFO and not covers_1971:
                     print(f"   └─ {PROXY_INFO[series_id]}")
                 
                 if nulls > obs_count * 0.1:  # More than 10% nulls is concerning
-                    print(f"   ⚠️  High null rate ({nulls/obs_count*100:.1f}%)")
-                    high_null_warning = True  # Warning only, not failure
+                    print(
+                        f"   [!] High null rate ({nulls/obs_count*100:.1f}%)"
+                    )
             else:
                 print(f"{series_id:<20} | EMPTY OR NULL")
                 all_valid = False
         
         print("-" * 75)
-        print("\n📋 DATA INTEGRITY SUMMARY:")
-        print(f"   Core series (1970+):    {sum(1 for s, d in cache.items() if d is not None and len(d) > 0 and d.index.min().date() <= datetime(1971,1,1).date())}")
-        print(f"   Series with proxies:    {sum(1 for s in cache if s in PROXY_INFO)}")
-        print(f"   Limited coverage:       {len(cache) - sum(1 for s, d in cache.items() if d is not None and len(d) > 0 and d.index.min().date() <= datetime(1971,1,1).date()) - sum(1 for s in cache if s in PROXY_INFO and s not in [s2 for s2, d2 in cache.items() if d2 is not None and len(d2) > 0 and d2.index.min().date() <= datetime(1971,1,1).date()])}")
-        
+        print("\nDATA INTEGRITY SUMMARY:")
+        core_series = sum(
+            1
+            for _, data in cache.items()
+            if data is not None
+            and len(data) > 0
+            and data.index.min().date() <= datetime(1971, 1, 1).date()
+        )
+        proxy_series = sum(1 for series in cache if series in PROXY_INFO)
+        limited_coverage = len(cache) - core_series - proxy_series
+
+        print(f"   Core series (1970+):    {core_series}")
+        print(f"   Series with proxies:    {proxy_series}")
+        print(f"   Limited coverage:       {limited_coverage}")
+
         if all_valid:
-            print("\n✅ Cache validated successfully - safe to run backtest")
-            if 'high_null_warning' in dir():
-                print("   (Some series have high null rates but this is expected)")
+            print("\n[OK] Cache validated successfully - safe to run backtest")
         else:
-            print("\n❌ Cache has critical issues - consider running with --fresh")
-        
+            print("\n[ERROR] Cache has critical issues - consider running with --fresh")
+
         return 0
 
     print("Initializing backtest runner...")
@@ -224,12 +252,11 @@ def main():
     runner = BacktestRunner(use_era_weights=use_era_weights)
     
     if start_date.year < 1962:
-        print("⚡ Extended mode: era-specific proxy chains active")
+        print("[*] Extended mode: era-specific proxy chains active")
         if use_era_weights:
             print("   Using era-specific pillar weights")
         else:
             print("   Using equal pillar weights (pass --era-weights for era-specific)")
-    
 
     print("Starting backtest... This may take several minutes.")
     print()
@@ -263,13 +290,19 @@ def main():
         print()
         print(f"Average MAC (overall):     {validation['avg_mac_overall']:.3f}")
         if validation['avg_mac_during_crisis'] is not None:
-            print(f"Average MAC (crisis):      {validation['avg_mac_during_crisis']:.3f}")
+            print(
+                "Average MAC (crisis):      "
+                f"{validation['avg_mac_during_crisis']:.3f}"
+            )
         else:
-            print(f"Average MAC (crisis):      N/A (no crisis points in range)")
+            print("Average MAC (crisis):      N/A (no crisis points in range)")
         if validation['avg_mac_non_crisis'] is not None:
-            print(f"Average MAC (non-crisis):  {validation['avg_mac_non_crisis']:.3f}")
+            print(
+                "Average MAC (non-crisis):  "
+                f"{validation['avg_mac_non_crisis']:.3f}"
+            )
         else:
-            print(f"Average MAC (non-crisis):  N/A")
+            print("Average MAC (non-crisis):  N/A")
         print()
         print(f"Crises evaluated:          {validation['crises_evaluated']}")
         print(f"Crises with warning:       {validation['crises_with_warning']}")
@@ -291,14 +324,15 @@ def main():
         with open(validation_path, 'w') as f:
             # Convert any non-serializable values
             validation_serializable = {
-                k: (v if not isinstance(v, float) or not (v != v) else None)  # Handle NaN
+                # Replace NaN values with None for JSON serialization
+                k: (v if not isinstance(v, float) or not (v != v) else None)
                 for k, v in validation.items()
             }
             json.dump(validation_serializable, f, indent=2, default=str)
         print(f"Saving validation metrics to {validation_path}...")
 
         print()
-        print("✓ Backtest complete! Results saved successfully.")
+        print("[OK] Backtest complete! Results saved successfully.")
         print(f"   Results directory: {RESULTS_DIR}")
         print()
         print("Next steps:")

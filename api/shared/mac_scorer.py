@@ -591,8 +591,15 @@ def calculate_mac(indicators: dict) -> dict:
     }
 
     # Calculate composite (equal weighted across 7 pillars)
-    all_scores = [liq_score, val_score, pos_score, vol_score,
-                  pol_score, con_score, pc_score]
+    all_scores = [
+        liq_score,
+        val_score,
+        pos_score,
+        vol_score,
+        pol_score,
+        con_score,
+        pc_score,
+    ]
     mac_score = sum(all_scores) / 7
 
     # Identify breaches

@@ -1,0 +1,29 @@
+%% MAC Framework — Walk-Forward Re-estimation Protocol
+%% Section 9.2 of methodology.md
+
+sequenceDiagram
+    participant T as Time t
+    participant W as Training Window [0, t-1]
+    participant M as Model Parameters
+    participant P as Prediction at t
+
+    Note over T,P: Expanding window, re-fit every 52 weeks, min 104 weeks training
+
+    T->>W: Collect data through t-1
+    W->>M: Re-fit ML weights (if refit interval)
+    W->>M: Re-estimate alpha (if refit interval)
+    M->>P: Compute MAC_t using current parameters
+    P->>T: Store prediction, advance to t+1
+
+    Note over T: Next week...
+
+    T->>W: Expand window to include t
+    W->>W: Check: t mod 52 == 0?
+    alt Refit interval reached
+        W->>M: Re-train GBM/XGBoost on [0, t]
+        W->>M: Re-calibrate alpha on [0, t]
+    else Not yet
+        W->>M: Use existing weights & alpha
+    end
+    M->>P: Compute MAC_{t+1}
+    P->>T: Store, advance

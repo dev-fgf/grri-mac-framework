@@ -1,0 +1,45 @@
+%% MAC Framework — Sentiment Pillar Pipeline
+%% Section 3.8 of methodology.md
+
+flowchart TD
+    subgraph TextPath["Text-Based Path (Production)"]
+        T1["FOMC Minutes<br/>(1993+)"]
+        T2["Fed Speeches<br/>(1987+)"]
+        T3["Split into<br/>sentences"]
+        T4["FinBERT scoring<br/>(ProsusAI/finbert)"]
+        T5["Aggregate:<br/>mean + uncertainty penalty"]
+    end
+
+    subgraph ProxyPath["Rate-Proxy Path (Backtest)"]
+        P1["Fed Funds 6mo delta<br/>sigmoid: k=1.5<br/>weight 0.50"]
+        P2["Yield Curve Slope<br/>10Y - 2Y<br/>weight 0.25"]
+        P3["Credit Spread Momentum<br/>BAA-AAA 3mo delta<br/>weight 0.25"]
+        P4["Weighted combination"]
+    end
+
+    subgraph Anchors["Calibration Anchors (14 dates)"]
+        A1["2008-09-16: dovish 0.95<br/>(Lehman week)"]
+        A2["2013-05-22: hawkish 0.20<br/>(Taper Tantrum)"]
+        A3["2022-06-15: hawkish 0.10<br/>(75bp surprise)"]
+        A4["... 11 more anchors"]
+    end
+
+    T1 --> T3
+    T2 --> T3
+    T3 --> T4
+    T4 --> T5
+
+    P1 --> P4
+    P2 --> P4
+    P3 --> P4
+    Anchors -.->|"override within<br/>14-day window"| P4
+
+    T5 --> SCORE{"Texts<br/>available?"}
+    SCORE -->|Yes| OUT["Sentiment Score<br/>[0, 1]"]
+    SCORE -->|No| P4
+    P4 --> OUT
+
+    OUT --> MAP{Score Range}
+    MAP -->|"> 0.65"| DOV["DOVISH<br/>(high capacity)"]
+    MAP -->|"0.35 - 0.65"| NEU["MIXED<br/>(neutral)"]
+    MAP -->|"< 0.35"| HAW["HAWKISH<br/>(constrained)"]

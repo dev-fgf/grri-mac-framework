@@ -6,10 +6,26 @@ requests>=2.31.0
 yfinance>=0.2.28
 python-dateutil>=2.8.2
 python-dotenv>=1.0.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
 
 # Azure Data Lake (Blob Storage)
 azure-storage-blob>=12.19.0
 pyarrow>=14.0.0
+
+# ML Optimization (optional — graceful fallback if missing)
+# xgboost>=2.0.0
+# optuna>=3.4.0
+
+# Kalman filter for VRP (optional)
+# filterpy>=1.4.5
+
+# Regime switching (optional)
+# hmmlearn>=0.3.0
+
+# Sentiment pillar (optional, heavy deps)
+# transformers>=4.35.0
+# torch>=2.1.0
 
 # Testing
 pytest>=7.4.0

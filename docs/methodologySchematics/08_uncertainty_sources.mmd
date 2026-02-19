@@ -1,0 +1,32 @@
+%% MAC Framework — Bootstrap Confidence Interval Pipeline
+%% Section 7.1 of methodology.md
+
+flowchart TD
+    subgraph Sources["Three Uncertainty Sources"]
+        A["1. Indicator noise<br/>sigma ~ proxy tier<br/>(0.01 to 0.15)"]
+        B["2. Weight instability<br/>sigma ~ 0.03 * w_i"]
+        C["3. Alpha uncertainty<br/>sigma = 0.05"]
+    end
+
+    A --> D["Perturb pillar scores<br/>s_i + N(0, sigma_tier)"]
+    B --> E["Perturb weights<br/>w_i + N(0, 0.03*w_i)<br/>re-normalise"]
+    C --> F["Perturb alpha<br/>alpha + N(0, 0.05)<br/>clip [0.5, 1.0]"]
+
+    D --> G["Recompute MAC_b<br/>for b = 1..1000"]
+    E --> G
+    F --> G
+
+    G --> H["Sort MAC bootstrap<br/>distribution"]
+    H --> I["CI_80 = [P10, P90]"]
+    H --> J["CI_90 = [P5, P95]"]
+    H --> K["bootstrap_std =<br/>std(MAC_b)"]
+
+    subgraph ProxyTiers["Proxy Uncertainty Tiers"]
+        T1["Tier 1 Native: 0.01<br/>(VIX post-1990)"]
+        T2["Tier 2 Computed: 0.03<br/>(BAA-AAA spread)"]
+        T3["Tier 3 Modern Proxy: 0.05<br/>(VXO as VIX)"]
+        T4["Tier 4 Historical: 0.10<br/>(NBER call money)"]
+        T5["Tier 5 Estimated: 0.15<br/>(basis trade, pre-1926 vol)"]
+    end
+
+    ProxyTiers -.-> A

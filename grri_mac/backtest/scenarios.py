@@ -837,6 +837,856 @@ KNOWN_EVENTS = {
             "positioning crowding."
         ),
     ),
+
+    # =========================================================================
+    # EXPANDED SCENARIOS — NON-CRISIS STRESS EPISODES & HISTORICAL (v7)
+    # Added to improve ML training balance (severity 0.40–0.70 range)
+    # =========================================================================
+
+    "credit_crunch_1966": HistoricalScenario(
+        name="Credit Crunch of 1966",
+        date=datetime(1966, 8, 29),
+        description="First Fed inflation fight since WWII; severe disintermediation",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["liquidity", "policy"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.55,
+            policy_response=0.40,
+            contagion=0.80,
+            duration=0.55,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 60,  # Proxy: FF-Tbill spread elevated
+            "cp_treasury_spread_bps": 70,
+            "term_premium_10y_bps": 50,
+            "ig_oas_bps": 90,  # Proxy: Baa-Aaa ~52bps × factor
+            "hy_oas_bps": 350,
+            "basis_trade_size_billions": 20,  # Minimal market
+            "treasury_spec_net_percentile": 50,
+            "svxy_aum_millions": 0,
+            "vix_level": 22,  # Proxy: realized vol
+            "vix_term_structure": 0.95,
+            "rv_iv_gap_pct": 30,
+            "policy_room_bps": 575,  # Fed Funds 5.75%
+            "fed_balance_sheet_gdp_pct": 5,
+            "core_pce_vs_target_bps": 150,  # Vietnam-era inflation
+            "em_flow_pct_weekly": -0.5,
+            "gsib_cds_avg_bps": 40,
+            "dxy_3m_change_pct": 1.0,
+            "embi_spread_bps": 300,
+            "global_equity_corr": 0.40,
+        },
+        context=(
+            "Fed tightened to fight Vietnam-era inflation. "
+            "Savings outflows from thrifts (Reg Q ceilings). "
+            "Near-recession, Fed eased quickly."
+        ),
+    ),
+
+    "penn_central_1970": HistoricalScenario(
+        name="Penn Central Bankruptcy",
+        date=datetime(1970, 6, 21),
+        description="Largest US bankruptcy; commercial paper market froze",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["liquidity"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.50,
+            mkt_dysfunction=0.45,
+            policy_response=0.35,
+            contagion=0.65,
+            duration=0.55,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 80,  # CP market froze
+            "cp_treasury_spread_bps": 120,
+            "term_premium_10y_bps": 100,
+            "ig_oas_bps": 100,  # Proxy: Baa-Aaa 77bps
+            "hy_oas_bps": 400,
+            "basis_trade_size_billions": 15,
+            "treasury_spec_net_percentile": 45,
+            "svxy_aum_millions": 0,
+            "vix_level": 25,  # Proxy: realized vol
+            "vix_term_structure": 0.92,
+            "rv_iv_gap_pct": 35,
+            "policy_room_bps": 800,  # Fed Funds ~8%
+            "fed_balance_sheet_gdp_pct": 5,
+            "core_pce_vs_target_bps": 200,
+            "em_flow_pct_weekly": -0.3,
+            "gsib_cds_avg_bps": 50,
+            "dxy_3m_change_pct": 0.5,
+            "embi_spread_bps": 250,
+            "global_equity_corr": 0.35,
+        },
+        context=(
+            "Largest US bankruptcy ($7B). CP market froze. "
+            "Fed opened discount window broadly. "
+            "Treasuries rallied as safe haven."
+        ),
+    ),
+
+    "oil_crisis_1973": HistoricalScenario(
+        name="1973 Oil Crisis / OPEC Embargo",
+        date=datetime(1973, 10, 19),
+        description="OPEC embargo quadrupled oil prices; stagflation onset",
+        expected_mac_range=(0.35, 0.50),
+        expected_breaches=["volatility", "policy"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.35,
+            mkt_dysfunction=0.50,
+            policy_response=0.30,
+            contagion=0.30,
+            duration=0.25,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 50,
+            "cp_treasury_spread_bps": 65,
+            "term_premium_10y_bps": 80,
+            "ig_oas_bps": 110,  # Proxy: Baa-Aaa ~81bps
+            "hy_oas_bps": 420,
+            "basis_trade_size_billions": 10,
+            "treasury_spec_net_percentile": 40,
+            "svxy_aum_millions": 0,
+            "vix_level": 28,  # Proxy: realized vol ~28% annualised
+            "vix_term_structure": 0.90,
+            "rv_iv_gap_pct": 40,
+            "policy_room_bps": 1000,  # Fed Funds ~10%
+            "fed_balance_sheet_gdp_pct": 5,
+            "core_pce_vs_target_bps": 400,  # Inflation 11%
+            "em_flow_pct_weekly": -1.5,
+            "gsib_cds_avg_bps": 60,
+            "dxy_3m_change_pct": -3.0,  # Dollar weakening
+            "embi_spread_bps": 350,
+            "global_equity_corr": 0.60,
+        },
+        context=(
+            "OPEC embargo after Yom Kippur War. "
+            "Oil prices 4× in months. Stagflation begins. "
+            "Fed constrained by inflation. S&P fell 48% by 1974."
+        ),
+    ),
+
+    "volcker_shock_1980": HistoricalScenario(
+        name="Volcker Shock",
+        date=datetime(1980, 3, 27),
+        description="Fed Funds at 20%; intentional recession to break inflation",
+        expected_mac_range=(0.35, 0.50),
+        expected_breaches=["policy", "liquidity"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.50,
+            mkt_dysfunction=0.55,
+            policy_response=0.20,
+            contagion=0.60,
+            duration=0.45,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 200,  # Extreme funding stress
+            "cp_treasury_spread_bps": 150,
+            "term_premium_10y_bps": -200,  # Deep inversion
+            "ig_oas_bps": 180,
+            "hy_oas_bps": 600,
+            "basis_trade_size_billions": 20,
+            "treasury_spec_net_percentile": 15,
+            "svxy_aum_millions": 0,
+            "vix_level": 25,  # Proxy: realised vol
+            "vix_term_structure": 0.88,
+            "rv_iv_gap_pct": 40,
+            "policy_room_bps": 2000,  # FF 20%
+            "fed_balance_sheet_gdp_pct": 5,
+            "core_pce_vs_target_bps": 600,  # 14.6% inflation
+            "em_flow_pct_weekly": -2.0,
+            "gsib_cds_avg_bps": 80,
+            "dxy_3m_change_pct": 5.0,
+            "embi_spread_bps": 500,
+            "global_equity_corr": 0.55,
+        },
+        context=(
+            "Volcker raised Fed Funds to 20%. "
+            "Intentional recession to break inflation. "
+            "Credit markets stressed but Treasuries eventually rallied "
+            "as inflation expectations broke."
+        ),
+    ),
+
+    "continental_illinois_1984": HistoricalScenario(
+        name="Continental Illinois / TBTF",
+        date=datetime(1984, 5, 17),
+        description="7th largest US bank fails; FDIC introduces TBTF doctrine",
+        expected_mac_range=(0.45, 0.60),
+        expected_breaches=["liquidity"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.55,
+            policy_response=0.45,
+            contagion=0.65,
+            duration=0.65,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 40,
+            "cp_treasury_spread_bps": 55,
+            "term_premium_10y_bps": 130,
+            "ig_oas_bps": 150,  # Proxy: Baa-Aaa ~120bps
+            "hy_oas_bps": 500,
+            "basis_trade_size_billions": 30,
+            "treasury_spec_net_percentile": 55,
+            "svxy_aum_millions": 0,
+            "vix_level": 18,  # Proxy: realised vol
+            "vix_term_structure": 0.98,
+            "rv_iv_gap_pct": 20,
+            "policy_room_bps": 1050,  # Fed Funds ~10.5%
+            "fed_balance_sheet_gdp_pct": 5,
+            "core_pce_vs_target_bps": 100,
+            "em_flow_pct_weekly": -0.8,
+            "gsib_cds_avg_bps": 100,
+            "dxy_3m_change_pct": 3.0,
+            "embi_spread_bps": 600,  # LDC debt crisis ongoing
+            "global_equity_corr": 0.45,
+        },
+        context=(
+            "First modern systemic rescue. FDIC introduced TBTF doctrine. "
+            "LDC debt crisis backdrop. Treasuries served as haven."
+        ),
+    ),
+
+    "black_monday_1987": HistoricalScenario(
+        name="Black Monday",
+        date=datetime(1987, 10, 19),
+        description="Largest single-day decline in history (-22.6%); Greenspan response",
+        expected_mac_range=(0.25, 0.40),
+        expected_breaches=["volatility", "liquidity", "positioning"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.15,
+            mkt_dysfunction=0.25,
+            policy_response=0.30,
+            contagion=0.30,
+            duration=0.65,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 100,  # Proxy: TED spiked
+            "cp_treasury_spread_bps": 90,
+            "term_premium_10y_bps": 200,
+            "ig_oas_bps": 160,
+            "hy_oas_bps": 550,
+            "basis_trade_size_billions": 60,  # Portfolio insurance crowding
+            "treasury_spec_net_percentile": 8,
+            "svxy_aum_millions": 0,
+            "vix_level": 150,  # VXO proxy (peak implied vol)
+            "vix_term_structure": 0.65,
+            "rv_iv_gap_pct": 80,
+            "policy_room_bps": 738,  # FF 7.38%
+            "fed_balance_sheet_gdp_pct": 5,
+            "core_pce_vs_target_bps": 80,
+            "em_flow_pct_weekly": -3.0,
+            "gsib_cds_avg_bps": 120,
+            "dxy_3m_change_pct": -4.0,
+            "embi_spread_bps": 500,
+            "global_equity_corr": 0.92,  # Global crash
+        },
+        context=(
+            "Portfolio insurance selling cascade. "
+            "DJIA -22.6% in one day. Greenspan provided immediate liquidity. "
+            "Recovery within 2 years. Treasuries rallied sharply."
+        ),
+    ),
+
+    "bond_massacre_1994": HistoricalScenario(
+        name="1994 Bond Massacre",
+        date=datetime(1994, 11, 15),
+        description="Surprise Fed tightening triggered global bond selloff",
+        expected_mac_range=(0.45, 0.60),
+        expected_breaches=["valuation"],
+        treasury_hedge_worked=False,  # Bonds were the problem
+        csr=CrisisSeverityScores(
+            drawdown=0.60,
+            mkt_dysfunction=0.65,
+            policy_response=0.55,
+            contagion=0.45,
+            duration=0.40,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 30,  # TED spread modest
+            "cp_treasury_spread_bps": 40,
+            "term_premium_10y_bps": 250,  # Curve steepened sharply
+            "ig_oas_bps": 85,
+            "hy_oas_bps": 340,
+            "basis_trade_size_billions": 100,
+            "treasury_spec_net_percentile": 85,  # Long crowding
+            "svxy_aum_millions": 0,
+            "vix_level": 20,
+            "vix_term_structure": 0.96,
+            "rv_iv_gap_pct": 25,
+            "policy_room_bps": 550,  # FF hiked from 3% to 5.5%
+            "fed_balance_sheet_gdp_pct": 6,
+            "core_pce_vs_target_bps": 20,
+            "em_flow_pct_weekly": -2.0,
+            "gsib_cds_avg_bps": 50,
+            "dxy_3m_change_pct": -3.0,
+            "embi_spread_bps": 600,
+            "global_equity_corr": 0.50,
+        },
+        context=(
+            "Greenspan's surprise tightening devastated bond portfolios globally. "
+            "Orange County bankrupt. Mexico peso crisis triggered. "
+            "10Y yields rose 250bps. Treasury hedge FAILED as bonds sold off."
+        ),
+    ),
+
+    "mexico_tequila_1994": HistoricalScenario(
+        name="Mexico Tequila Crisis",
+        date=datetime(1994, 12, 20),
+        description="Peso devaluation triggered EM contagion",
+        expected_mac_range=(0.45, 0.60),
+        expected_breaches=["contagion"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.65,
+            mkt_dysfunction=0.65,
+            policy_response=0.40,
+            contagion=0.30,
+            duration=0.45,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 25,
+            "cp_treasury_spread_bps": 35,
+            "term_premium_10y_bps": 200,
+            "ig_oas_bps": 80,
+            "hy_oas_bps": 380,
+            "basis_trade_size_billions": 90,
+            "treasury_spec_net_percentile": 60,
+            "svxy_aum_millions": 0,
+            "vix_level": 18,
+            "vix_term_structure": 0.98,
+            "rv_iv_gap_pct": 20,
+            "policy_room_bps": 575,  # FF 5.75%
+            "fed_balance_sheet_gdp_pct": 6,
+            "core_pce_vs_target_bps": 10,
+            "em_flow_pct_weekly": -4.0,  # Severe EM outflows
+            "gsib_cds_avg_bps": 55,
+            "dxy_3m_change_pct": 5.0,
+            "embi_spread_bps": 1100,  # EM spreads blew out
+            "global_equity_corr": 0.60,
+        },
+        context=(
+            "Peso devalued 40%. $50B IMF/US bailout. "
+            "Contagion to Argentina, Brazil ('Tequila Effect'). "
+            "US flight to quality benefited Treasuries."
+        ),
+    ),
+
+    "asian_crisis_1997": HistoricalScenario(
+        name="Asian Financial Crisis",
+        date=datetime(1997, 10, 27),
+        description="Thai baht devaluation triggered Asian currency collapse, global contagion",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["contagion", "volatility"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.55,
+            policy_response=0.70,
+            contagion=0.25,
+            duration=0.40,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 50,  # TED spread
+            "cp_treasury_spread_bps": 45,
+            "term_premium_10y_bps": 70,
+            "ig_oas_bps": 95,
+            "hy_oas_bps": 380,
+            "basis_trade_size_billions": 120,
+            "treasury_spec_net_percentile": 55,
+            "svxy_aum_millions": 0,
+            "vix_level": 38,  # FRED: VIX peaked Oct 97
+            "vix_term_structure": 0.85,
+            "rv_iv_gap_pct": 45,
+            "policy_room_bps": 550,  # FF 5.50%
+            "fed_balance_sheet_gdp_pct": 6,
+            "core_pce_vs_target_bps": -10,
+            "em_flow_pct_weekly": -5.0,  # Massive EM outflows
+            "gsib_cds_avg_bps": 70,
+            "dxy_3m_change_pct": 5.0,
+            "embi_spread_bps": 600,
+            "global_equity_corr": 0.75,
+        },
+        context=(
+            "Thai baht devaluation triggered Asian currency crisis. "
+            "Contagion to Korea, Indonesia, Malaysia. "
+            "US largely insulated. Treasuries rallied on flight to quality."
+        ),
+    ),
+
+    "pre_gfc_buildup_2006": HistoricalScenario(
+        name="Pre-GFC Build-up / Complacency Peak",
+        date=datetime(2007, 6, 1),
+        description="Credit spreads at historic lows; housing bubble peak; VIX 10",
+        expected_mac_range=(0.50, 0.65),
+        expected_breaches=["valuation"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.85,
+            mkt_dysfunction=0.90,
+            policy_response=0.70,
+            contagion=0.60,
+            duration=0.70,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 10,  # Tight funding
+            "cp_treasury_spread_bps": 15,
+            "term_premium_10y_bps": -10,  # Flat curve
+            "ig_oas_bps": 60,  # Historic low — complacency
+            "hy_oas_bps": 250,  # Compressed — breach zone
+            "basis_trade_size_billions": 280,
+            "treasury_spec_net_percentile": 70,
+            "svxy_aum_millions": 0,
+            "vix_level": 11,  # Historic low
+            "vix_term_structure": 1.06,
+            "rv_iv_gap_pct": 15,
+            "policy_room_bps": 525,  # FF 5.25%
+            "fed_balance_sheet_gdp_pct": 6,
+            "core_pce_vs_target_bps": 40,
+            "em_flow_pct_weekly": 1.0,
+            "gsib_cds_avg_bps": 25,  # Banks at tightest
+            "dxy_3m_change_pct": -2.0,
+            "embi_spread_bps": 180,  # Historic tight
+            "global_equity_corr": 0.40,
+        },
+        context=(
+            "Credit spreads at all-time lows. VIX at 10. "
+            "CDO issuance at peak. Housing bubble fully inflated. "
+            "Classic complacency — compressed valuations flag risk buildup."
+        ),
+    ),
+
+    "bnp_paribas_2007": HistoricalScenario(
+        name="BNP Paribas Freeze",
+        date=datetime(2007, 8, 9),
+        description="BNP froze three subprime funds; interbank market seized",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["liquidity", "valuation"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.60,
+            mkt_dysfunction=0.40,
+            policy_response=0.55,
+            contagion=0.45,
+            duration=0.55,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 80,  # LIBOR-OIS spiked from 10bps
+            "cp_treasury_spread_bps": 85,
+            "term_premium_10y_bps": 50,
+            "ig_oas_bps": 120,  # Starting to widen
+            "hy_oas_bps": 450,
+            "basis_trade_size_billions": 320,
+            "treasury_spec_net_percentile": 30,
+            "svxy_aum_millions": 0,
+            "vix_level": 26,
+            "vix_term_structure": 0.88,
+            "rv_iv_gap_pct": 40,
+            "policy_room_bps": 525,  # FF 5.25%
+            "fed_balance_sheet_gdp_pct": 6,
+            "core_pce_vs_target_bps": 60,
+            "em_flow_pct_weekly": -1.5,
+            "gsib_cds_avg_bps": 90,  # European bank stress
+            "dxy_3m_change_pct": -1.0,
+            "embi_spread_bps": 250,
+            "global_equity_corr": 0.65,
+        },
+        context=(
+            "BNP Paribas froze three subprime-linked funds. "
+            "LIBOR-OIS spiked from 10bps to 80bps overnight. "
+            "Subprime contagion begins. Treasuries rallied."
+        ),
+    ),
+
+    "euro_sovereign_peak_2011": HistoricalScenario(
+        name="European Sovereign Debt Crisis Peak",
+        date=datetime(2011, 11, 23),
+        description="Italian/Spanish yields at danger zone; Draghi pre-'whatever it takes'",
+        expected_mac_range=(0.35, 0.50),
+        expected_breaches=["contagion", "valuation"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.45,
+            policy_response=0.55,
+            contagion=0.25,
+            duration=0.30,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 40,
+            "cp_treasury_spread_bps": 50,
+            "cross_currency_basis_bps": -110,  # EUR/USD severe
+            "term_premium_10y_bps": 120,
+            "ig_oas_bps": 210,
+            "hy_oas_bps": 760,
+            "basis_trade_size_billions": 220,
+            "treasury_spec_net_percentile": 72,
+            "svxy_aum_millions": 80,
+            "vix_level": 35,
+            "vix_term_structure": 0.86,
+            "rv_iv_gap_pct": 42,
+            "policy_room_bps": 10,  # At ELB
+            "fed_balance_sheet_gdp_pct": 18,
+            "core_pce_vs_target_bps": 80,
+            "em_flow_pct_weekly": -2.0,
+            "gsib_cds_avg_bps": 250,  # European bank CDS extreme
+            "dxy_3m_change_pct": 4.0,
+            "embi_spread_bps": 500,
+            "global_equity_corr": 0.82,
+        },
+        context=(
+            "Italian 10Y yield hit 7.5%. Spanish yields above 6.5%. "
+            "TARGET2 imbalances peaked at EUR 1T. "
+            "ECB had not yet launched OMT. US Treasuries massive beneficiary."
+        ),
+    ),
+
+    "taper_tantrum_2013": HistoricalScenario(
+        name="Taper Tantrum",
+        date=datetime(2013, 6, 24),
+        description="Bernanke signals QE tapering; EM 'Fragile Five' sell off",
+        expected_mac_range=(0.50, 0.65),
+        expected_breaches=[],
+        treasury_hedge_worked=False,  # Bonds sold off on taper fears
+        csr=CrisisSeverityScores(
+            drawdown=0.65,
+            mkt_dysfunction=0.80,
+            policy_response=0.70,
+            contagion=0.45,
+            duration=0.55,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 15,
+            "cp_treasury_spread_bps": 20,
+            "term_premium_10y_bps": 180,  # Surged from 100
+            "ig_oas_bps": 125,
+            "hy_oas_bps": 430,
+            "basis_trade_size_billions": 280,
+            "treasury_spec_net_percentile": 82,  # Long crowding
+            "svxy_aum_millions": 200,
+            "vix_level": 20,
+            "vix_term_structure": 0.95,
+            "rv_iv_gap_pct": 25,
+            "policy_room_bps": 15,  # At ELB
+            "fed_balance_sheet_gdp_pct": 22,
+            "core_pce_vs_target_bps": -40,  # Below target
+            "em_flow_pct_weekly": -3.5,  # Fragile Five outflows
+            "gsib_cds_avg_bps": 65,
+            "dxy_3m_change_pct": 3.0,
+            "embi_spread_bps": 400,
+            "global_equity_corr": 0.65,
+        },
+        context=(
+            "Bernanke's May 22 testimony signaled tapering. "
+            "10Y yield surged from 1.6% to 3.0%. EM currencies crashed. "
+            "'Fragile Five' (BRA, IND, IDN, TUR, ZAF) under severe pressure. "
+            "Treasury hedge failed as bonds were the source of stress."
+        ),
+    ),
+
+    "china_devaluation_2015": HistoricalScenario(
+        name="China Devaluation",
+        date=datetime(2015, 8, 24),
+        description="PBOC devalued yuan; global equity rout; VIX spiked to 40",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["volatility"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.60,
+            policy_response=0.80,
+            contagion=0.45,
+            duration=0.55,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 15,
+            "cp_treasury_spread_bps": 25,
+            "term_premium_10y_bps": 80,
+            "ig_oas_bps": 155,
+            "hy_oas_bps": 530,
+            "basis_trade_size_billions": 350,
+            "treasury_spec_net_percentile": 60,
+            "svxy_aum_millions": 400,
+            "vix_level": 40,  # Spiked sharply
+            "vix_term_structure": 0.80,
+            "rv_iv_gap_pct": 50,
+            "policy_room_bps": 15,  # At ELB (pre-liftoff)
+            "fed_balance_sheet_gdp_pct": 24,
+            "core_pce_vs_target_bps": -30,
+            "em_flow_pct_weekly": -3.0,
+            "gsib_cds_avg_bps": 75,
+            "dxy_3m_change_pct": 3.0,
+            "embi_spread_bps": 480,
+            "global_equity_corr": 0.78,
+        },
+        context=(
+            "PBOC surprised markets with 3% yuan devaluation. "
+            "S&P fell 11% in a week. VIX spiked to 40. "
+            "Fed delayed Sept rate hike. Treasuries rallied as safe haven."
+        ),
+    ),
+
+    "energy_credit_2015": HistoricalScenario(
+        name="Energy Credit Stress / Oil Collapse",
+        date=datetime(2016, 2, 11),
+        description="Oil to $26; HY energy spreads blow out; recession fears",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["valuation"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.65,
+            policy_response=0.70,
+            contagion=0.55,
+            duration=0.40,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 20,
+            "cp_treasury_spread_bps": 35,
+            "term_premium_10y_bps": 80,
+            "ig_oas_bps": 180,
+            "hy_oas_bps": 810,  # Near breach
+            "basis_trade_size_billions": 380,
+            "treasury_spec_net_percentile": 65,
+            "svxy_aum_millions": 350,
+            "vix_level": 28,
+            "vix_term_structure": 0.88,
+            "rv_iv_gap_pct": 35,
+            "policy_room_bps": 38,  # FF just lifted off in Dec 2015
+            "fed_balance_sheet_gdp_pct": 24,
+            "core_pce_vs_target_bps": -20,
+            "em_flow_pct_weekly": -2.0,
+            "gsib_cds_avg_bps": 100,
+            "dxy_3m_change_pct": 2.0,
+            "embi_spread_bps": 520,
+            "global_equity_corr": 0.70,
+        },
+        context=(
+            "Oil crashed from $100 to $26. Energy HY defaults spiked. "
+            "Recession fears. Deutsche Bank CDS widened. "
+            "Treasuries rallied strongly as safe haven."
+        ),
+    ),
+
+    "q4_selloff_2018": HistoricalScenario(
+        name="Q4 2018 Selloff / Fed Pivot",
+        date=datetime(2018, 12, 24),
+        description="Fed tightening + QT; S&P 500 down 20%; Christmas Eve low",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["volatility", "policy"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.45,
+            mkt_dysfunction=0.70,
+            policy_response=0.55,
+            contagion=0.65,
+            duration=0.45,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 10,
+            "cp_treasury_spread_bps": 30,
+            "term_premium_10y_bps": 15,  # Curve nearly inverted
+            "ig_oas_bps": 150,
+            "hy_oas_bps": 530,
+            "basis_trade_size_billions": 400,
+            "treasury_spec_net_percentile": 88,
+            "svxy_aum_millions": 300,
+            "vix_level": 36,
+            "vix_term_structure": 0.82,
+            "rv_iv_gap_pct": 42,
+            "policy_room_bps": 240,  # FF 2.40%
+            "fed_balance_sheet_gdp_pct": 20,
+            "core_pce_vs_target_bps": -5,  # Near target
+            "em_flow_pct_weekly": -1.5,
+            "gsib_cds_avg_bps": 80,
+            "dxy_3m_change_pct": 2.0,
+            "embi_spread_bps": 420,
+            "global_equity_corr": 0.72,
+        },
+        context=(
+            "Powell's 'long way from neutral' + QT on autopilot. "
+            "S&P 500 fell 20%. Christmas Eve low. "
+            "Powell pivoted in Jan 2019. Treasuries rallied during selloff."
+        ),
+    ),
+
+    "em_crisis_2018": HistoricalScenario(
+        name="2018 EM Crisis (Turkey/Argentina)",
+        date=datetime(2018, 8, 13),
+        description="Turkish lira -40%, Argentine peso -50%; EM contagion fears",
+        expected_mac_range=(0.50, 0.65),
+        expected_breaches=["contagion"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.75,
+            policy_response=0.80,
+            contagion=0.40,
+            duration=0.55,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 8,
+            "cp_treasury_spread_bps": 20,
+            "term_premium_10y_bps": 30,
+            "ig_oas_bps": 110,
+            "hy_oas_bps": 350,
+            "basis_trade_size_billions": 380,
+            "treasury_spec_net_percentile": 80,
+            "svxy_aum_millions": 350,
+            "vix_level": 16,
+            "vix_term_structure": 1.02,
+            "rv_iv_gap_pct": 18,
+            "policy_room_bps": 192,  # FF 1.92%
+            "fed_balance_sheet_gdp_pct": 21,
+            "core_pce_vs_target_bps": 10,
+            "em_flow_pct_weekly": -3.5,  # Severe EM outflows
+            "gsib_cds_avg_bps": 65,
+            "dxy_3m_change_pct": 6.0,  # Strong dollar crushing EM
+            "embi_spread_bps": 480,
+            "global_equity_corr": 0.55,
+        },
+        context=(
+            "Turkish lira collapsed 40% (Erdogan vs central bank). "
+            "Argentina peso -50%. Contagion fears to SA, Russia. "
+            "US largely insulated. Treasuries benefited from flight to quality."
+        ),
+    ),
+
+    "evergrande_2021": HistoricalScenario(
+        name="Evergrande / China Property Crisis",
+        date=datetime(2021, 9, 20),
+        description="Evergrande default fears; China property sector stress",
+        expected_mac_range=(0.55, 0.70),
+        expected_breaches=[],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.70,
+            mkt_dysfunction=0.85,
+            policy_response=0.80,
+            contagion=0.55,
+            duration=0.65,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": 0,
+            "cp_treasury_spread_bps": 10,
+            "term_premium_10y_bps": 60,
+            "ig_oas_bps": 95,
+            "hy_oas_bps": 310,
+            "basis_trade_size_billions": 520,
+            "treasury_spec_net_percentile": 50,
+            "svxy_aum_millions": 420,
+            "vix_level": 25,
+            "vix_term_structure": 0.92,
+            "rv_iv_gap_pct": 28,
+            "policy_room_bps": 10,  # At ELB
+            "fed_balance_sheet_gdp_pct": 36,
+            "core_pce_vs_target_bps": 150,
+            "em_flow_pct_weekly": -1.5,
+            "gsib_cds_avg_bps": 55,
+            "dxy_3m_change_pct": 1.0,
+            "embi_spread_bps": 340,
+            "global_equity_corr": 0.62,
+        },
+        context=(
+            "Evergrande missed bond payments. $300B in liabilities. "
+            "Fears of systemic China property meltdown. "
+            "Contained — no major US transmission. Treasuries stable."
+        ),
+    ),
+
+    "uk_ldi_crisis_2022": HistoricalScenario(
+        name="UK LDI / Pension Crisis",
+        date=datetime(2022, 9, 28),
+        description="Mini-budget chaos; gilt yields spike 150bps in 3 days; BoE intervenes",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["volatility", "policy"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.35,
+            policy_response=0.40,
+            contagion=0.55,
+            duration=0.60,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": -5,
+            "cp_treasury_spread_bps": 20,
+            "cross_currency_basis_bps": -50,
+            "term_premium_10y_bps": 50,
+            "ig_oas_bps": 155,
+            "hy_oas_bps": 520,
+            "basis_trade_size_billions": 560,
+            "treasury_spec_net_percentile": 40,
+            "svxy_aum_millions": 280,
+            "vix_level": 32,
+            "vix_term_structure": 0.88,
+            "rv_iv_gap_pct": 38,
+            "policy_room_bps": 308,  # FF 3.08%
+            "fed_balance_sheet_gdp_pct": 34,
+            "core_pce_vs_target_bps": 300,  # Inflation very high
+            "em_flow_pct_weekly": -1.5,
+            "gsib_cds_avg_bps": 95,
+            "dxy_3m_change_pct": 8.0,  # Extreme dollar strength
+            "embi_spread_bps": 420,
+            "global_equity_corr": 0.75,
+        },
+        context=(
+            "Truss/Kwarteng mini-budget triggered gilt collapse. "
+            "UK 30Y gilt yield spiked to 5.1%. LDI margin calls cascaded. "
+            "BoE emergency bond buying. Global spillover contained. "
+            "US Treasuries actually rallied as haven."
+        ),
+    ),
+
+    "yen_carry_unwind_2024": HistoricalScenario(
+        name="Yen Carry Trade Unwind",
+        date=datetime(2024, 8, 5),
+        description="BoJ hike triggered yen surge; global carry trade unwind; Nikkei -12%",
+        expected_mac_range=(0.40, 0.55),
+        expected_breaches=["positioning", "volatility"],
+        treasury_hedge_worked=True,
+        csr=CrisisSeverityScores(
+            drawdown=0.55,
+            mkt_dysfunction=0.55,
+            policy_response=0.75,
+            contagion=0.40,
+            duration=0.65,
+        ),
+        indicators={
+            "sofr_iorb_spread_bps": -5,
+            "cp_treasury_spread_bps": 8,
+            "term_premium_10y_bps": 15,
+            "ig_oas_bps": 105,
+            "hy_oas_bps": 360,
+            "basis_trade_size_billions": 680,
+            "treasury_spec_net_percentile": 92,  # Extreme positioning
+            "svxy_aum_millions": 550,
+            "vix_level": 65,  # Intraday spike
+            "vix_term_structure": 0.72,
+            "rv_iv_gap_pct": 55,
+            "policy_room_bps": 538,  # FF 5.38%
+            "fed_balance_sheet_gdp_pct": 28,
+            "core_pce_vs_target_bps": 80,
+            "em_flow_pct_weekly": -2.5,
+            "gsib_cds_avg_bps": 70,
+            "dxy_3m_change_pct": -4.0,  # Dollar weakening (yen surging)
+            "embi_spread_bps": 320,
+            "global_equity_corr": 0.85,
+        },
+        context=(
+            "BoJ surprised with rate hike. Yen surged 3% in days. "
+            "Global carry trades unwound simultaneously. "
+            "Nikkei fell 12% in one day. VIX spiked to 65 intraday. "
+            "Recovered within a week. Treasuries rallied on risk-off."
+        ),
+    ),
 }
 
 

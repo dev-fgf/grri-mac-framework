@@ -2,7 +2,7 @@
 
 Calculates MAC scores over historical periods and
 validates against crisis events.
-Now includes 7th Private Credit pillar and momentum.
+Includes 8 pillars: 7 quantitative + sentiment (rate-proxy).
 
 Methodological Fixes (v6 §14):
     Fix A — Exclude missing pillars from composite
@@ -32,9 +32,12 @@ from ..pillars.private_credit import (
     PrivateCreditPillar, PrivateCreditIndicators,
     SLOOSData, BDCData,
 )
+from ..pillars.sentiment import SentimentPillar
+from ..data.fomc_text import FOMCTextSource
 from ..mac.composite import (
     calculate_mac, get_mac_interpretation,
-    ML_OPTIMIZED_WEIGHTS,
+    ML_OPTIMIZED_WEIGHTS, ML_OPTIMIZED_WEIGHTS_8,
+    INTERACTION_ADJUSTED_WEIGHTS_8,
 )
 from ..mac.momentum import calculate_momentum
 from .crisis_events import CRISIS_EVENTS, get_crisis_for_date
@@ -85,7 +88,7 @@ class BacktestRunner:
         self.use_era_weights = use_era_weights
         self.calibration_factor = calibration_factor
 
-        # Initialize pillars (7 pillars total)
+        # Initialize pillars (8 pillars total)
         self.liquidity = LiquidityPillar(fred_client=self.fred)
         self.valuation = ValuationPillar(fred_client=self.fred)
         self.volatility = VolatilityPillar(fred_client=self.fred)
@@ -95,7 +98,9 @@ class BacktestRunner:
         self.private_credit = PrivateCreditPillar(
             fred_client=self.fred,
         )  # 7th pillar
-        
+        self.sentiment = SentimentPillar()  # 8th pillar (optional)
+        self.fomc_source = FOMCTextSource()
+
         # Historical MAC scores for momentum calculation
         self._historical_macs: List[dict] = []
 
@@ -141,8 +146,8 @@ class BacktestRunner:
         ]))
         
         # Add buffer for lookback calculations
-        # (larger for realized vol computation)
-        buffer_start = start_date - timedelta(days=90)
+        # (larger for sentiment proxy 6-month rate change)
+        buffer_start = start_date - timedelta(days=200)
         
         self.fred.prefetch_series(series_to_fetch, buffer_start, end_date)
         
@@ -190,7 +195,10 @@ class BacktestRunner:
             private_credit_indicators
         )
 
-        # All pillar scores (for reporting — always has all 7 entries)
+        # 8th pillar: Sentiment (rate-change proxy for backtest)
+        sentiment_result = self._score_sentiment(date)
+
+        # All pillar scores (for reporting — always has all 8 entries)
         all_scores = {
             "liquidity": liquidity_scores.composite,
             "valuation": valuation_scores.composite,
@@ -199,6 +207,7 @@ class BacktestRunner:
             "positioning": positioning_scores.composite,
             "contagion": contagion_scores.composite,
             "private_credit": private_credit_scores.composite,
+            "sentiment": sentiment_result.composite_score,
         }
 
         # Fix A: Detect which pillars actually received real indicator data.
@@ -235,6 +244,10 @@ class BacktestRunner:
                 )
                 is not None
             ),
+            "sentiment": (
+                sentiment_result.method != "pre_data"
+                and sentiment_result.method != "no_texts"
+            ),
         }
 
         # Build composite from only pillars with real data
@@ -245,9 +258,11 @@ class BacktestRunner:
             active_scores = all_scores  # Fallback: use all if none have data
 
         # Fix D: Weight selection — ML weights for modern, era weights for
-        # historical, equal weights as default
+        # historical, equal weights as default.
+        # Use 8-pillar weights when sentiment is active.
+        sentiment_active = has_data.get("sentiment", False)
         if date >= datetime(2006, 1, 1):
-            weights = ML_OPTIMIZED_WEIGHTS
+            weights = ML_OPTIMIZED_WEIGHTS_8 if sentiment_active else ML_OPTIMIZED_WEIGHTS
         elif self.use_era_weights:
             weights = get_era_weights(date)
         else:
@@ -392,6 +407,7 @@ class BacktestRunner:
                 "policy": p.pillar_scores["policy"],
                 "contagion": p.pillar_scores["contagion"],
                 "private_credit": p.pillar_scores["private_credit"],
+                "sentiment": p.pillar_scores.get("sentiment", 0.5),
                 "interpretation": p.interpretation,
                 "crisis_event": p.crisis_event,
                 "data_quality": p.data_quality,
@@ -579,6 +595,48 @@ class BacktestRunner:
         indicators.bdc = BDCData(observation_date=date)
         
         return indicators
+
+    def _score_sentiment(self, date: datetime):
+        """Score sentiment pillar for a backtest date.
+
+        Uses three-tier approach:
+          1. Try cached/loaded FOMC texts → FinBERT or keyword proxy
+          2. Fall back to FRED rate-change proxy (1960+)
+          3. Return neutral 0.5 for pre-1960
+        """
+        from ..pillars.sentiment import SentimentResult
+
+        # Try text-based scoring first
+        texts_docs = self.fomc_source.get_recent_texts(
+            as_of_date=date, n=3,
+        )
+        if texts_docs:
+            texts = [d.text for d in texts_docs if d.text]
+            if texts:
+                return self.sentiment.score(
+                    texts=texts, observation_date=date,
+                )
+
+        # Fall back to rate-change proxy
+        try:
+            proxy_score = self.fomc_source.get_rate_proxy_sentiment(
+                date, self.fred,
+            )
+            return self.sentiment.score_from_proxy(
+                proxy_score, observation_date=date,
+            )
+        except Exception:
+            return SentimentResult(
+                composite_score=0.5,
+                mean_sentiment=0.5,
+                std_sentiment=0.0,
+                n_sentences=0,
+                n_documents=0,
+                hawkish_pct=0.0,
+                dovish_pct=0.0,
+                neutral_pct=100.0,
+                method="fallback",
+            )
 
     def _assess_data_quality(self, date: datetime) -> str:
         """

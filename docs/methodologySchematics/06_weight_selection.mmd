@@ -1,0 +1,38 @@
+%% MAC Framework — Weight Selection Logic (v7.1, 8 Pillars)
+%% Section 4.2 of methodology.md
+
+flowchart TD
+    A["Check stress<br/>condition"] --> B{"positioning &lt; 0.3<br/>AND (vol &lt; 0.3<br/>OR liquidity &lt; 0.3)?"}
+
+    B -->|Yes| C["Use interaction-adjusted weights (8-pillar)"]
+    B -->|No| D["Use ML-optimised weights"]
+
+    D --> SENT{"Sentiment<br/>active?"}
+    SENT -->|Yes| D8["8-pillar ML weights"]
+    SENT -->|No| D7["7-pillar ML weights"]
+
+    C --> C1["liquidity:   0.12"]
+    C --> C2["valuation:   0.07"]
+    C --> C3["positioning: 0.22  +++"]
+    C --> C4["volatility:  0.14"]
+    C --> C5["policy:      0.08"]
+    C --> C6["contagion:   0.16  +++"]
+    C --> C7["priv credit: 0.10"]
+    C --> C8["sentiment:   0.11"]
+
+    D8 --> D81["liquidity:   0.14"]
+    D8 --> D82["valuation:   0.09"]
+    D8 --> D83["positioning: 0.20"]
+    D8 --> D84["volatility:  0.13"]
+    D8 --> D85["policy:      0.11"]
+    D8 --> D86["contagion:   0.13"]
+    D8 --> D87["priv credit: 0.09"]
+    D8 --> D88["sentiment:   0.11"]
+
+    D7 --> D71["liquidity:   0.16"]
+    D7 --> D72["valuation:   0.10"]
+    D7 --> D73["positioning: 0.22"]
+    D7 --> D74["volatility:  0.15"]
+    D7 --> D75["policy:      0.12"]
+    D7 --> D76["contagion:   0.15"]
+    D7 --> D77["priv credit: 0.10"]

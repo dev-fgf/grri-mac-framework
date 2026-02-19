@@ -9,6 +9,8 @@ import os
 import sys
 from datetime import datetime
 
+import pytest
+
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
@@ -21,14 +23,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from grri_mac.backtest.runner import BacktestRunner
 
 
-def test_key_dates():
-    """Test MAC calculation on key historical dates."""
-
-    # Check for FRED API key
-    if not os.environ.get("FRED_API_KEY"):
-        print("ERROR: FRED_API_KEY environment variable not set!")
-        print("Get your free API key at: https://fred.stlouisfed.org/docs/api/api_key.html")
-        return False
+def _run_key_dates() -> bool:
+    """Run MAC calculation on key historical dates; return True if all pass."""
 
     runner = BacktestRunner()
 
@@ -84,6 +80,15 @@ def test_key_dates():
     return all_passed
 
 
+def test_key_dates():
+    """Test MAC calculation on key historical dates."""
+
+    if not os.environ.get("FRED_API_KEY"):
+        pytest.skip("FRED_API_KEY not set; skipping backtest smoke test")
+
+    assert _run_key_dates()
+
+
 if __name__ == "__main__":
-    success = test_key_dates()
+    success = _run_key_dates()
     sys.exit(0 if success else 1)

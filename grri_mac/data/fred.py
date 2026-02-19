@@ -42,7 +42,7 @@ class FREDClient:
         "DGS10": "DGS10",
         "DGS30": "DGS30",
         "DTB3": "DTB3",  # 3-month Treasury bill
-        "TB3MS": "TB3MS",  # 3-month T-Bill secondary market (monthly, from 1934)
+        "TB3MS": "TB3MS",  # 3-month T-Bill secondary market (monthly, 1934+)
         # Commercial paper
         "DCPF3M": "DCPF3M",  # 3-month AA financial CP rate
         "DCPN3M": "DCPN3M",  # 3-month AA nonfinancial CP rate
@@ -59,20 +59,20 @@ class FREDClient:
         "VXOCLS": "VXOCLS",  # VXO / Old VIX (1986-2021) - historical proxy
         # Equity indices for realized volatility (pre-1986)
         "NASDAQCOM": "NASDAQCOM",  # NASDAQ Composite (1971+)
-        "SP500_OECD": "SPASTT01USM661N",  # S&P 500 total return (OECD, 1957+, monthly)
+        "SP500_OECD": "SPASTT01USM661N",  # S&P 500 TR (OECD, 1957+, monthly)
         # Term premium
         "TERM_PREMIUM_10Y": "THREEFYTP10",  # ACM 10-year term premium
         # Macro
         "GDP": "GDP",
         "CORE_PCE": "PCEPILFE",  # Core PCE price index
         "FED_BALANCE_SHEET": "WALCL",  # Fed total assets
-        "BOGMBASE": "BOGMBASE",  # Monetary Base (1959+) - for pre-2002 Fed balance sheet
+        "BOGMBASE": "BOGMBASE",  # Monetary Base (1959+) for pre-2002 Fed balance sheet
         "M2SL": "M2SL",  # M2 Money Supply (1959+)
         "FED_FUNDS_TARGET": "DFEDTARU",  # Fed funds target upper
-        "FED_FUNDS_RATE": "FEDFUNDS",  # Effective federal funds rate (monthly average)
+        "FED_FUNDS_RATE": "FEDFUNDS",  # Effective fed funds rate (monthly avg)
         # Extended historical series for 1907+ backtest
         "INTDSRUSM193N": "INTDSRUSM193N",  # Fed Discount Rate (1913+, monthly)
-        "IRLTLT01USM156N": "IRLTLT01USM156N",  # Long-Term Govt Bond Yield (1920+)
+        "IRLTLT01USM156N": "IRLTLT01USM156N",  # Long-term gov bond yield (1920+)
         "GDPA": "GDPA",  # Nominal GDP Annual (1929+)
     }
 
@@ -83,7 +83,7 @@ class FREDClient:
 
     # Extended historical boundaries for 1907+ backtest
     MOODYS_START = datetime(1919, 1, 1)       # Moody's Aaa/Baa yields
-    DISCOUNT_RATE_START = datetime(1948, 1, 1) # Fed discount rate (FRED starts 1948)
+    DISCOUNT_RATE_START = datetime(1948, 1, 1)  # Fed discount rate (FRED starts 1948)
     NBER_DATA_START = datetime(1907, 1, 1)     # NBER Macrohistory coverage
     TB3MS_START = datetime(1934, 1, 1)         # 3-month T-Bill monthly
 
@@ -92,17 +92,21 @@ class FREDClient:
         Initialize FRED client.
 
         Args:
-            api_key: FRED API key. If not provided, will look for FRED_API_KEY env var.
+            api_key: FRED API key. If not provided, uses FRED_API_KEY env var.
         """
         if Fred is None:
-            raise ImportError("fredapi package not installed. Run: pip install fredapi")
+            raise ImportError(
+                "fredapi package not installed. Run: pip install fredapi"
+            )
 
         self.fred = Fred(api_key=api_key) if api_key else Fred()
         self._cache: dict[str, pd.Series] = {}
-        self._bulk_cache: dict[str, pd.Series] = {}  # For prefetched full series
+        # Prefetched full series for faster backtests
+        self._bulk_cache: dict[str, pd.Series] = {}
         self._last_request_time = 0.0
         self._min_request_interval = 0.5  # 0.5 seconds = 120 requests/minute
-        self._backtest_mode = False  # When True, only use cached data (no API calls)
+        # When True, only use cached data (no API calls)
+        self._backtest_mode = False
 
         # Lazy-loaded historical data provider for pre-1954 data
         self._historical_provider = None
@@ -151,7 +155,9 @@ class FREDClient:
         except Exception as e:
             print(f"Warning: Could not save cache to disk: {e}")
 
-    def _merge_series(self, existing: pd.Series, new_data: pd.Series) -> pd.Series:
+    def _merge_series(
+        self, existing: pd.Series, new_data: pd.Series
+    ) -> pd.Series:
         """
         Merge new data into existing series, extending date range.
         
@@ -212,8 +218,12 @@ class FREDClient:
                     # Normalize cached dates for comparison
                     cached_start = cached.index.min()
                     cached_end = cached.index.max()
-                    cached_start_norm = datetime(cached_start.year, cached_start.month, cached_start.day)
-                    cached_end_norm = datetime(cached_end.year, cached_end.month, cached_end.day)
+                    cached_start_norm = datetime(
+                        cached_start.year, cached_start.month, cached_start.day
+                    )
+                    cached_end_norm = datetime(
+                        cached_end.year, cached_end.month, cached_end.day
+                    )
                     
                     # Only fetch if cache doesn't cover the requested range
                     needs_earlier = start_date_norm < cached_start_norm
@@ -228,11 +238,18 @@ class FREDClient:
                     series_to_fetch[actual_id] = (start_date, end_date)
         
         if not series_to_fetch:
-            print(f"All {len(series_ids)} series already cached for requested date range. No API calls needed.")
+            print(
+                "All "
+                f"{len(series_ids)} series already cached for requested date range. "
+                "No API calls needed."
+            )
             return
         
         if already_cached > 0:
-            print(f"{already_cached} series already cached. Fetching {len(series_to_fetch)} series from FRED...")
+            print(
+                f"{already_cached} series already cached. "
+                f"Fetching {len(series_to_fetch)} series from FRED..."
+            )
         else:
             print(f"Fetching {len(series_to_fetch)} series from FRED...")
         
@@ -257,13 +274,16 @@ class FREDClient:
                     self._bulk_cache[actual_id] = self._merge_series(
                         self._bulk_cache[actual_id], data
                     )
-                    print(f"  ✓ {actual_id}: extended to {len(self._bulk_cache[actual_id])} observations")
+                    print(
+                        f"  [OK] {actual_id}: extended to "
+                        f"{len(self._bulk_cache[actual_id])} observations"
+                    )
                 else:
                     self._bulk_cache[actual_id] = data
-                    print(f"  ✓ {actual_id}: {len(data)} observations")
+                    print(f"  [OK] {actual_id}: {len(data)} observations")
                 fetched_count += 1
             except Exception as e:
-                print(f"  ✗ {actual_id}: {e}")
+                print(f"  [FAIL] {actual_id}: {e}")
         
         # Save to disk after fetching
         if fetched_count > 0:
@@ -415,7 +435,8 @@ class FREDClient:
 
         Uses TED spread (3-month LIBOR minus T-Bill) for historical periods.
         TED spread was the canonical measure of bank funding stress during the GFC.
-        Note: LIBOR series USD3MTD156N was discontinued; TEDRATE provides pre-calculated spread.
+        Note: LIBOR series USD3MTD156N was discontinued; TEDRATE provides
+        a pre-calculated spread.
         """
         if date is None:
             date = datetime.now()
@@ -461,7 +482,9 @@ class FREDClient:
         elif date >= self.NBER_DATA_START:  # 1907+: Use NBER call money - govt rate
             return self._get_historical_funding_spread(date)
         else:
-            raise ValueError(f"No funding spread data available before 1907 for date {date}")
+            raise ValueError(
+                f"No funding spread data before 1907 for date {date}"
+            )
 
     def _get_ff_tbill_spread(self, date: datetime) -> float:
         """
@@ -573,7 +596,8 @@ class FREDClient:
         """
         Get Investment Grade OAS in basis points for a specific date.
         
-        Note: ICE BofA series (BAMLC0A0CM) returns values in percentage format (e.g., 1.26 = 126bps).
+        Note: ICE BofA series (BAMLC0A0CM) returns values in percentage
+        format (e.g., 1.26 = 126bps).
         For dates before Dec 1996, uses Moody's Baa-10Y Treasury spread as proxy.
         Calibration: Baa-Treasury spread is ~40bps wider than IG OAS on average.
         """
@@ -617,7 +641,8 @@ class FREDClient:
         """
         Get High Yield OAS in basis points for a specific date.
         
-        Note: ICE BofA series (BAMLH0A0HYM2) returns values in percentage format (e.g., 5.72 = 572bps).
+        Note: ICE BofA series (BAMLH0A0HYM2) returns values in percentage
+        format (e.g., 5.72 = 572bps).
         For dates before Dec 1996, uses scaled Baa-Aaa spread as proxy.
         Calibration: Baa-Aaa spread scaled by 4.5x approximates HY OAS levels.
         """
@@ -704,10 +729,10 @@ class FREDClient:
         raise ValueError(f"No VIX data available for date {date}")
 
     def _compute_realized_volatility(
-        self, 
-        date: datetime, 
+        self,
+        date: datetime,
         window_days: int = 21,
-        annualize: bool = True
+        annualize: bool = True,
     ) -> Optional[float]:
         """
         Compute realized volatility from NASDAQ returns as VIX proxy for pre-1986.

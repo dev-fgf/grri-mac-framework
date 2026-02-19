@@ -129,7 +129,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 record_health(db, "YAHOO_CRYPTO", report)
             except Exception as e:
                 try:
-                    record_health(db, "YAHOO_CRYPTO", make_down_report("YAHOO_CRYPTO", str(e)))
+                    record_health(
+                        db,
+                        "YAHOO_CRYPTO",
+                        make_down_report("YAHOO_CRYPTO", str(e)),
+                    )
                 except Exception:
                     pass
 

@@ -1,0 +1,16 @@
+%% MAC Framework — Policy Pillar Binding-Constraint Architecture
+%% Section 3.5 of methodology.md
+
+flowchart TD
+    A["Score 5 sub-indicators"] --> B{"max - min ><br/>homogeneity<br/>threshold?"}
+    B -->|Yes: heterogeneous| C["Policy = min(sub-indicators)<br/>(binding constraint)"]
+    B -->|No: homogeneous| D["Policy = weighted average"]
+    D --> E["Inflation: 0.30<br/>Fwd Inflation: 0.15<br/>Policy Room: 0.22<br/>Balance Sheet: 0.17<br/>Fiscal Space: 0.16"]
+    C --> F["Apply era cap"]
+    D --> F
+
+    F --> G{"Era?"}
+    G -->|Pre-1913| H["cap = min(0.30,<br/>0.15 + 0.30 * gold_ratio)"]
+    G -->|1913-1934| I["cap = 0.55"]
+    G -->|1944-1971| J["cap = 0.65"]
+    G -->|Post-1971| K["No cap"]

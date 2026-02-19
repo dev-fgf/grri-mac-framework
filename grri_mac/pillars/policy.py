@@ -45,6 +45,8 @@ class PolicyIndicators:
     debt_to_gdp_pct: Optional[float] = None  # Federal debt / GDP
     observation_date: Optional[datetime] = None  # For era-aware caps
     gold_reserve_ratio: Optional[float] = None  # Gold reserves / monetary base (pre-1934)
+    # v7: Forward-looking inflation expectations (5y5y TIPS breakeven)
+    forward_inflation_expectations_bps: Optional[float] = None
 
 
 @dataclass
@@ -55,19 +57,25 @@ class PolicyScores:
     balance_sheet: float = 0.5
     inflation: float = 0.5
     fiscal_space: float = 0.5  # Debt/GDP constraint
+    forward_inflation: float = 0.5  # v7: expectations anchor
     composite: float = 0.5
     composite_method: str = "min"  # "min" or "weighted_avg"
     era_cap_applied: Optional[float] = None  # If an era cap was binding
 
 
-# ── Weighted-average fallback weights (v6 §4.5) ─────────────────────────
+# ── Weighted-average fallback weights (v7 §4.5) ─────────────────────────
+# Updated to include forward inflation expectations when available.
+# When forward_inflation is absent, weights renormalize automatically.
 WEIGHTED_AVG_WEIGHTS = {
-    "inflation": 0.35,
-    "policy_room": 0.25,
-    "balance_sheet": 0.20,
-    "fiscal_space": 0.20,
+    "inflation": 0.30,
+    "forward_inflation": 0.15,
+    "policy_room": 0.22,
+    "balance_sheet": 0.17,
+    "fiscal_space": 0.16,
 }
-# Threshold for switching from min to weighted average
+
+# Default threshold for switching from min to weighted average.
+# Can be overridden by calibrate_homogeneity_threshold().
 HOMOGENEITY_THRESHOLD = 0.25
 
 
@@ -107,6 +115,13 @@ class PolicyPillar:
             "ample": 70,
             "thin": 90,
             "breach": 120,
+        },
+        "forward_inflation": {
+            # 5y5y TIPS breakeven deviation from 2% in bps
+            # Well-anchored expectations = ample capacity
+            "ample": 30,
+            "thin": 75,
+            "breach": 150,
         },
     }
 
@@ -226,11 +241,50 @@ class PolicyPillar:
             lower_is_better=True,
         )
 
-    def _get_era_cap(self, date: Optional[datetime]) -> Optional[float]:
-        """Return the era-specific cap on the policy score, if any.
+    def score_forward_inflation(
+        self, expectations_bps: float,
+    ) -> float:
+        """Score forward inflation expectations (v7).
+
+        Uses 5y5y TIPS breakeven (or SPF proxy). Measures how
+        well-anchored long-run inflation expectations are.
+
+        Deviation from 2% target in absolute bps — lower is better
+        (well-anchored expectations = more policy capacity).
+
+        Args:
+            expectations_bps: Absolute deviation of 5y5y
+                breakeven from 2% target, in basis points.
+
+        Returns:
+            Score between 0.0 (breach) and 1.0 (ample).
+        """
+        t = self.THRESHOLDS["forward_inflation"]
+        return score_indicator_simple(
+            abs(expectations_bps),
+            t["ample"],
+            t["thin"],
+            t["breach"],
+            lower_is_better=True,
+        )
+
+    def _get_era_cap(
+        self,
+        date: Optional[datetime],
+        gold_reserve_ratio: Optional[float] = None,
+    ) -> Optional[float]:
+        """Return the era-specific cap on the policy score.
+
+        v7: Pre-1913 uses a sliding cap based on gold reserves
+        rather than a hard 0.30 cap. If gold_reserve_ratio is
+        available, cap = min(0.30, 0.15 + 0.30 * ratio).
+        This reflects that some pre-Fed periods had stronger
+        gold backing than others.
 
         Args:
             date: Observation date. If None, no cap applied.
+            gold_reserve_ratio: Gold reserves / monetary base
+                (0-1). Used for pre-1913 sliding cap.
 
         Returns:
             Maximum allowed policy score for the era, or None.
@@ -241,7 +295,11 @@ class PolicyPillar:
         year = date.year
 
         if year < 1913:
-            return self.ERA_CAPS["pre_fed"]
+            base_cap = self.ERA_CAPS["pre_fed"]
+            if gold_reserve_ratio is not None:
+                sliding = 0.15 + 0.30 * gold_reserve_ratio
+                return min(base_cap, sliding)
+            return base_cap
         elif year < 1934:
             return self.ERA_CAPS["early_fed_gold"]
         elif 1944 <= year <= 1971:
@@ -279,9 +337,32 @@ class PolicyPillar:
 
         return score
 
+    @staticmethod
+    def calibrate_homogeneity_threshold(
+        historical_dispersions: list[float],
+    ) -> float:
+        """Compute data-driven homogeneity threshold.
+
+        Uses the 75th percentile of historical score dispersions
+        to set the switching point between min and weighted-avg.
+
+        Args:
+            historical_dispersions: List of (max - min) score
+                dispersions from historical scenarios.
+
+        Returns:
+            Calibrated threshold (falls back to 0.25 if empty).
+        """
+        if not historical_dispersions:
+            return HOMOGENEITY_THRESHOLD
+        sorted_d = sorted(historical_dispersions)
+        idx = int(0.75 * (len(sorted_d) - 1))
+        return sorted_d[idx]
+
     def calculate(
         self,
         indicators: Optional[PolicyIndicators] = None,
+        homogeneity_threshold: Optional[float] = None,
     ) -> PolicyScores:
         """Calculate policy pillar scores using binding constraint architecture.
 
@@ -303,31 +384,48 @@ class PolicyPillar:
         if indicators is None:
             indicators = self.fetch_indicators()
 
+        threshold = (
+            homogeneity_threshold
+            if homogeneity_threshold is not None
+            else HOMOGENEITY_THRESHOLD
+        )
+
         scores = PolicyScores()
         available_scores = {}
 
         # ── Score individual dimensions ──────────────────────────────
         if indicators.policy_room_bps is not None:
-            scores.policy_room = self.score_policy_room(indicators.policy_room_bps)
+            scores.policy_room = self.score_policy_room(
+                indicators.policy_room_bps,
+            )
             available_scores["policy_room"] = scores.policy_room
 
         if indicators.fed_balance_sheet_gdp_pct is not None:
             scores.balance_sheet = self.score_balance_sheet(
-                indicators.fed_balance_sheet_gdp_pct
+                indicators.fed_balance_sheet_gdp_pct,
             )
             available_scores["balance_sheet"] = scores.balance_sheet
 
         if indicators.core_pce_vs_target_bps is not None:
             scores.inflation = self.score_inflation(
-                indicators.core_pce_vs_target_bps
+                indicators.core_pce_vs_target_bps,
             )
             available_scores["inflation"] = scores.inflation
 
         if indicators.debt_to_gdp_pct is not None:
             scores.fiscal_space = self.score_fiscal_space(
-                indicators.debt_to_gdp_pct
+                indicators.debt_to_gdp_pct,
             )
             available_scores["fiscal_space"] = scores.fiscal_space
+
+        # v7: Forward inflation expectations
+        if indicators.forward_inflation_expectations_bps is not None:
+            scores.forward_inflation = self.score_forward_inflation(
+                indicators.forward_inflation_expectations_bps,
+            )
+            available_scores["forward_inflation"] = (
+                scores.forward_inflation
+            )
 
         # ── Binding constraint composite ─────────────────────────────
         if len(available_scores) > 0:
@@ -338,26 +436,32 @@ class PolicyPillar:
                 # Single indicator — use it directly
                 scores.composite = score_values[0]
                 scores.composite_method = "single"
-            elif dispersion > HOMOGENEITY_THRESHOLD:
-                # High dispersion: one dimension dominates → min (binding)
+            elif dispersion > threshold:
+                # High dispersion: binding constraint → min
                 scores.composite = min(score_values)
                 scores.composite_method = "min"
             else:
-                # Low dispersion: homogeneously tight → weighted average
+                # Low dispersion: weighted average
                 weighted_sum = 0.0
                 weight_sum = 0.0
                 for name, val in available_scores.items():
-                    w = WEIGHTED_AVG_WEIGHTS.get(name, 0.25)
+                    w = WEIGHTED_AVG_WEIGHTS.get(name, 0.20)
                     weighted_sum += val * w
                     weight_sum += w
-                scores.composite = weighted_sum / weight_sum if weight_sum > 0 else 0.5
+                if weight_sum > 0:
+                    scores.composite = weighted_sum / weight_sum
+                else:
+                    scores.composite = 0.5
                 scores.composite_method = "weighted_avg"
         else:
             scores.composite = 0.5
             scores.composite_method = "default"
 
         # ── Historical era caps ──────────────────────────────────────
-        era_cap = self._get_era_cap(indicators.observation_date)
+        era_cap = self._get_era_cap(
+            indicators.observation_date,
+            indicators.gold_reserve_ratio,
+        )
         if era_cap is not None and scores.composite > era_cap:
             scores.composite = era_cap
             scores.era_cap_applied = era_cap

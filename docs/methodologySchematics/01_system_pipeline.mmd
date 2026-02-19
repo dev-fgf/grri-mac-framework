@@ -1,0 +1,58 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e8f4fd', 'primaryBorderColor': '#2980b9', 'secondaryColor': '#fdf2e9', 'tertiaryColor': '#eafaf1' } } }%%
+%% MAC Framework — System Pipeline (v7.1, 8 Pillars)
+%% Section 2.1 of methodology.md
+
+flowchart TB
+    subgraph DataLayer["Data Layer"]
+        FRED["FRED API<br/>(41+ series)"]
+        NBER["NBER Macrohistory<br/>(1857-1989)"]
+        Shiller["Shiller Dataset<br/>(1871-present)"]
+        Schwert["Schwert Volatility<br/>(1802-1987)"]
+        BoE["Bank of England<br/>(1694-1995)"]
+        CFTC["CFTC / COT<br/>(1962-present)"]
+        BDC["BDC Prices<br/>(2004-present)"]
+        FOMC["FOMC Minutes<br/>(1993-present)"]
+    end
+
+    subgraph PillarLayer["Pillar Scoring (8 Pillars)"]
+        LIQ["Liquidity"]
+        VAL["Valuation"]
+        POS["Positioning"]
+        VOL["Volatility"]
+        POL["Policy"]
+        CON["Contagion"]
+        PC["Private Credit"]
+        SENT["Sentiment"]
+    end
+
+    subgraph CompositeLayer["Composite Engine"]
+        WA["Weighted Average<br/>w_i from ML"]
+        BIP["Breach Interaction<br/>Penalty pi(n)"]
+        CAL["Calibration<br/>Factor alpha"]
+        MAC["MAC Score"]
+    end
+
+    subgraph UncertaintyLayer["Uncertainty & Regime"]
+        BOOT["Bootstrap CI<br/>(n=1000)"]
+        HMM["HMM Regime<br/>P(fragile)"]
+        CONF["Conformal<br/>Prediction Bands"]
+    end
+
+    subgraph ValidationLayer["Validation"]
+        BT["Walk-Forward<br/>Backtest"]
+        PR["Precision-Recall<br/>Curve"]
+        FPC["FP Cost<br/>Analysis"]
+    end
+
+    DataLayer --> PillarLayer
+    FOMC --> SENT
+    PillarLayer --> WA
+    WA --> BIP
+    BIP --> CAL
+    CAL --> MAC
+    MAC --> BOOT
+    MAC --> HMM
+    BOOT --> CONF
+    MAC --> BT
+    BT --> PR
+    PR --> FPC

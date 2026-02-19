@@ -30,7 +30,7 @@ LEAD_TIME_WEEKS = 8              # Early signal up to 8 weeks before = TP
 TAU_MIN = 0.10
 TAU_MAX = 0.80
 TAU_STEP = 0.01
-TOTAL_CRISIS_EVENTS = 41         # Full event catalogue 1907–2025
+TOTAL_CRISIS_EVENTS = 56         # Full event catalogue 1907–2025 (v7)
 
 # Standard operating points (v6 §15.6.9)
 STANDARD_OPERATING_POINTS: Dict[str, float] = {

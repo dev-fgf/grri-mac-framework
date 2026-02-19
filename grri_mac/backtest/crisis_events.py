@@ -893,6 +893,308 @@ CRISIS_EVENTS = [
             "nikkei": -12,  # Single-day decline
         }
     ),
+
+    # ==========================================================================
+    # ADDITIONAL EVENTS (v7 expansion to 55+ events)
+    # ==========================================================================
+    CrisisEvent(
+        name="1914 Exchange Closure",
+        start_date=datetime(1914, 7, 31),
+        end_date=datetime(1914, 12, 12),
+        affected_countries=["USA", "GBR", "FRA", "DEU"],
+        expected_pillars_in_breach=[
+            "liquidity", "contagion", "policy",
+        ],
+        expected_mac_range=(0.15, 0.35),
+        severity="extreme",
+        description=(
+            "NYSE closed 4.5 months on WWI outbreak. "
+            "Gold hoarding, transatlantic finance "
+            "disrupted. Fed opened during crisis."
+        ),
+        key_indicators={
+            "exchange_closed_days": 137,
+            "gold_outflows": "severe",
+        }
+    ),
+
+    CrisisEvent(
+        name="1966 Credit Crunch",
+        start_date=datetime(1966, 8, 1),
+        end_date=datetime(1966, 10, 31),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity", "policy"],
+        expected_mac_range=(0.40, 0.55),
+        severity="moderate",
+        description=(
+            "First post-WWII Fed inflation fight. "
+            "Severe disintermediation, savings "
+            "outflows from thrifts."
+        ),
+        key_indicators={
+            "baa_aaa_spread_bps": 52,
+            "fed_funds_pct": 5.75,
+        }
+    ),
+
+    CrisisEvent(
+        name="1994 Bond Massacre",
+        start_date=datetime(1994, 2, 4),
+        end_date=datetime(1994, 12, 31),
+        affected_countries=["USA", "GBR", "DEU"],
+        expected_pillars_in_breach=["volatility", "policy"],
+        expected_mac_range=(0.40, 0.55),
+        severity="moderate",
+        description=(
+            "Greenspan surprise hike. 10Y yield surged "
+            "from 5.8% to 8%. Worst bond bear market "
+            "in a generation. Orange County bankruptcy."
+        ),
+        key_indicators={
+            "ten_year_yield_change_bps": 220,
+            "move_index": 120,
+        }
+    ),
+
+    CrisisEvent(
+        name="Mexico Tequila Crisis",
+        start_date=datetime(1994, 12, 20),
+        end_date=datetime(1995, 3, 31),
+        affected_countries=["MEX", "ARG", "BRA", "USA"],
+        expected_pillars_in_breach=["contagion", "liquidity"],
+        expected_mac_range=(0.40, 0.55),
+        severity="high",
+        description=(
+            "Peso devaluation triggers EM contagion. "
+            "US $50B rescue package. 'Tequila Effect' "
+            "spreads to Argentina and Brazil."
+        ),
+        key_indicators={
+            "em_spread_bps": 800,
+            "peso_depreciation_pct": 50,
+        }
+    ),
+
+    CrisisEvent(
+        name="2001 Argentina / Turkey",
+        start_date=datetime(2001, 2, 19),
+        end_date=datetime(2002, 1, 6),
+        affected_countries=["ARG", "TUR", "BRA"],
+        expected_pillars_in_breach=["contagion"],
+        expected_mac_range=(0.40, 0.60),
+        severity="high",
+        description=(
+            "Turkey lira crisis (Feb 2001), Argentina "
+            "sovereign default (Dec 2001). EM spreads "
+            "widened. Limited US contagion."
+        ),
+        key_indicators={
+            "embi_spread_bps": 900,
+            "argentina_sovereign_spread_bps": 4000,
+        }
+    ),
+
+    CrisisEvent(
+        name="2015-16 Energy Credit Stress",
+        start_date=datetime(2015, 12, 1),
+        end_date=datetime(2016, 2, 11),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["valuation", "volatility"],
+        expected_mac_range=(0.40, 0.55),
+        severity="moderate",
+        description=(
+            "Oil price crash to $26, energy HY spread "
+            "blowout. Third Avenue frozen. Broad HY "
+            "contagion fears."
+        ),
+        key_indicators={
+            "hy_oas": 830,
+            "oil_price": 26,
+            "vix": 28,
+        }
+    ),
+
+    CrisisEvent(
+        name="Repo Market Seizure 2019",
+        start_date=datetime(2019, 9, 17),
+        end_date=datetime(2019, 10, 11),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["liquidity"],
+        expected_mac_range=(0.50, 0.65),
+        severity="moderate",
+        description=(
+            "Overnight repo rate spiked to 10%. "
+            "Fed resumed repo operations and "
+            "T-bill purchases. Reserve scarcity."
+        ),
+        key_indicators={
+            "repo_rate_pct": 10.0,
+            "sofr_spike_bps": 282,
+        }
+    ),
+
+    CrisisEvent(
+        name="Evergrande / China Property 2021",
+        start_date=datetime(2021, 9, 13),
+        end_date=datetime(2021, 10, 15),
+        affected_countries=["CHN", "HKG", "USA"],
+        expected_pillars_in_breach=["contagion", "valuation"],
+        expected_mac_range=(0.50, 0.65),
+        severity="moderate",
+        description=(
+            "Evergrande missed bond payments, "
+            "triggering fears of Chinese property "
+            "sector contagion to global markets."
+        ),
+        key_indicators={
+            "china_hy_spread_bps": 2500,
+            "vix": 25,
+        }
+    ),
+
+    CrisisEvent(
+        name="2022 Rate Shock / Crypto Winter",
+        start_date=datetime(2022, 6, 13),
+        end_date=datetime(2022, 6, 18),
+        affected_countries=["USA", "global"],
+        expected_pillars_in_breach=[
+            "volatility", "policy", "positioning",
+        ],
+        expected_mac_range=(0.35, 0.55),
+        severity="moderate",
+        description=(
+            "Unexpected 75bp hike, 2Y yield above 3.4%, "
+            "crypto collapses (Terra/Luna, Celsius, "
+            "Three Arrows). S&P enters bear market."
+        ),
+        key_indicators={
+            "fed_funds_change_bps": 75,
+            "sp500_ytd_pct": -23,
+            "vix": 34,
+        }
+    ),
+
+    CrisisEvent(
+        name="FTX Collapse",
+        start_date=datetime(2022, 11, 6),
+        end_date=datetime(2022, 11, 14),
+        affected_countries=["USA", "global"],
+        expected_pillars_in_breach=["positioning"],
+        expected_mac_range=(0.50, 0.65),
+        severity="moderate",
+        description=(
+            "FTX exchange collapses. Limited traditional "
+            "market contagion but exposed leverage in "
+            "crypto ecosystem."
+        ),
+        key_indicators={
+            "btc_decline_pct": -25,
+            "vix": 25,
+        }
+    ),
+
+    CrisisEvent(
+        name="Ukraine Invasion Market Shock",
+        start_date=datetime(2022, 2, 24),
+        end_date=datetime(2022, 3, 14),
+        affected_countries=["UKR", "RUS", "DEU", "USA", "global"],
+        expected_pillars_in_breach=[
+            "contagion", "volatility", "policy",
+        ],
+        expected_mac_range=(0.35, 0.55),
+        severity="high",
+        description=(
+            "Russia invades Ukraine. Energy prices "
+            "surge, European gas crisis, commodity "
+            "dislocations, Nickel market halt."
+        ),
+        key_indicators={
+            "vix": 36,
+            "oil_price": 130,
+            "nickel_halt": True,
+        }
+    ),
+
+    CrisisEvent(
+        name="April 2025 Tariff Shock",
+        start_date=datetime(2025, 4, 2),
+        end_date=datetime(2025, 4, 14),
+        affected_countries=["USA", "CHN", "global"],
+        expected_pillars_in_breach=[
+            "positioning", "volatility",
+            "liquidity", "contagion",
+        ],
+        expected_mac_range=(0.20, 0.40),
+        severity="extreme",
+        description=(
+            "Sweeping tariff announcement triggers "
+            "basis trade unwind, equity crash, "
+            "Treasury market dysfunction. "
+            "Bond-equity correlation flip."
+        ),
+        key_indicators={
+            "vix": 52,
+            "sp500_drawdown_pct": -12,
+            "basis_trade_unwind": True,
+        }
+    ),
+
+    CrisisEvent(
+        name="1987 Pre-Crash Build-up",
+        start_date=datetime(1987, 9, 1),
+        end_date=datetime(1987, 10, 16),
+        affected_countries=["USA"],
+        expected_pillars_in_breach=["valuation", "positioning"],
+        expected_mac_range=(0.45, 0.60),
+        severity="moderate",
+        description=(
+            "Markets rose 40% in 8 months then "
+            "stalled. Portfolio insurance + margin "
+            "leverage at extremes. Pre-cursor signals."
+        ),
+        key_indicators={
+            "sp500_pe": 22,
+            "portfolio_insurance_aum_bn": 100,
+        }
+    ),
+
+    CrisisEvent(
+        name="European Sovereign Crisis Peak (2012)",
+        start_date=datetime(2012, 5, 1),
+        end_date=datetime(2012, 7, 26),
+        affected_countries=["ESP", "ITA", "GRC", "PRT"],
+        expected_pillars_in_breach=["contagion", "valuation"],
+        expected_mac_range=(0.35, 0.50),
+        severity="high",
+        description=(
+            "Spanish 10Y above 7%, Greece exit fears "
+            "peak. Draghi 'whatever it takes' speech "
+            "(July 26) marks turning point."
+        ),
+        key_indicators={
+            "spanish_10y_spread_bps": 650,
+            "italian_10y_spread_bps": 530,
+        }
+    ),
+
+    CrisisEvent(
+        name="EM Fragile Five Crisis 2018",
+        start_date=datetime(2018, 4, 1),
+        end_date=datetime(2018, 9, 30),
+        affected_countries=["TUR", "ARG", "ZAF", "BRA", "IDN"],
+        expected_pillars_in_breach=["contagion"],
+        expected_mac_range=(0.45, 0.60),
+        severity="moderate",
+        description=(
+            "Turkish lira crisis, Argentine peso "
+            "crash. EM currencies under pressure "
+            "from Fed tightening + dollar strength."
+        ),
+        key_indicators={
+            "em_spread_bps": 400,
+            "try_depreciation_pct": 40,
+        }
+    ),
 ]
 
 

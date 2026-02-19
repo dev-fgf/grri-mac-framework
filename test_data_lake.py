@@ -10,7 +10,7 @@ import json
 import shutil
 import tempfile
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch  # noqa: F401
 
@@ -112,7 +112,7 @@ class TestBlobPathHelpers(unittest.TestCase):
 
     def test_default_date_is_today(self):
         path = BlobStore.blob_path("cboe", "VIX3M")
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         self.assertIn(today, path)
 
 

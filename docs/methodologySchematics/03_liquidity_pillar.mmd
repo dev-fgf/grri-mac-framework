@@ -1,0 +1,14 @@
+%% MAC Framework — Liquidity Pillar Scoring
+%% Section 3.1 of methodology.md
+
+flowchart LR
+    subgraph Indicators
+        A["SOFR-IORB<br/>spread (bps)"]
+        B["CP-Treasury<br/>spread (bps)"]
+        C["Cross-currency<br/>basis (bps)"]
+        D["Treasury bid-ask<br/>(32nds)"]
+    end
+    subgraph Scoring
+        E["Piecewise linear<br/>lower-is-better"]
+    end
+    Indicators --> E --> F["Liquidity<br/>= mean(scores)"]

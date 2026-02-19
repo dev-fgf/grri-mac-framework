@@ -1,0 +1,25 @@
+%% MAC Framework — Standard Backtest Loop (v7.1, 8 Pillars)
+%% Section 9.1 of methodology.md
+
+flowchart LR
+    subgraph Input
+        A["Start date<br/>(1971 or 1907)"]
+        B["End date<br/>(2024)"]
+        C["Frequency<br/>(weekly)"]
+    end
+
+    subgraph Loop["For each week t"]
+        D["Prefetch FRED<br/>data to t"]
+        E["Calculate 8<br/>pillar scores"]
+        F["Compute MAC<br/>with interaction penalty"]
+        G["Classify:<br/>crisis window?"]
+        H["Store MAC_t,<br/>pillar scores, flags"]
+    end
+
+    Input --> Loop
+    Loop --> I["Validation:<br/>TPR, FPR, FP taxonomy"]
+
+    I --> J{"Backtest Mode"}
+    J -->|Standard| K["1971-2025<br/>FRED only"]
+    J -->|Extended| L["1962-2025<br/>FRED + Moody's"]
+    J -->|Full| M["1907-2025<br/>FRED + NBER + Shiller<br/>+ Schwert + BoE + FINRA"]

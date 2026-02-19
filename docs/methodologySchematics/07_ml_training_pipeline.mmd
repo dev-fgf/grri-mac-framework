@@ -1,0 +1,19 @@
+%% MAC Framework — ML Weight Optimisation Training Pipeline (v7.1)
+%% Section 5.2 of methodology.md
+
+flowchart TD
+    A["35 historical scenarios<br/>(1907-2025)"] --> B["Augmentation<br/>35 x 9 = 315 effective"]
+    B --> C["Feature engineering<br/>8 base + 6 interactions = 14"]
+    C --> D["StandardScaler<br/>zero-mean, unit-var"]
+    D --> E{"XGBoost<br/>available?"}
+    E -->|Yes| F["Optuna Bayesian HPO<br/>50 trials, 5-fold TSCV"]
+    E -->|No| G["sklearn GBM<br/>n_est=50, depth=2, lr=0.1"]
+    F --> H["Extract feature<br/>importances"]
+    G --> H
+    H --> I["Normalize base importances<br/>to pillar weights (sum=1)"]
+    I --> J["LOOCV on real<br/>scenarios only (N=35)"]
+    J --> K["Report: OOS R-squared,<br/>MAE, weight stability"]
+
+    K --> L{"avg weight deviation<br/>from equal > 0.03?"}
+    L -->|Yes| M["Use ML weights"]
+    L -->|No| N["Fall back to<br/>equal weights (1/8)"]
