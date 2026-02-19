@@ -35,8 +35,18 @@ Proxy Methodology:
 
 from dataclasses import dataclass
 from typing import Optional
+import logging
 
 from ..mac.scorer import score_indicator_simple, score_indicator_range
+
+logger = logging.getLogger(__name__)
+
+# Try to import hedge failure detector (v7 enhancement)
+try:
+    from .hedge_failure_analysis import HedgeFailureDetector
+    _HEDGE_FAILURE_AVAILABLE = True
+except ImportError:
+    _HEDGE_FAILURE_AVAILABLE = False
 
 
 @dataclass
@@ -48,6 +58,9 @@ class PositioningIndicators:
     svxy_aum_millions: Optional[float] = None
     # For dynamic OI-relative thresholds
     total_treasury_oi_billions: Optional[float] = None
+    # v7: Hedge failure indicators
+    primary_dealer_gross_leverage: Optional[float] = None
+    treasury_futures_herfindahl: Optional[float] = None
 
 
 @dataclass
@@ -97,16 +110,20 @@ class PositioningPillar:
         },
     }
 
-    def __init__(self, cftc_client=None, etf_client=None):
+    def __init__(self, cftc_client=None, etf_client=None, use_hedge_failure=True):
         """
         Initialize positioning pillar.
 
         Args:
             cftc_client: CFTCClient instance for COT data
             etf_client: ETFClient instance for ETF data
+            use_hedge_failure: Use hedge failure analysis (v7)
         """
         self.cftc = cftc_client
         self.etf = etf_client
+        self._hedge_detector = None
+        if use_hedge_failure and _HEDGE_FAILURE_AVAILABLE:
+            self._hedge_detector = HedgeFailureDetector()
 
     def fetch_indicators(self) -> PositioningIndicators:
         """Fetch current positioning indicators from data sources."""
@@ -270,6 +287,9 @@ class PositioningPillar:
         """
         Calculate positioning pillar scores.
 
+        v7: Incorporates hedge failure analysis when primary dealer
+        leverage or Treasury futures Herfindahl data is available.
+
         Args:
             indicators: Optional pre-fetched indicators. If None, will fetch.
 
@@ -315,6 +335,23 @@ class PositioningPillar:
             scores.svxy_aum = self.score_svxy_aum(indicators.svxy_aum_millions)
             scored_count += 1
 
+        # v7: Hedge failure indicators (when available)
+        if self._hedge_detector is not None:
+            if indicators.primary_dealer_gross_leverage is not None:
+                dealer_score = self._hedge_detector.score_primary_dealer_leverage(
+                    indicators.primary_dealer_gross_leverage,
+                )
+                # Blend into composite as an additional scored indicator
+                scored_count += 1
+                # Store as basis_trade (re-use field) or add to total directly
+                # We add it as an extra factor in the composite below
+
+            if indicators.treasury_futures_herfindahl is not None:
+                hhi_score = self._hedge_detector.score_herfindahl(
+                    indicators.treasury_futures_herfindahl,
+                )
+                scored_count += 1
+
         # Calculate composite
         if scored_count > 0:
             total = 0.0
@@ -324,6 +361,21 @@ class PositioningPillar:
                 total += scores.spec_net
             if indicators.svxy_aum_millions is not None:
                 total += scores.svxy_aum
+            # v7: Add hedge failure indicator scores
+            if (
+                self._hedge_detector is not None
+                and indicators.primary_dealer_gross_leverage is not None
+            ):
+                total += self._hedge_detector.score_primary_dealer_leverage(
+                    indicators.primary_dealer_gross_leverage,
+                )
+            if (
+                self._hedge_detector is not None
+                and indicators.treasury_futures_herfindahl is not None
+            ):
+                total += self._hedge_detector.score_herfindahl(
+                    indicators.treasury_futures_herfindahl,
+                )
             scores.composite = total / scored_count
         else:
             scores.composite = 0.5

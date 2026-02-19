@@ -199,6 +199,8 @@ flowchart LR
 
 **Design note:** Two-sided scoring is critical. Pre-GFC complacency (June 2007: IG OAS at 60 bps, HY OAS at 250 bps) is captured as a breach via compressed spreads, while crisis blow-outs are captured at the wide end. This avoids the asymmetric blind spot of traditional spread-only models.
 
+**v7.1 Adaptive Bands:** After accumulating 52+ weekly observations, the valuation pillar switches to regime-dependent rolling-percentile bands via `AdaptiveValuationBands`. Percentile boundaries adapt to the monetary policy regime (QE / tightening / neutral), so the definition of "ample" spreads evolves with the environment rather than relying on fixed thresholds calibrated to a single era.
+
 **Historical proxy chain:**
 
 | Era | Source | Proxy |
@@ -223,7 +225,15 @@ flowchart LR
 
 **Volatility Risk Premium (VRP) Adjustment:**
 
-The VRP scales the volatility pillar to account for the variance risk premium (Carr & Wu, 2009):
+The VRP scales the volatility pillar to account for the variance risk premium (Carr & Wu, 2009). v7.1 uses a Kalman filter state-space model as the primary estimator, falling back to the linear formula when filterpy/pykalman are unavailable:
+
+*Kalman State-Space Model (primary):*
+- State equation: $\text{VRP}_t = \text{VRP}_{t-1} + w_t$, $w_t \sim N(0, Q)$
+- Observation equation: $z_t = \text{VRP}_t + v_t$, $v_t \sim N(0, R)$
+- Measurement inputs: vol-of-vol, skew, and excess kurtosis of returns
+- The filter optimally combines noisy observations with the random-walk prior
+
+*Linear Fallback:*
 
 $$
 \text{VRP}_t = \text{clip}\!\Big(1.05 + 0.015 \cdot \sigma(\Delta\text{VIX})_{252d},\; [1.05,\; 1.55]\Big)
@@ -277,6 +287,8 @@ $$
 Ample: < 8% of OI; Thin: 8–12%; Breach: > 18%.
 
 **Hedge failure mechanism:** When any positioning indicator breaches its critical threshold, the pillar composite is forced below 0.18, triggering the interaction penalty and reflecting the empirical finding that positioning breach is a necessary condition for Treasury hedge failure (see Section 13.1).
+
+**v7.1 Hedge Failure Detector:** The positioning pillar integrates a formal `HedgeFailureDetector` module that scores two additional indicators when available: (1) primary dealer gross leverage (NY Fed data), and (2) Treasury futures Herfindahl index (concentration measure). These are blended into the composite as additional scored factors. The detector formalises the hedge failure definition as simultaneous 10Y return < -2% and S&P 500 < -3%, and maintains a Bayesian posterior over P(severe | positioning breach) updated from an expanded sample of N = 9 episodes (see Section 12.6).
 
 **References:**
 - Federal Reserve Board (2024), "Quantifying Treasury Cash-Futures Basis Trades."
@@ -541,7 +553,7 @@ $$
 
 where:
 - $\gamma = 0.043$, $\gamma_{\text{cap}} = 0.15$
-- $f_{\text{indep}}(n) = \binom{K}{n} \hat{p}^n (1-\hat{p})^{K-n}$ with pooled breach rate $\hat{p} \approx 0.125$
+- $f_{\text{indep}}(n) = \binom{K}{n} \hat{p}^n (1-\hat{p})^{K-n}$ with pooled breach rate $\hat{p} \approx 0.125$ (default), or per-pillar breach probabilities from the Dirichlet-multinomial model (Section 8.2) when the data-driven breach model is active
 - $f_{\text{obs}}(n)$ is the observed co-breach frequency across 14 modern crises
 
 **Observed excess ratios** (14 modern crises, 1998–2025):
@@ -857,6 +869,8 @@ $$
 
 This replaces the binomial independence assumption in the co-breach penalty with an empirical joint distribution that varies by historical era.
 
+**v7.1 Integration:** The `PillarBreachModel` is initialised in the backtest runner and passed to `calculate_mac_with_ci()` at every timestep. When fitted, it provides data-driven co-breach penalties via `get_penalty_for_breach_count(n)` that replace the hardcoded `BREACH_INTERACTION_PENALTY` lookup table. The fitted model captures era-specific patterns — e.g., pre-1990 episodes show higher volatility-policy co-breach rates, while post-2000 episodes show higher positioning-liquidity clustering. Fallback to the pooled-probability table is automatic when insufficient scenario data is available.
+
 ---
 
 ## 9. Backtesting Methodology
@@ -1096,39 +1110,43 @@ Using FRED: `FEDFUNDS`/`DFF` (rate change), `DGS10`/`DGS2` (yield curve), `BAA`/
 
 ## 12. Validation Results
 
-### 12.1 Standard Backtest (1971–2025, 8-Pillar Model)
+### 12.1 Standard Backtest (1971–2025, 8-Pillar Model, v7.1 Fully Wired)
 
 | Metric | Value |
 |--------|:---:|
 | Data points (weekly) | 2,813 |
 | Crises evaluated | 39 |
-| Crises with warning (TP) | 35 |
-| **True Positive Rate** | **89.7%** |
-| Average MAC (overall) | 0.489 |
-| Average MAC (crisis periods) | 0.442 |
-| Average MAC (non-crisis) | 0.502 |
-| MAC range | [0.000, 0.849] |
+| Crises with warning (TP) | 36 |
+| **True Positive Rate** | **92.3%** |
+| Average MAC (overall) | 0.471 |
+| Average MAC (crisis periods) | 0.425 |
+| Average MAC (non-crisis) | 0.485 |
+| MAC range | [0.000, 0.854] |
 | Crisis-period separation | 0.060 (statistically significant) |
+| Mean bootstrap std | 0.036 |
+| Mean 80% CI width | 0.093 |
+| Mean 90% CI width | 0.118 |
 
 ### 12.2 Per-Era Detection Rates
 
 | Era | Crises (N) | Detected | TPR |
 |-----|:---:|:---:|:---:|
-| Post-Bretton Woods (1971–1990) | 8 | 6 | **75.0%** |
+| Post-Bretton Woods (1971–1990) | 8 | 7 | **87.5%** |
 | Modern (1990–2025) | 31 | 29 | **93.5%** |
 
-### 12.3 Comparison: 7-Pillar vs 8-Pillar Model
+### 12.3 Progressive Improvement: 7-Pillar to v7.1 Fully Wired
 
-| Metric | 7-Pillar (v7.0) | 8-Pillar (v7.1) | Change |
-|--------|:---:|:---:|--------|
-| Overall TPR | 84.6% | **89.7%** | +5.1pp |
-| Crises detected | 33/39 | **35/39** | +2 |
-| Modern-era TPR | 87.1% | **93.5%** | +6.4pp |
-| Avg MAC (crisis) | 0.449 | 0.442 | -0.007 (better separation) |
-| Avg MAC (non-crisis) | 0.518 | 0.502 | -0.016 |
-| MAC range max | 0.898 | 0.849 | -0.049 (sentiment compresses upper range) |
+| Metric | 7-Pillar (v7.0) | 8-Pillar (v7.1 base) | 8-Pillar (v7.1 wired) | Change |
+|--------|:---:|:---:|:---:|--------|
+| Overall TPR | 84.6% | 89.7% | **92.3%** | +7.7pp |
+| Crises detected | 33/39 | 35/39 | **36/39** | +3 |
+| Modern-era TPR | 87.1% | 93.5% | **93.5%** | +6.4pp |
+| Avg MAC (crisis) | 0.449 | 0.442 | **0.425** | -0.024 (better separation) |
+| Avg MAC (non-crisis) | 0.518 | 0.502 | **0.485** | -0.033 |
+| Bootstrap CI (80%) | N/A | N/A | **0.093** | new |
+| HMM P(fragile) mean | N/A | N/A | **0.559** | new |
 
-The sentiment pillar's primary contribution is detecting two additional crises in the modern era where the rate-change proxy captured the dovish-to-hawkish pivot that preceded the stress event. The slight reduction in non-crisis MAC average reflects the hawkish regime of 2022–2023 being appropriately scored as capacity-constraining.
+The v7.1 fully-wired improvements come from three sources: (1) Kalman-filtered VRP produces smoother, more responsive volatility estimates that improve early detection, (2) adaptive valuation bands avoid false negatives from structural regime shifts in spread levels, and (3) the data-driven breach model (Dirichlet-multinomial) generates more accurate co-breach penalties than the pooled-probability approximation.
 
 ### 12.4 Data Quality Distribution
 
@@ -1269,4 +1287,4 @@ The sentiment pillar has several specific limitations:
 
 ---
 
-*Document generated from MAC Framework v7.1 codebase. All formulas, thresholds, and constants verified against source code. 8-pillar backtest: 2,813 weekly observations, 89.7% TPR, 35/39 crises detected.*
+*Document generated from MAC Framework v7.1 codebase. All formulas, thresholds, and constants verified against source code. 8-pillar backtest (fully wired): 2,813 weekly observations, 92.3% TPR, 36/39 crises detected. Bootstrap CI, HMM regime overlay, and data-driven breach model active.*

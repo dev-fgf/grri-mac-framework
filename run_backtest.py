@@ -317,7 +317,7 @@ def main():
         print()
         print(f"Saving results to {output_path}...")
         df.to_csv(output_path)
-        
+
         # Also save validation summary
         validation_path = output_path.with_suffix('.validation.json')
         import json
@@ -330,6 +330,67 @@ def main():
             }
             json.dump(validation_serializable, f, indent=2, default=str)
         print(f"Saving validation metrics to {validation_path}...")
+
+        # ── v7: Bootstrap CI summary ─────────────────────────────
+        if "bootstrap_std" in df.columns and df["bootstrap_std"].notna().any():
+            mean_std = df["bootstrap_std"].mean()
+            print()
+            print("BOOTSTRAP CONFIDENCE INTERVALS (v7):")
+            print("-" * 70)
+            print(f"  Mean bootstrap std:      {mean_std:.4f}")
+            if "ci_80_low" in df.columns:
+                mean_width_80 = (
+                    df["ci_80_high"].mean() - df["ci_80_low"].mean()
+                )
+                print(f"  Mean 80%% CI width:       {mean_width_80:.4f}")
+            if "ci_90_low" in df.columns:
+                mean_width_90 = (
+                    df["ci_90_high"].mean() - df["ci_90_low"].mean()
+                )
+                print(f"  Mean 90%% CI width:       {mean_width_90:.4f}")
+
+        # ── v7: HMM regime summary ───────────────────────────────
+        if "hmm_regime" in df.columns and df["hmm_regime"].notna().any():
+            print()
+            print("HMM REGIME OVERLAY (v7):")
+            print("-" * 70)
+            regime_counts = df["hmm_regime"].value_counts()
+            for regime, count in regime_counts.items():
+                pct = count / len(df) * 100
+                print(f"  {regime:<12}: {count:>5} weeks ({pct:.1f}%%)")
+            if "hmm_fragile_prob" in df.columns:
+                mean_fragile = df["hmm_fragile_prob"].mean()
+                print(f"  Mean P(fragile):         {mean_fragile:.3f}")
+
+        # ── v7: FP cost analysis ─────────────────────────────────
+        try:
+            from grri_mac.backtest.fp_cost_analysis import (
+                run_fp_cost_analysis, format_fp_cost_report,
+            )
+            from grri_mac.backtest.crisis_events import CRISIS_EVENTS
+
+            print()
+            print("Running FP cost analysis (v7)...")
+
+            # Prepare data for FP analyser
+            weekly_data = []
+            for _, row in df.iterrows():
+                weekly_data.append({
+                    "date": row.name if hasattr(row.name, 'year') else row.name,
+                    "mac_score": row["mac_score"],
+                    "is_deteriorating": row.get("is_deteriorating", False),
+                    "mac_status": row.get("mac_status", "UNKNOWN"),
+                })
+
+            crisis_tuples = [
+                (c.name, c.start_date) for c in CRISIS_EVENTS
+            ]
+
+            fp_result = run_fp_cost_analysis(weekly_data, crisis_tuples)
+            print(format_fp_cost_report(fp_result))
+
+        except Exception as e:
+            print(f"  FP cost analysis skipped: {e}")
 
         print()
         print("[OK] Backtest complete! Results saved successfully.")

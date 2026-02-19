@@ -66,6 +66,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict, List, Tuple
 from datetime import datetime, timedelta
 from enum import Enum
+import logging
 
 from .private_credit_decorrelation import (
     DecorrelationResult,
@@ -73,6 +74,15 @@ from .private_credit_decorrelation import (
     PrivateCreditDecorrelator,
     blend_decorrelated_with_sloos,
 )
+
+logger = logging.getLogger(__name__)
+
+# Try to import PCA decorrelator (v7 enhancement — 5-factor)
+try:
+    from .private_credit_pca import RollingPCADecorrelator, PCADecorrelationResult
+    _PCA_AVAILABLE = True
+except ImportError:
+    _PCA_AVAILABLE = False
 
 
 class PrivateCreditStress(Enum):
@@ -161,12 +171,19 @@ class PEFirmData:
 @dataclass
 class PrivateCreditIndicators:
     """Complete private credit stress indicators."""
-    
+
     sloos: Optional[SLOOSData] = None
     bdc: Optional[BDCData] = None
     leveraged_loans: Optional[LeveragedLoanData] = None
     pe_firms: Optional[PEFirmData] = None
     decorrelation_ts: Optional[DecorrelationTimeSeries] = None  # v6 §4.7
+    # v7: PCA factor time series (5-factor)
+    pca_bdc_returns: Optional[List[float]] = None
+    pca_spx_returns: Optional[List[float]] = None
+    pca_vix_changes: Optional[List[float]] = None
+    pca_hy_oas_changes: Optional[List[float]] = None
+    pca_move_changes: Optional[List[float]] = None
+    pca_xccy_basis_changes: Optional[List[float]] = None
 
 
 @dataclass
@@ -263,16 +280,20 @@ class PrivateCreditPillar:
         "hedge_fund_lev_loans": "BOGZ1FL623069503Q",
     }
     
-    def __init__(self, fred_client=None, market_data_client=None):
+    def __init__(self, fred_client=None, market_data_client=None, use_pca=True):
         """
         Initialize with data clients.
-        
+
         Args:
             fred_client: Client for FRED API (SLOOS data)
             market_data_client: Client for stock/ETF prices
+            use_pca: Use 5-factor PCA decorrelation (v7); falls back to OLS
         """
         self.fred_client = fred_client
         self.market_data_client = market_data_client
+        self._pca_decorrelator = None
+        if use_pca and _PCA_AVAILABLE:
+            self._pca_decorrelator = RollingPCADecorrelator()
     
     def score_sloos(self, data: SLOOSData) -> Tuple[float, List[str]]:
         """
@@ -521,38 +542,61 @@ class PrivateCreditPillar:
         else:
             pe_score = 0.5
         
-        # ── v6 §4.7: Decorrelation pipeline ─────────────────────────
+        # ── v7: PCA decorrelation pipeline (5-factor) ────────────────
+        # Try PCA first, then fall back to OLS, then to fixed weights
         decorr_result = None
         composite_method = "fixed_weight"
-        
-        if indicators.decorrelation_ts is not None:
+
+        pca_attempted = False
+        if (
+            self._pca_decorrelator is not None
+            and indicators.pca_bdc_returns is not None
+            and indicators.pca_spx_returns is not None
+            and indicators.pca_vix_changes is not None
+            and indicators.pca_hy_oas_changes is not None
+        ):
+            pca_attempted = True
+            try:
+                pca_result = self._pca_decorrelator.decorrelate(
+                    bdc_returns=indicators.pca_bdc_returns,
+                    spx_returns=indicators.pca_spx_returns,
+                    vix_changes=indicators.pca_vix_changes,
+                    hy_oas_changes=indicators.pca_hy_oas_changes,
+                    move_changes=indicators.pca_move_changes,
+                    xccy_basis_changes=indicators.pca_xccy_basis_changes,
+                )
+                if pca_result.data_quality not in ("insufficient", "failed"):
+                    composite = blend_decorrelated_with_sloos(
+                        pca_result.decorrelated_score,
+                        sloos_score,
+                        pca_result.data_quality,
+                    )
+                    composite_method = "pca_decorrelated_blend"
+                    pca_attempted = False  # Mark success
+            except Exception:
+                pass  # Fall through to OLS
+
+        # v6 §4.7: OLS decorrelation fallback
+        if composite_method == "fixed_weight" and indicators.decorrelation_ts is not None:
             decorrelator = PrivateCreditDecorrelator()
             decorr_result = decorrelator.decorrelate(indicators.decorrelation_ts)
-            
+
             if decorr_result.data_quality != "insufficient":
-                # Use decorrelated blend: 60% decorrelated + 40% SLOOS
                 composite = blend_decorrelated_with_sloos(
                     decorr_result.decorrelated_score,
                     sloos_score,
                     decorr_result.data_quality,
                 )
                 composite_method = "decorrelated_blend"
-                
+
                 if decorr_result.ewma_z is not None and decorr_result.ewma_z < -1.5:
                     all_warnings.append(
                         f"DECORRELATED: Private credit specific stress at "
-                        f"{decorr_result.ewma_z:.2f}σ (after removing equity/credit factors)"
+                        f"{decorr_result.ewma_z:.2f}sigma (after removing equity/credit factors)"
                     )
-            else:
-                # Insufficient decorrelation data — fallback
-                composite = (
-                    sloos_score * self.WEIGHTS["sloos"] +
-                    bdc_score * self.WEIGHTS["bdc"] +
-                    ll_score * self.WEIGHTS["leveraged_loans"] +
-                    pe_score * self.WEIGHTS["pe_firms"]
-                )
-        else:
-            # No decorrelation data — original fixed-weight composite
+
+        # Fixed-weight fallback
+        if composite_method == "fixed_weight":
             composite = (
                 sloos_score * self.WEIGHTS["sloos"] +
                 bdc_score * self.WEIGHTS["bdc"] +

@@ -16,8 +16,18 @@ Only spreads in a "healthy" middle range score as ample.
 
 from dataclasses import dataclass
 from typing import Optional
+import logging
 
 from ..mac.scorer import score_indicator_range
+
+logger = logging.getLogger(__name__)
+
+# Try to import adaptive valuation bands (v7 enhancement)
+try:
+    from .valuation_adaptive import AdaptiveValuationBands
+    _ADAPTIVE_AVAILABLE = True
+except ImportError:
+    _ADAPTIVE_AVAILABLE = False
 
 
 @dataclass
@@ -71,14 +81,22 @@ class ValuationPillar:
         },
     }
 
-    def __init__(self, fred_client=None):
+    def __init__(self, fred_client=None, use_adaptive_bands=True):
         """
         Initialize valuation pillar.
 
         Args:
             fred_client: FREDClient instance for fetching data
+            use_adaptive_bands: Use regime-dependent adaptive bands (v7)
         """
         self.fred = fred_client
+        self._adaptive_bands = None
+        if use_adaptive_bands and _ADAPTIVE_AVAILABLE:
+            self._adaptive_bands = AdaptiveValuationBands()
+        # Accumulate history for adaptive scoring
+        self._ig_oas_history: list[float] = []
+        self._hy_oas_history: list[float] = []
+        self._tp_history: list[float] = []
 
     def fetch_indicators(self) -> ValuationIndicators:
         """Fetch current valuation indicators from data sources."""
@@ -135,12 +153,18 @@ class ValuationPillar:
     def calculate(
         self,
         indicators: Optional[ValuationIndicators] = None,
+        regime: str = "neutral",
     ) -> ValuationScores:
         """
         Calculate valuation pillar scores.
 
+        v7: When sufficient history is accumulated and adaptive bands
+        are available, uses regime-dependent rolling percentile bands
+        instead of fixed thresholds.
+
         Args:
             indicators: Optional pre-fetched indicators. If None, will fetch.
+            regime: Monetary policy regime ("qe", "tightening", "neutral")
 
         Returns:
             ValuationScores with individual and composite scores
@@ -148,19 +172,59 @@ class ValuationPillar:
         if indicators is None:
             indicators = self.fetch_indicators()
 
+        # Accumulate history for adaptive scoring
+        if indicators.ig_oas_bps is not None:
+            self._ig_oas_history.append(indicators.ig_oas_bps)
+        if indicators.hy_oas_bps is not None:
+            self._hy_oas_history.append(indicators.hy_oas_bps)
+        if indicators.term_premium_10y_bps is not None:
+            self._tp_history.append(indicators.term_premium_10y_bps)
+
         scores = ValuationScores()
         scored_count = 0
 
+        # v7: Try adaptive bands if sufficient history
+        use_adaptive = (
+            self._adaptive_bands is not None
+            and len(self._ig_oas_history) >= 52
+        )
+
         if indicators.term_premium_10y_bps is not None:
-            scores.term_premium = self.score_term_premium(indicators.term_premium_10y_bps)
+            if use_adaptive and len(self._tp_history) >= 52:
+                result = self._adaptive_bands.score_with_regime(
+                    indicators.term_premium_10y_bps,
+                    self._tp_history,
+                    regime,
+                )
+                scores.term_premium = result.score
+            else:
+                scores.term_premium = self.score_term_premium(
+                    indicators.term_premium_10y_bps
+                )
             scored_count += 1
 
         if indicators.ig_oas_bps is not None:
-            scores.ig_oas = self.score_ig_oas(indicators.ig_oas_bps)
+            if use_adaptive:
+                result = self._adaptive_bands.score_with_regime(
+                    indicators.ig_oas_bps,
+                    self._ig_oas_history,
+                    regime,
+                )
+                scores.ig_oas = result.score
+            else:
+                scores.ig_oas = self.score_ig_oas(indicators.ig_oas_bps)
             scored_count += 1
 
         if indicators.hy_oas_bps is not None:
-            scores.hy_oas = self.score_hy_oas(indicators.hy_oas_bps)
+            if use_adaptive and len(self._hy_oas_history) >= 52:
+                result = self._adaptive_bands.score_with_regime(
+                    indicators.hy_oas_bps,
+                    self._hy_oas_history,
+                    regime,
+                )
+                scores.hy_oas = result.score
+            else:
+                scores.hy_oas = self.score_hy_oas(indicators.hy_oas_bps)
             scored_count += 1
 
         # Calculate composite

@@ -264,24 +264,30 @@ def validate_breach_penalty_sensitivity(
 def calculate_breach_interaction_penalty(
     pillar_scores: dict[str, float],
     breach_threshold: float = 0.3,
+    breach_model=None,
 ) -> float:
     """
     Calculate non-linear penalty for multiple simultaneous breaches.
 
-    The interaction effect captures that risks compound when multiple
-    pillars are stressed simultaneously (e.g., liquidity + positioning
-    creates forced selling spirals).
+    v7: When a fitted PillarBreachModel is provided, uses data-driven
+    per-pillar breach probabilities instead of the hardcoded lookup table.
 
     Args:
         pillar_scores: Dict mapping pillar names to scores (0-1)
         breach_threshold: Score below which a pillar is "stressed"
+        breach_model: Optional fitted PillarBreachModel (v7)
 
     Returns:
         Penalty factor (0.0-0.15) to subtract from MAC score
     """
     breach_count = sum(1 for s in pillar_scores.values() if s < breach_threshold)
-    # Cap at 6 for lookup
-    breach_count = min(breach_count, 6)
+    breach_count = min(breach_count, 7)
+
+    # v7: Use data-driven breach model if available
+    if breach_model is not None:
+        return breach_model.get_penalty_for_breach_count(breach_count)
+
+    # Fallback: hardcoded penalties
     return BREACH_INTERACTION_PENALTY.get(breach_count, 0.15)
 
 
@@ -291,6 +297,7 @@ def calculate_mac(
     breach_threshold: float = 0.2,
     apply_interaction_penalty: bool = True,
     interaction_stress_threshold: float = 0.3,
+    breach_model=None,
 ) -> MACResult:
     """
     Calculate MAC composite score from pillar scores.
@@ -301,6 +308,8 @@ def calculate_mac(
         breach_threshold: Threshold below which pillar flagged as breaching
         apply_interaction_penalty: Apply non-linear penalty for multi-breach
         interaction_stress_threshold: Score below which pillar is "stressed"
+        breach_model: Optional fitted PillarBreachModel for data-driven
+            interaction penalties (v7)
 
     Returns:
         MACResult with composite score, individual scores, and breach flags
@@ -321,7 +330,7 @@ def calculate_mac(
     interaction_penalty = 0.0
     if apply_interaction_penalty:
         interaction_penalty = calculate_breach_interaction_penalty(
-            pillars, interaction_stress_threshold
+            pillars, interaction_stress_threshold, breach_model=breach_model,
         )
 
     # Final MAC score with penalty applied
@@ -427,6 +436,7 @@ def calculate_mac_with_ci(
     n_bootstrap: int = 1000,
     alpha_mean: float = 0.78,
     alpha_std: float = 0.05,
+    breach_model=None,
 ) -> MACResult:
     """Calculate MAC score with bootstrap confidence intervals.
 
@@ -440,12 +450,16 @@ def calculate_mac_with_ci(
         n_bootstrap: Number of bootstrap iterations
         alpha_mean: Mean calibration factor (from LOOCV)
         alpha_std: Std of calibration factor (from LOOCV)
+        breach_model: Optional fitted PillarBreachModel (v7)
 
     Returns:
         MACResult with ci_80, ci_90, and bootstrap_std populated
     """
     # First, compute the point estimate
-    result = calculate_mac(pillars, weights=weights, breach_threshold=breach_threshold)
+    result = calculate_mac(
+        pillars, weights=weights, breach_threshold=breach_threshold,
+        breach_model=breach_model,
+    )
 
     # Then compute CIs
     try:

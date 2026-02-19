@@ -6,14 +6,15 @@ Indicators:
 - VIX level
 - VIX term structure (M2/M1)
 - Realized vs implied volatility gap
-- Time-varying Volatility Risk Premium (VRP) multiplier (v6 §4.4.5)
+- Time-varying Volatility Risk Premium (VRP) multiplier
 
-VRP Architecture (v6 §4.4.5):
-  VRP_t = 1.05 + 0.015 × σ(vol-of-vol)_{12m}
+VRP Architecture (v7):
+  Primary: Kalman filter state-space model (vrp_kalman.py)
+  Fallback: Linear VRP_t = 1.05 + 0.015 * sigma(vol-of-vol)_{12m}
   Clipped to [1.05, 1.55]
-  
+
   Dual computation: both with and without VRP applied.
-  Quality flag raised when |MAC_with_VRP − MAC_without_VRP| > 0.05.
+  Quality flag raised when |MAC_with_VRP - MAC_without_VRP| > 0.05.
 """
 
 from dataclasses import dataclass
@@ -24,6 +25,13 @@ import logging
 from ..mac.scorer import score_indicator_range
 
 logger = logging.getLogger(__name__)
+
+# Try to import Kalman VRP estimator (v7 enhancement)
+try:
+    from .vrp_kalman import KalmanVRPEstimator
+    _KALMAN_VRP_AVAILABLE = True
+except ImportError:
+    _KALMAN_VRP_AVAILABLE = False
 
 # ── VRP constants (v6 §4.4.5) ───────────────────────────────────────────
 VRP_BASE = 1.05          # Minimum premium (long-run average ~5%)
@@ -105,16 +113,20 @@ class VolatilityPillar:
         },
     }
 
-    def __init__(self, fred_client=None, etf_client=None):
+    def __init__(self, fred_client=None, etf_client=None, use_kalman_vrp=True):
         """
         Initialize volatility pillar.
 
         Args:
             fred_client: FREDClient instance for VIX data
             etf_client: ETFClient instance for term structure proxy
+            use_kalman_vrp: Use Kalman filter VRP (v7); falls back to linear
         """
         self.fred = fred_client
         self.etf = etf_client
+        self._kalman_estimator = None
+        if use_kalman_vrp and _KALMAN_VRP_AVAILABLE:
+            self._kalman_estimator = KalmanVRPEstimator()
 
     def fetch_indicators(self) -> VolatilityIndicators:
         """Fetch current volatility indicators from data sources."""
@@ -279,18 +291,15 @@ class VolatilityPillar:
         vix_history: Optional[list[float]] = None,
         lookback_days: int = 252,
     ) -> VRPResult:
-        """Calculate time-varying Volatility Risk Premium (v6 §4.4.5).
+        """Calculate time-varying Volatility Risk Premium.
 
-        Formula: VRP_t = 1.05 + 0.015 × σ(vol-of-vol)_{12m}
-        Clipped to [1.05, 1.55].
-
-        The VRP multiplier scales the volatility pillar score, reflecting
-        that high vol-of-vol regimes carry additional risk beyond what
-        the VIX level alone captures.
+        v7: Tries Kalman filter state-space model first, which
+        uses vol-of-vol, skew, and kurtosis as measurement inputs.
+        Falls back to linear formula if Kalman unavailable.
 
         Args:
             vix_history: Historical VIX values for vol-of-vol calculation
-            lookback_days: Rolling window for σ calculation
+            lookback_days: Rolling window for calculation
 
         Returns:
             VRPResult with multiplier, diagnostics, and quality assessment
@@ -301,6 +310,24 @@ class VolatilityPillar:
             result.data_quality = "insufficient"
             return result
 
+        # v7: Try Kalman filter VRP estimation first
+        if self._kalman_estimator is not None:
+            try:
+                kalman_result = self._kalman_estimator.estimate(
+                    vix_history, lookback=lookback_days,
+                )
+                if kalman_result.method == "kalman":
+                    result.vrp_multiplier = kalman_result.vrp_estimate
+                    result.vol_of_vol_12m = kalman_result.vol_of_vol
+                    result.data_quality = (
+                        "good" if kalman_result.n_observations >= lookback_days
+                        else "partial"
+                    )
+                    return result
+            except Exception:
+                pass  # Fall through to linear
+
+        # Linear fallback: VRP_t = 1.05 + 0.015 * sigma(vol-of-vol)
         vol_of_vol = self.calculate_vol_of_vol(vix_history, lookback_days)
         if vol_of_vol is None:
             result.data_quality = "insufficient"
@@ -308,7 +335,6 @@ class VolatilityPillar:
 
         result.vol_of_vol_12m = vol_of_vol
 
-        # VRP_t = 1.05 + 0.015 × σ(vol-of-vol)
         raw_vrp = VRP_BASE + VRP_SENSITIVITY * vol_of_vol
         result.vrp_multiplier = max(VRP_FLOOR, min(VRP_CEILING, raw_vrp))
 

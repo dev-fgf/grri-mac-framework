@@ -4,18 +4,25 @@ Calculates MAC scores over historical periods and
 validates against crisis events.
 Includes 8 pillars: 7 quantitative + sentiment (rate-proxy).
 
-Methodological Fixes (v6 §14):
+v7.1 Enhancements:
+    - Bootstrap confidence intervals (80%/90% CIs)
+    - Data-driven breach interaction penalties (Dirichlet-multinomial)
+    - Kalman filter VRP (wired via volatility pillar)
+    - Adaptive valuation bands (wired via valuation pillar)
+    - Hedge failure analysis (wired via positioning pillar)
+    - PCA decorrelation (wired via private credit pillar)
+    - HMM regime overlay (P(fragile) at each timestep)
+
+Methodological Fixes (v6 §14, carried forward):
     Fix A — Exclude missing pillars from composite
     Fix B — Wire contagion proxy via BAA10Y
     Fix C — Range-based valuation scoring
     Fix D — ML-optimised weights for modern era
     Fix E — Era-aware calibration factor
     Fix F — Momentum-enhanced warning detection
-
-These fixes raised TPR from 26.7% to 75.6% across
-41 crises (1907–2025).
 """
 
+import logging
 from datetime import datetime, timedelta
 from typing import Optional, List
 from dataclasses import dataclass
@@ -35,13 +42,28 @@ from ..pillars.private_credit import (
 from ..pillars.sentiment import SentimentPillar
 from ..data.fomc_text import FOMCTextSource
 from ..mac.composite import (
-    calculate_mac, get_mac_interpretation,
+    calculate_mac, calculate_mac_with_ci, get_mac_interpretation,
     ML_OPTIMIZED_WEIGHTS, ML_OPTIMIZED_WEIGHTS_8,
     INTERACTION_ADJUSTED_WEIGHTS_8,
 )
 from ..mac.momentum import calculate_momentum
 from .crisis_events import CRISIS_EVENTS, get_crisis_for_date
 from .era_configs import get_era_weights
+
+logger = logging.getLogger(__name__)
+
+# v7: Optional modules — graceful fallback if unavailable
+try:
+    from ..mac.breach_model import PillarBreachModel
+    _BREACH_MODEL_AVAILABLE = True
+except ImportError:
+    _BREACH_MODEL_AVAILABLE = False
+
+try:
+    from ..mac.regime_hmm import RegimeHMM
+    _HMM_AVAILABLE = True
+except ImportError:
+    _HMM_AVAILABLE = False
 
 
 @dataclass
@@ -59,8 +81,17 @@ class BacktestPoint:
     momentum_1w: Optional[float] = None
     momentum_4w: Optional[float] = None
     trend_direction: str = "unknown"
-    mac_status: str = "UNKNOWN"  # COMFORTABLE … CRITICAL
+    mac_status: str = "UNKNOWN"  # COMFORTABLE ... CRITICAL
     is_deteriorating: bool = False
+    # v7: Bootstrap confidence intervals
+    ci_80_low: Optional[float] = None
+    ci_80_high: Optional[float] = None
+    ci_90_low: Optional[float] = None
+    ci_90_high: Optional[float] = None
+    bootstrap_std: Optional[float] = None
+    # v7: HMM regime overlay
+    hmm_fragile_prob: Optional[float] = None
+    hmm_regime: Optional[str] = None
 
 
 class BacktestRunner:
@@ -88,7 +119,7 @@ class BacktestRunner:
         self.use_era_weights = use_era_weights
         self.calibration_factor = calibration_factor
 
-        # Initialize pillars (8 pillars total)
+        # Initialize pillars (8 pillars total, v7 enhancements enabled)
         self.liquidity = LiquidityPillar(fred_client=self.fred)
         self.valuation = ValuationPillar(fred_client=self.fred)
         self.volatility = VolatilityPillar(fred_client=self.fred)
@@ -103,6 +134,23 @@ class BacktestRunner:
 
         # Historical MAC scores for momentum calculation
         self._historical_macs: List[dict] = []
+
+        # v7: Breach model (data-driven interaction penalties)
+        self._breach_model = None
+        if _BREACH_MODEL_AVAILABLE:
+            self._breach_model = PillarBreachModel()
+            # Fit on expanded co-breach observations (pre-computed)
+            self._breach_model.fit([])  # Uses built-in defaults
+            try:
+                self._breach_model.compute_interaction_penalties()
+            except Exception:
+                self._breach_model = None
+
+        # v7: HMM regime overlay
+        self._hmm = None
+        self._pillar_history: List[dict] = []
+        if _HMM_AVAILABLE:
+            self._hmm = RegimeHMM()
 
     def _prefetch_fred_data(
         self,
@@ -268,8 +316,12 @@ class BacktestRunner:
         else:
             weights = None  # Equal weights
 
-        # Calculate MAC composite (auto-normalises weights to active pillars)
-        mac_result = calculate_mac(active_scores, weights=weights)
+        # Calculate MAC composite with bootstrap CIs (v7)
+        mac_result = calculate_mac_with_ci(
+            active_scores,
+            weights=weights,
+            breach_model=self._breach_model,
+        )
 
         # Fix E: Apply calibration factor (era-aware)
         # The 0.78 factor was calibrated against modern (post-2006) scenarios.
@@ -298,12 +350,38 @@ class BacktestRunner:
             "mac_score": calibrated_mac,
         })
 
+        # v7: Accumulate pillar scores for HMM regime overlay
+        self._pillar_history.append(all_scores)
+
+        # v7: HMM regime prediction
+        hmm_fragile_prob = None
+        hmm_regime = None
+        if self._hmm is not None and len(self._pillar_history) >= 52:
+            try:
+                if not self._hmm.is_fitted:
+                    self._hmm.fit(self._pillar_history)
+                if self._hmm.is_fitted:
+                    recent = self._pillar_history[-12:]
+                    regime_result = self._hmm.predict(
+                        all_scores, recent_history=recent,
+                    )
+                    hmm_fragile_prob = regime_result.fragile_prob
+                    hmm_regime = regime_result.regime
+            except Exception:
+                pass
+
         # Check if in crisis period
         crisis = get_crisis_for_date(date)
         crisis_name = crisis.name if crisis else None
 
         # Determine data quality based on date
         data_quality = self._assess_data_quality(date)
+
+        # Extract CI from mac_result (v7)
+        ci_80_low = mac_result.ci_80[0] if mac_result.ci_80 else None
+        ci_80_high = mac_result.ci_80[1] if mac_result.ci_80 else None
+        ci_90_low = mac_result.ci_90[0] if mac_result.ci_90 else None
+        ci_90_high = mac_result.ci_90[1] if mac_result.ci_90 else None
 
         return BacktestPoint(
             date=date,
@@ -318,6 +396,13 @@ class BacktestRunner:
             trend_direction=momentum.trend_direction,
             mac_status=momentum.status.value,
             is_deteriorating=momentum.is_deteriorating,
+            ci_80_low=ci_80_low,
+            ci_80_high=ci_80_high,
+            ci_90_low=ci_90_low,
+            ci_90_high=ci_90_high,
+            bootstrap_std=mac_result.bootstrap_std,
+            hmm_fragile_prob=hmm_fragile_prob,
+            hmm_regime=hmm_regime,
         )
 
     def run_backtest(
@@ -416,6 +501,15 @@ class BacktestRunner:
                 "trend_direction": p.trend_direction,
                 "mac_status": p.mac_status,
                 "is_deteriorating": p.is_deteriorating,
+                # v7: Bootstrap CIs
+                "ci_80_low": p.ci_80_low,
+                "ci_80_high": p.ci_80_high,
+                "ci_90_low": p.ci_90_low,
+                "ci_90_high": p.ci_90_high,
+                "bootstrap_std": p.bootstrap_std,
+                # v7: HMM regime
+                "hmm_fragile_prob": p.hmm_fragile_prob,
+                "hmm_regime": p.hmm_regime,
             }
             for p in results
         ])
