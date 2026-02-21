@@ -192,10 +192,47 @@ CUSTOM_CSS = r"""
     @page {
       margin: 2cm;
       @bottom-center {
-        content: "MAC Framework v7.1 — Confidential";
+        content: "MAC Framework v7.1 — Confidential Draft  |  GRS © FGF";
         font-size: 8pt;
         color: #999;
       }
+    }
+
+    /* ── Confidential Draft watermark ──────────────────────── */
+    @media print {
+      body::after {
+        content: "CONFIDENTIAL DRAFT";
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-35deg);
+        font-size: 4em;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-weight: 700;
+        color: rgba(200, 0, 0, 0.09);
+        letter-spacing: 0.1em;
+        pointer-events: none;
+        z-index: 9999;
+        white-space: nowrap;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+    /* On-screen watermark too */
+    body::after {
+      content: "CONFIDENTIAL DRAFT";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-35deg);
+      font-size: 4em;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-weight: 700;
+      color: rgba(200, 0, 0, 0.07);
+      letter-spacing: 0.1em;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
     }
 """
 

@@ -1,0 +1,57 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e8f4fd', 'primaryBorderColor': '#2980b9', 'secondaryColor': '#fdf2e9', 'tertiaryColor': '#eafaf1' } } }%%
+%% GRRI — Adaptive Weighting and Monte Carlo Pipeline
+%% Sections 9–10 of GRRI_Historical_Extension_Paper.md
+
+flowchart TD
+    subgraph Data["Historical Pillar Scores"]
+        HS["4 GRRI Pillars<br/>1870–2025"]
+        CRISIS["Crisis Labels<br/>(Reinhart-Rogoff)"]
+    end
+
+    subgraph Weighting["Adaptive Pillar Weighting (§9)"]
+        AUG["Augmentation<br/>bootstrap + noise"]
+        GBM["Gradient Boosting<br/>(GBM or XGBoost)"]
+        FEAT["4 base features<br/>+ 3 interactions"]
+        LOO["Leave-One-Out<br/>Cross-Validation"]
+        WT["Optimised Weights<br/>wₚ, wₑ, wₛ, wₙ"]
+    end
+
+    subgraph MonteCarlo["Monte Carlo Simulation (§10)"]
+        DIST["Per-pillar<br/>distributions<br/>(skew-t / GPD)"]
+        COP["Copula<br/>(Gaussian/t)"]
+        SIM["10,000 joint<br/>pillar draws"]
+        GRRI_MC["GRRI(ω)<br/>distribution"]
+        CI["95% CI and<br/>tail risk VaR"]
+    end
+
+    subgraph Independence["Independence Analysis (§11)"]
+        MI_G["MI / NMI<br/>pairwise"]
+        HSIC_G["HSIC<br/>kernel test"]
+        MIC_G["MIC<br/>grid search"]
+        TC_G["Total Correlation<br/>system redundancy"]
+        DEC_G["Decorrelation<br/>if NMI > 0.35"]
+    end
+
+    HS --> AUG
+    CRISIS --> AUG
+    AUG --> GBM
+    GBM --> FEAT
+    FEAT --> LOO
+    LOO --> WT
+
+    HS --> DIST
+    DIST --> COP
+    COP --> SIM
+    SIM --> GRRI_MC
+    GRRI_MC --> CI
+
+    HS --> MI_G
+    HS --> HSIC_G
+    HS --> MIC_G
+    MI_G --> TC_G
+    HSIC_G --> TC_G
+    MIC_G --> TC_G
+    TC_G --> DEC_G
+
+    DEC_G -.->|"orthogonalised<br/>pillars"| GBM
+    DEC_G -.->|"updated copula<br/>parameters"| COP

@@ -1,0 +1,41 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e8f4fd', 'primaryBorderColor': '#2980b9', 'secondaryColor': '#fdf2e9', 'tertiaryColor': '#eafaf1' } } }%%
+%% GRRI/MAC — Independence Analysis Metrics Comparison
+%% Sections 11 (GRRI Paper) and 18 (MAC Methodology)
+
+flowchart TD
+    subgraph Metrics["Three Complementary Metrics"]
+        direction TB
+        MI["<b>Mutual Information</b><br/>I(X;Y) = H(X)+H(Y)−H(X,Y)<br/>• Model-free, entropy-based<br/>• Captures ALL dependence<br/>• = 0 ⟺ independence"]
+        HSIC["<b>HSIC</b><br/>tr(K_X H K_Y H) / (n−1)²<br/>• Kernel-based (RKHS)<br/>• Powerful for complex shapes<br/>• Permutation p-value"]
+        MIC["<b>MIC</b><br/>max I(X;Y)/log₂ min(n_x,n_y)<br/>• Equitable explorer<br/>• Same score = same noise<br/>• Detects any functional form"]
+    end
+
+    subgraph Captures["What Each Captures"]
+        direction TB
+        C1["MI: Total shared<br/>information (bits)"]
+        C2["HSIC: Distribution-level<br/>embedding similarity"]
+        C3["MIC: Functional vs<br/>random relationship"]
+    end
+
+    subgraph Blind["Blind Spots"]
+        direction TB
+        B1["MI: Bin-sensitive<br/>with small N"]
+        B2["HSIC: Bandwidth<br/>choice matters"]
+        B3["MIC: Computational<br/>cost O(n^2α)"]
+    end
+
+    MI --> C1
+    HSIC --> C2
+    MIC --> C3
+
+    MI --> B1
+    HSIC --> B2
+    MIC --> B3
+
+    C1 --> AGREE{"All three<br/>agree?"}
+    C2 --> AGREE
+    C3 --> AGREE
+
+    AGREE -->|"Yes: high"| DEP["Strong dependence<br/>→ decorrelate"]
+    AGREE -->|"Yes: low"| IND["Independent<br/>→ orthogonal ✓"]
+    AGREE -->|"No"| INV["Investigate:<br/>non-linear structure"]

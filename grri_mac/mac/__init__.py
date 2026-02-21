@@ -21,6 +21,16 @@ from .multicountry import (
     create_scenario_comparison,
     get_default_regional_thresholds_comparison,
 )
+from .dependence import (
+    PillarDependenceAnalyzer,
+    DependenceReport,
+    PairwiseResult,
+    compute_mi,
+    compute_hsic,
+    compute_mic,
+    compute_total_correlation,
+    compute_dual_total_correlation,
+)
 
 __all__ = [
     # Core scoring
@@ -44,4 +54,13 @@ __all__ = [
     "analyze_contagion_pathways",
     "create_scenario_comparison",
     "get_default_regional_thresholds_comparison",
+    # Dependence analysis
+    "PillarDependenceAnalyzer",
+    "DependenceReport",
+    "PairwiseResult",
+    "compute_mi",
+    "compute_hsic",
+    "compute_mic",
+    "compute_total_correlation",
+    "compute_dual_total_correlation",
 ]

@@ -392,6 +392,56 @@ def main():
         except Exception as e:
             print(f"  FP cost analysis skipped: {e}")
 
+        # ── v7.1: Cross-pillar dependence analysis ───────────────
+        try:
+            from grri_mac.mac.dependence import PillarDependenceAnalyzer
+
+            print()
+            print("CROSS-PILLAR DEPENDENCE ANALYSIS (v7.1):")
+            print("-" * 70)
+
+            # Collect pillar scores from the time-series backtest
+            pillar_cols = [
+                c for c in df.columns
+                if c.startswith("pillar_") or c in (
+                    "liquidity", "valuation", "positioning",
+                    "volatility", "policy", "contagion",
+                    "private_credit", "sentiment",
+                )
+            ]
+            if not pillar_cols:
+                # Try pillar_ prefixed columns
+                pillar_cols = [c for c in df.columns if c.startswith("pillar_")]
+
+            if len(pillar_cols) >= 2:
+                pillar_history = {}
+                for col in pillar_cols:
+                    name = col.replace("pillar_", "")
+                    series = df[col].dropna()
+                    if len(series) >= 20:
+                        pillar_history[name] = series.tolist()
+
+                if len(pillar_history) >= 2:
+                    analyzer = PillarDependenceAnalyzer(
+                        n_permutations=200,
+                    )
+                    dep_report = analyzer.full_analysis(pillar_history)
+                    print(dep_report.format_report())
+
+                    # Save dependence report
+                    dep_path = output_path.with_name(
+                        output_path.stem + "_dependence.txt"
+                    )
+                    dep_path.write_text(dep_report.format_report())
+                    print(f"  Dependence report saved to {dep_path}")
+                else:
+                    print("  Skipped: fewer than 2 pillars with data")
+            else:
+                print("  Skipped: no pillar score columns found")
+
+        except Exception as e:
+            print(f"  Dependence analysis skipped: {e}")
+
         print()
         print("[OK] Backtest complete! Results saved successfully.")
         print(f"   Results directory: {RESULTS_DIR}")

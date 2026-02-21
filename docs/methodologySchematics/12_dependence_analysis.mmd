@@ -1,0 +1,47 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e8f4fd', 'primaryBorderColor': '#2980b9', 'secondaryColor': '#fdf2e9', 'tertiaryColor': '#eafaf1' } } }%%
+%% MAC Framework — Cross-Pillar Dependence Analysis Pipeline
+%% Section 18 of MAC_Methodology_Document.md
+
+flowchart TD
+    subgraph Input["Input: Pillar Score History"]
+        PS["7 Pillar Score<br/>Time Series"]
+    end
+
+    subgraph Pairwise["Pairwise Analysis (21 pairs)"]
+        MI["Mutual Information<br/>I(X;Y) — bits"]
+        NMI["Normalised MI<br/>NMI ∈ [0,1]"]
+        HSIC["HSIC (RBF kernel)<br/>median heuristic σ"]
+        PERM["Permutation Test<br/>1000 permutations"]
+        MIC["MIC Grid Search<br/>B(n) = n^0.6"]
+        PEAR["Pearson ρ<br/>(linear baseline)"]
+    end
+
+    subgraph System["System-Level Redundancy"]
+        TC["Watanabe Total<br/>Correlation C (bits)"]
+        DTC["Han Dual Total<br/>Correlation D (bits)"]
+    end
+
+    subgraph Decisions["Downstream Decisions"]
+        D1["Decorrelation<br/>Candidates"]
+        D2["Interaction Feature<br/>Validation"]
+        D3["Monte Carlo<br/>Correlation Update"]
+    end
+
+    PS --> MI
+    PS --> HSIC
+    PS --> MIC
+    PS --> PEAR
+    MI --> NMI
+    HSIC --> PERM
+    PS --> TC
+    PS --> DTC
+
+    NMI -->|"NMI > 0.2"| D1
+    PERM -->|"p < 0.05"| D1
+    PERM -->|"p > 0.05"| D2
+    PEAR -->|"gap > 0.15<br/>from hardcoded"| D3
+    MIC -->|"MIC ≫ |ρ|"| D3
+
+    D1 -->|"Apply OLS residual<br/>extraction"| DEC["Decorrelated<br/>Pillar Scores"]
+    D2 -->|"Remove noise<br/>features"| MLW["ML Weight<br/>Optimiser"]
+    D3 -->|"Update Cholesky<br/>decomposition"| MC["Monte Carlo<br/>Simulator"]

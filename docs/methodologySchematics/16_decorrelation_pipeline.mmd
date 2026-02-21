@@ -1,0 +1,39 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e8f4fd', 'primaryBorderColor': '#2980b9', 'secondaryColor': '#fdf2e9', 'tertiaryColor': '#eafaf1' } } }%%
+%% MAC Framework — Decorrelation Pipeline
+%% Section 18.6 of MAC_Methodology_Document.md
+
+flowchart LR
+    subgraph Detect["1. Detect Dependence"]
+        PAIR["All 21 pillar<br/>pairs"]
+        MI_D["MI / NMI"]
+        HSIC_D["HSIC + permutation<br/>p-value"]
+        FLAG["Flag pairs:<br/>NMI>0.2 AND p<0.05"]
+    end
+
+    subgraph Decorrelate["2. Decorrelate"]
+        OLS["Rolling OLS<br/>y = β₀ + β₁x + ε"]
+        RES["Extract residual ε"]
+        STD["Standardise:<br/>z = ε / σ(ε)"]
+        EWMA["EWMA smooth<br/>(halflife=12)"]
+    end
+
+    subgraph Validate["3. Validate"]
+        RE_MI["Re-compute MI<br/>on residuals"]
+        CHECK{"NMI < 0.10?"}
+        PASS["✓ Pass: use<br/>decorrelated scores"]
+        ITER["↻ Add more<br/>regressors"]
+    end
+
+    PAIR --> MI_D
+    PAIR --> HSIC_D
+    MI_D --> FLAG
+    HSIC_D --> FLAG
+    FLAG --> OLS
+    OLS --> RES
+    RES --> STD
+    STD --> EWMA
+    EWMA --> RE_MI
+    RE_MI --> CHECK
+    CHECK -->|"Yes"| PASS
+    CHECK -->|"No"| ITER
+    ITER --> OLS

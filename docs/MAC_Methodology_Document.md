@@ -1,6 +1,10 @@
 # Margin Absorption Capacity (MAC) Framework: Detailed Methodology
 
+**Martyn Brush, FGF Research**
+
 **Version 5.0 — February 2026**
+
+*Confidential Draft*
 
 *A comprehensive guide to the theory, data architecture, machine learning components, scoring methodology, and empirical validation of the MAC framework*
 
@@ -1096,7 +1100,237 @@ The framework analyses stress transmission between regions through:
 
 ---
 
-## 18. References
+## 18. Pillar Independence and Dependence Analysis
+
+### 18.1 Motivation
+
+Section 17.2 states that each pillar "captures distinct, orthogonal risk dimensions." This is a structural claim underpinning the entire MAC framework: if pillars are redundant, their separate weighting overstates the information content and inflates model confidence.
+
+Pearson correlation — the only dependence measure previously used (hardcoded in `PILLAR_CORRELATIONS` for Monte Carlo simulation) — captures only **linear, monotone** relationships. Financial risk factors commonly exhibit:
+
+- **Non-linear co-movement** (e.g., liquidity and contagion decouple in calm markets but co-spike in crises)
+- **Tail dependence** (shared extreme behaviour invisible to Pearson at the margin level)
+- **Non-monotone functional relationships** (e.g., policy tightening cycles reduce volatility up to a point, then amplify it)
+
+Three complementary metrics address these blind spots.
+
+The following diagram shows the complete analysis pipeline and its downstream connections:
+
+```mermaid
+flowchart TD
+    subgraph Input["Input: Pillar Score History"]
+        PS["7 Pillar Score<br/>Time Series"]
+    end
+
+    subgraph Pairwise["Pairwise Analysis (21 pairs)"]
+        MI["Mutual Information<br/>I(X;Y) — bits"]
+        NMI["Normalised MI<br/>NMI ∈ [0,1]"]
+        HSIC["HSIC (RBF kernel)<br/>median heuristic σ"]
+        PERM["Permutation Test<br/>1000 permutations"]
+        MIC["MIC Grid Search<br/>B(n) = n^0.6"]
+        PEAR["Pearson ρ<br/>(linear baseline)"]
+    end
+
+    subgraph System["System-Level Redundancy"]
+        TC["Watanabe Total<br/>Correlation C (bits)"]
+        DTC["Han Dual Total<br/>Correlation D (bits)"]
+    end
+
+    subgraph Decisions["Downstream Decisions"]
+        D1["Decorrelation<br/>Candidates"]
+        D2["Interaction Feature<br/>Validation"]
+        D3["Monte Carlo<br/>Correlation Update"]
+    end
+
+    PS --> MI
+    PS --> HSIC
+    PS --> MIC
+    PS --> PEAR
+    MI --> NMI
+    HSIC --> PERM
+    PS --> TC
+    PS --> DTC
+
+    NMI -->|"NMI > 0.2"| D1
+    PERM -->|"p < 0.05"| D1
+    PERM -->|"p > 0.05"| D2
+    PEAR -->|"gap > 0.15<br/>from hardcoded"| D3
+    MIC -->|"MIC ≫ |ρ|"| D3
+
+    D1 -->|"Apply OLS residual<br/>extraction"| DEC["Decorrelated<br/>Pillar Scores"]
+    D2 -->|"Remove noise<br/>features"| MLW["ML Weight<br/>Optimiser"]
+    D3 -->|"Update Cholesky<br/>decomposition"| MC["Monte Carlo<br/>Simulator"]
+```
+
+*Figure 18.1. Cross-pillar dependence analysis pipeline.  Three metrics (MI, HSIC, MIC) plus Pearson correlation feed into three downstream decisions: decorrelation, interaction feature validation, and Monte Carlo correlation update.*
+
+### 18.2 Metrics
+
+#### 18.2.1 Mutual Information (MI)
+
+$$I(X; Y) = \sum_{x,y} p(x,y) \log_2 \frac{p(x,y)}{p(x)\,p(y)}$$
+
+MI is a model-free, information-theoretic measure of total statistical dependence. It equals zero **if and only if** X and Y are independent (not merely uncorrelated). The implementation uses equiprobable binning with $k = \lceil N^{1/3} \rceil$ bins per dimension.
+
+**Normalised MI** (NMI) is reported as:
+
+$$\text{NMI} = \frac{2 \cdot I(X;Y)}{H(X) + H(Y)} \in [0, 1]$$
+
+providing a scale-invariant comparator across pillar pairs.
+
+#### 18.2.2 Hilbert–Schmidt Independence Criterion (HSIC)
+
+$$\text{HSIC}(X, Y) = \frac{1}{(n-1)^2} \operatorname{tr}(K_X H K_Y H)$$
+
+where $K_X, K_Y$ are RBF kernel matrices and $H = I - \frac{1}{n}\mathbf{1}\mathbf{1}^\top$ is the centering matrix.
+
+HSIC operates in a reproducing kernel Hilbert space (RKHS) and is particularly powerful for detecting:
+
+- Complex non-linear dependencies invisible to MI's discrete binning
+- Subtle distributional differences between paired variables
+
+Bandwidth selection uses the **median heuristic**: $\sigma = \text{median}(\|x_i - x_j\|)$. Statistical significance is assessed via a **permutation test** (default 1,000 permutations), yielding a calibrated p-value without distributional assumptions.
+
+#### 18.2.3 Maximal Information Coefficient (MIC)
+
+MIC searches over a family of 2-D grids at varying resolution, computing the normalised MI on each grid and reporting the maximum:
+
+$$\text{MIC}(X, Y) = \max_{n_x \cdot n_y < B(n)} \frac{I_{n_x, n_y}(X; Y)}{\log_2 \min(n_x, n_y)}$$
+
+where $B(n) = n^{0.6}$ controls the exploration budget. MIC is **equitable**: it assigns similar scores to relationships of the same noise level regardless of functional form, making it ideal for exploring whether pillar pairs have *any* functional relationship — linear, quadratic, periodic, or otherwise.
+
+### 18.3 System-Level Redundancy
+
+Beyond pairwise metrics, two multivariate measures quantify total system redundancy:
+
+**Watanabe Total Correlation** (TC):
+
+$$C(X_1, \ldots, X_p) = \sum_{i=1}^{p} H(X_i) - H(X_1, \ldots, X_p)$$
+
+TC is zero if and only if all pillars are jointly independent. A high TC indicates that the 7-pillar system contains redundant information — the effective dimensionality is lower than 7.
+
+**Han Dual Total Correlation** (DTC):
+
+$$D(X_1, \ldots, X_p) = H(X_1, \ldots, X_p) - \sum_{i=1}^{p} H(X_i | X_{\neg i})$$
+
+DTC captures **synergistic** (higher-order) interactions that exist beyond pairwise dependencies — e.g., three pillars jointly predicting a crisis that no pair alone can predict.
+
+### 18.4 Prior Knowledge and Hypotheses
+
+The framework's existing architecture encodes implicit dependence assumptions:
+
+| Pillar Pair | Hardcoded Pearson (Monte Carlo) | Theoretical Basis |
+|---|---|---|
+| Liquidity – Contagion | 0.70 | Funding stress amplifies cross-market transmission |
+| Liquidity – Volatility | 0.65 | Illiquidity spikes coincide with vol expansion |
+| Volatility – Positioning | 0.60 | Crowded trades unwind in high-vol regimes |
+| Positioning – Contagion | 0.50 | Herding drives contagion pathways |
+| Liquidity – Positioning | 0.55 | Margin-driven deleveraging |
+| Valuation – Volatility | 0.45 | Overvaluation fragility |
+| Contagion – Valuation | 0.40 | Spread compression in complacency |
+| Policy – Volatility | −0.20 | Accommodative policy dampens vol (pre-crisis) |
+
+The dependence analysis module (`grri_mac.mac.dependence`) validates these against empirical data using all three non-linear metrics, and flags pairs where:
+
+1. **Hardcoded Pearson diverges** from empirical Pearson by > 0.15
+2. **NMI or MIC significantly exceeds** what Pearson would predict (non-linear dependence)
+3. **HSIC permutation test** rejects independence (p < 0.05) where the pair was assumed approximately independent
+
+### 18.5 Implementation
+
+The analysis is implemented in `grri_mac/mac/dependence.py` with the following architecture:
+
+```
+PillarDependenceAnalyzer
+├── full_analysis(pillar_history)     → DependenceReport
+│   ├── compute_mi(x, y)             → (MI bits, NMI)
+│   ├── compute_hsic(x, y)           → (HSIC stat, p-value)
+│   ├── compute_mic(x, y)            → MIC ∈ [0,1]
+│   ├── compute_total_correlation()  → TC bits
+│   └── compute_dual_total_correlation() → DTC bits
+├── rolling_analysis(history, window) → [DependenceReport]
+└── compare_to_hardcoded(history)     → comparison dict
+```
+
+**Key design decisions:**
+
+| Decision | Rationale |
+|---|---|
+| Pure NumPy (no minepy) | Zero external dependencies beyond numpy; MIC computed via grid search |
+| Permutation test for HSIC | Avoids asymptotic approximation assumptions; valid for any sample size |
+| Median heuristic bandwidth | Adaptive, parameter-free; standard in kernel methods literature |
+| Rolling window mode | Detects crisis-regime dependence shifts (e.g., "all correlations go to 1") |
+| Comparison to PILLAR_CORRELATIONS | Direct audit of Monte Carlo simulation assumptions |
+
+### 18.6 Implications for Weight Optimisation
+
+The decorrelation pipeline follows a detect–decorrelate–validate loop:
+
+```mermaid
+flowchart LR
+    subgraph Detect["1. Detect Dependence"]
+        PAIR["All 21 pillar<br/>pairs"]
+        MI_D["MI / NMI"]
+        HSIC_D["HSIC + permutation<br/>p-value"]
+        FLAG["Flag pairs:<br/>NMI>0.2 AND p<0.05"]
+    end
+
+    subgraph Decorrelate["2. Decorrelate"]
+        OLS["Rolling OLS<br/>y = β₀ + β₁x + ε"]
+        RES["Extract residual ε"]
+        STD["Standardise:<br/>z = ε / σ(ε)"]
+        EWMA["EWMA smooth<br/>(halflife=12)"]
+    end
+
+    subgraph Validate["3. Validate"]
+        RE_MI["Re-compute MI<br/>on residuals"]
+        CHECK{"NMI < 0.10?"}
+        PASS["✓ Pass: use<br/>decorrelated scores"]
+        ITER["↻ Add more<br/>regressors"]
+    end
+
+    PAIR --> MI_D
+    PAIR --> HSIC_D
+    MI_D --> FLAG
+    HSIC_D --> FLAG
+    FLAG --> OLS
+    OLS --> RES
+    RES --> STD
+    STD --> EWMA
+    EWMA --> RE_MI
+    RE_MI --> CHECK
+    CHECK -->|"Yes"| PASS
+    CHECK -->|"No"| ITER
+    ITER --> OLS
+```
+
+*Figure 18.2. Decorrelation pipeline for redundant pillar pairs.  Flagged pairs undergo OLS residual extraction, standardisation, and EWMA smoothing, then are re-tested for residual dependence.*
+
+Dependence analysis results feed into three downstream decisions:
+
+1. **Decorrelation candidates**: Pillar pairs with NMI > 0.2 AND HSIC p < 0.05 are candidates for the same residual-extraction procedure currently applied only to private credit (via `PrivateCreditDecorrelator`). This prevents the ML weight optimiser from double-counting correlated information.
+
+2. **Interaction feature validation**: The theory-driven `INTERACTION_PAIRS` in `ml_weights.py` can be validated against HSIC significance — pairs that are statistically independent should not receive interaction features, as these would introduce pure noise into the gradient boosting model.
+
+3. **Monte Carlo correlation update**: Where empirical Pearson deviates from hardcoded values by > 0.15, the `PILLAR_CORRELATIONS` dict should be updated and the Cholesky decomposition in the Monte Carlo simulator re-computed. Non-linear dependence detected by HSIC/MIC but missed by Pearson suggests that the Gaussian copula assumption in the simulator may need upgrading to a t-copula or vine copula.
+
+### 18.7 Validation
+
+The module is tested with 44 unit tests covering:
+
+- Entropy computation (uniform, degenerate, joint distributions)
+- MI bounds and monotonicity (independent → ~0, identical → H(X), linear → high)
+- HSIC significance (independent → p > 0.01, linear/nonlinear → p < 0.05)
+- MIC equitability (linear and sin(x) relationships both detected)
+- RBF kernel properties (symmetry, PSD, unit diagonal)
+- Total correlation ordering (independent < redundant)
+- Full analyzer pipeline (pair counts, symmetry, format_report)
+- Rolling window analysis
+- Error handling (single pillar, length mismatch)
+
+---
+
+## 19. References
 
 ### Academic Literature
 
@@ -1108,33 +1342,42 @@ The framework analyses stress transmission between regions through:
 
 4. **Shiller, R.J.** — Yale Online Data. S&P Composite Stock Price Index, CAPE, CPI, long-term interest rates (from 1871).
 
+5. **Kraskov, A., Stögbauer, H., & Grassberger, P.** (2004). "Estimating Mutual Information." *Physical Review E*, 69(6), 066138. — k-NN MI estimator.
+
+6. **Gretton, A., Bousquet, O., Smola, A., & Schölkopf, B.** (2005). "Measuring Statistical Dependence with Hilbert–Schmidt Norms." *Algorithmic Learning Theory*, LNCS 3734, 63–77. — HSIC.
+
+7. **Reshef, D.N., Reshef, Y.A., Finucane, H.K., et al.** (2011). "Detecting Novel Associations in Large Data Sets." *Science*, 334(6062), 1518–1524. — Maximal Information Coefficient.
+
+8. **Watanabe, S.** (1960). "Information Theoretical Analysis of Multivariate Correlation." *IBM Journal of Research and Development*, 4(1), 66–82. — Total correlation.
+
 ### Federal Reserve Research
 
-5. **Federal Reserve Board** (March 2024). "Quantifying Treasury Cash-Futures Basis Trades." *FEDS Notes*. — Basis trade size estimates ($260B–$574B in late 2023).
+9. **Federal Reserve Board** (March 2024). "Quantifying Treasury Cash-Futures Basis Trades." *FEDS Notes*. — Basis trade size estimates ($260B–$574B in late 2023).
 
-6. **Federal Reserve Board** (August 2023). "Recent Developments in Hedge Funds' Treasury Futures and Repo Positions." *FEDS Notes*. — Identifies basis trade as financial stability vulnerability.
+10. **Federal Reserve Board** (August 2023). "Recent Developments in Hedge Funds' Treasury Futures and Repo Positions." *FEDS Notes*. — Identifies basis trade as financial stability vulnerability.
 
-7. **Office of Financial Research** (April 2021). "Hedge Funds and the Treasury Cash-Futures Disconnect." *OFR Working Paper 21-01*. — Documents basis trade unwind contribution to March 2020 Treasury dysfunction.
+11. **Office of Financial Research** (April 2021). "Hedge Funds and the Treasury Cash-Futures Disconnect." *OFR Working Paper 21-01*. — Documents basis trade unwind contribution to March 2020 Treasury dysfunction.
 
 ### Data Sources
 
-8. **FRED** (Federal Reserve Economic Data). Federal Reserve Bank of St. Louis. https://fred.stlouisfed.org/
+12. **FRED** (Federal Reserve Economic Data). Federal Reserve Bank of St. Louis. https://fred.stlouisfed.org/
 
-9. **NBER Macrohistory Database**. National Bureau of Economic Research. https://www.nber.org/research/data/nber-macrohistory-database — Interest rates, gold stocks, commercial paper rates (from 1857).
+13. **NBER Macrohistory Database**. National Bureau of Economic Research. https://www.nber.org/research/data/nber-macrohistory-database — Interest rates, gold stocks, commercial paper rates (from 1857).
 
-10. **Bank of England Research Database**. Bank of England. — GBP/USD exchange rate (from 1791), Bank Rate (from 1694).
+14. **Bank of England Research Database**. Bank of England. — GBP/USD exchange rate (from 1791), Bank Rate (from 1694).
 
-11. **MeasuringWorth**. https://www.measuringworth.com/ — US nominal GDP (from 1790).
+15. **MeasuringWorth**. https://www.measuringworth.com/ — US nominal GDP (from 1790).
 
-12. **FINRA / NYSE**. — Margin debt statistics (from 1918).
+16. **FINRA / NYSE**. — Margin debt statistics (from 1918).
 
-13. **CFTC Commitments of Traders (COT)**. Commodity Futures Trading Commission. — Treasury futures positioning (from 1986).
+17. **CFTC Commitments of Traders (COT)**. Commodity Futures Trading Commission. — Treasury futures positioning (from 1986).
 
 ---
 
-*Framework Version: 5.0 (7-Pillar, Extended 1907–2025)*
+*Framework Version: 5.1 (7-Pillar, Extended 1907–2025, with Dependence Analysis)*
 *Calibration Factor: 0.78 (era-aware)*
 *Weight Method: ML-optimised (2006+), era-specific (pre-1971), equal (default)*
+*Dependence Analysis: MI (Kraskov), HSIC (Gretton), MIC (Reshef), TC (Watanabe)*
 *Data Sources: FRED, NBER Macrohistory, Schwert (1989), Shiller (Yale), Bank of England, MeasuringWorth, FINRA*
 *Document Author: FGF Research*
 *Last Updated: February 2026*

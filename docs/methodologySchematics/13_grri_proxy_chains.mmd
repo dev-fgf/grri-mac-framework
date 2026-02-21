@@ -1,0 +1,63 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e8f4fd', 'primaryBorderColor': '#2980b9', 'secondaryColor': '#fdf2e9', 'tertiaryColor': '#eafaf1' } } }%%
+%% GRRI Historical Extension — Proxy Chain Architecture
+%% Section 3 of GRRI_Historical_Extension_Paper.md
+
+flowchart LR
+    subgraph Modern["Modern Data (1990+)"]
+        WGI["WGI Rule of Law<br/>(1996+)"]
+        WEO["IMF WEO GDP<br/>(1980+)"]
+        HDI["UNDP HDI<br/>(1990+)"]
+        INFORM["INFORM Climate<br/>(2012+)"]
+    end
+
+    subgraph Mid["Mid-Century Proxies (1945–1990)"]
+        P5["Polity5 polity2<br/>(1800–2018)"]
+        COW["COW Wars<br/>(1816–2007)"]
+        GARR["Garriga CBI<br/>(1970–2012)"]
+        UCDP["UCDP Deaths<br/>(1946+)"]
+    end
+
+    subgraph Deep["Deep Historical (pre-1945)"]
+        VDEM["V-Dem Polyarchy<br/>(1789+)"]
+        MAD["Maddison GDP/pc<br/>(1820+)"]
+        SCHW["Schwert Vol<br/>(1802–1987)"]
+        NBER["NBER Macro<br/>(1857+)"]
+    end
+
+    subgraph Environment["Environmental Chain"]
+        EMDAT["EM-DAT Disasters<br/>(1900+)"]
+        HAD["HadCRUT5 Temp<br/>(1850+)"]
+    end
+
+    subgraph GRRI["GRRI Composite"]
+        P["Political<br/>Pillar"]
+        E["Economic<br/>Pillar"]
+        S["Social<br/>Pillar"]
+        N["Environmental<br/>Pillar"]
+        COMP["R = 0.25P + 0.25E<br/> + 0.25S + 0.25N"]
+        MOD["Modifier =<br/>2/(1+exp(4(R−0.5)))"]
+    end
+
+    WGI --> P
+    P5 --> P
+    VDEM --> P
+    COW --> P
+
+    WEO --> E
+    MAD --> E
+    NBER --> E
+    GARR --> E
+
+    HDI --> S
+    MAD -.->|"GDP/pc for<br/>HDI proxy"| S
+    VDEM -.->|"Suffrage"| S
+
+    INFORM --> N
+    EMDAT --> N
+    HAD --> N
+
+    P --> COMP
+    E --> COMP
+    S --> COMP
+    N --> COMP
+    COMP --> MOD

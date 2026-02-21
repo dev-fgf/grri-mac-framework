@@ -1,0 +1,3463 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Martyn Brush, FGF Research" />
+  <title>GRRI Historical Extension: Proxy-Chain Architecture for Deep-Historical Geopolitical Risk Measurement</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">GRRI Historical Extension: Proxy-Chain Architecture
+for Deep-Historical Geopolitical Risk Measurement</h1>
+<p class="author">Martyn Brush, FGF Research</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a
+href="#extending-the-global-risk-and-resilience-index-historical-proxy-chains-for-long-run-country-level-resilience-measurement"
+id="toc-extending-the-global-risk-and-resilience-index-historical-proxy-chains-for-long-run-country-level-resilience-measurement">Extending
+the Global Risk and Resilience Index: Historical Proxy Chains for
+Long-Run Country-Level Resilience Measurement</a>
+<ul>
+<li><a href="#abstract" id="toc-abstract">Abstract</a></li>
+<li><a href="#introduction" id="toc-introduction">1. Introduction</a>
+<ul>
+<li><a href="#motivation" id="toc-motivation">1.1 Motivation</a></li>
+<li><a href="#contribution" id="toc-contribution">1.2
+Contribution</a></li>
+<li><a href="#coverage-summary" id="toc-coverage-summary">1.3 Coverage
+Summary</a></li>
+</ul></li>
+<li><a href="#theoretical-framework" id="toc-theoretical-framework">2.
+Theoretical Framework</a>
+<ul>
+<li><a href="#the-grri-pillar-model" id="toc-the-grri-pillar-model">2.1
+The GRRI Pillar Model</a></li>
+<li><a href="#proxy-chain-design-principles"
+id="toc-proxy-chain-design-principles">2.2 Proxy Chain Design
+Principles</a></li>
+<li><a href="#minimum-pillar-constraint"
+id="toc-minimum-pillar-constraint">2.3 Minimum-Pillar
+Constraint</a></li>
+</ul></li>
+<li><a href="#data-sources-and-licensing"
+id="toc-data-sources-and-licensing">3. Data Sources and Licensing</a>
+<ul>
+<li><a href="#licensing-classification"
+id="toc-licensing-classification">3.1 Licensing Classification</a></li>
+<li><a href="#political-pillar-data-sources"
+id="toc-political-pillar-data-sources">3.2 Political Pillar Data
+Sources</a></li>
+<li><a href="#economic-pillar-data-sources"
+id="toc-economic-pillar-data-sources">3.3 Economic Pillar Data
+Sources</a></li>
+<li><a href="#social-pillar-data-sources"
+id="toc-social-pillar-data-sources">3.4 Social Pillar Data
+Sources</a></li>
+<li><a href="#environmental-pillar-data-sources"
+id="toc-environmental-pillar-data-sources">3.5 Environmental Pillar Data
+Sources</a></li>
+</ul></li>
+<li><a href="#proxy-chain-architecture-by-pillar"
+id="toc-proxy-chain-architecture-by-pillar">4. Proxy Chain Architecture
+by Pillar</a>
+<ul>
+<li><a href="#political-pillar" id="toc-political-pillar">4.1 Political
+Pillar</a></li>
+<li><a href="#economic-pillar" id="toc-economic-pillar">4.2 Economic
+Pillar</a></li>
+<li><a href="#social-pillar" id="toc-social-pillar">4.3 Social
+Pillar</a></li>
+<li><a href="#environmental-pillar" id="toc-environmental-pillar">4.4
+Environmental Pillar</a></li>
+</ul></li>
+<li><a href="#licensing-summary-for-commercial-use"
+id="toc-licensing-summary-for-commercial-use">5. Licensing Summary for
+Commercial Use</a>
+<ul>
+<li><a href="#minimum-viable-commercial-configuration"
+id="toc-minimum-viable-commercial-configuration">5.1 Minimum Viable
+Commercial Configuration</a></li>
+<li><a href="#v-dem-cc-by-sa-4.0-implications"
+id="toc-v-dem-cc-by-sa-4.0-implications">5.2 V-Dem CC-BY-SA 4.0
+Implications</a></li>
+</ul></li>
+<li><a href="#implementation-architecture"
+id="toc-implementation-architecture">6. Implementation Architecture</a>
+<ul>
+<li><a href="#module-structure" id="toc-module-structure">6.1 Module
+Structure</a></li>
+<li><a href="#grrihistoricalprovider-class"
+id="toc-grrihistoricalprovider-class">6.2 GRRIHistoricalProvider
+Class</a></li>
+<li><a href="#data-loading-protocol" id="toc-data-loading-protocol">6.3
+Data Loading Protocol</a></li>
+<li><a href="#data-acquisition" id="toc-data-acquisition">6.4 Data
+Acquisition</a></li>
+</ul></li>
+<li><a href="#validation-considerations"
+id="toc-validation-considerations">7. Validation Considerations</a>
+<ul>
+<li><a href="#overlap-period-validation"
+id="toc-overlap-period-validation">7.1 Overlap-Period
+Validation</a></li>
+<li><a href="#historical-stress-testing"
+id="toc-historical-stress-testing">7.2 Historical Stress
+Testing</a></li>
+<li><a href="#known-limitations" id="toc-known-limitations">7.3 Known
+Limitations</a></li>
+</ul></li>
+<li><a href="#comparison-with-mac-historical-extension"
+id="toc-comparison-with-mac-historical-extension">8. Comparison with MAC
+Historical Extension</a></li>
+<li><a href="#adaptive-pillar-weighting-for-grri"
+id="toc-adaptive-pillar-weighting-for-grri">9. Adaptive Pillar Weighting
+for GRRI</a>
+<ul>
+<li><a href="#motivation-beyond-equal-weights"
+id="toc-motivation-beyond-equal-weights">9.1 Motivation: Beyond Equal
+Weights</a></li>
+<li><a href="#mac-weighting-methodology-transplantable-components"
+id="toc-mac-weighting-methodology-transplantable-components">9.2 MAC
+Weighting Methodology (Transplantable Components)</a></li>
+<li><a href="#adaptation-to-grri" id="toc-adaptation-to-grri">9.3
+Adaptation to GRRI</a></li>
+<li><a href="#bootstrap-confidence-intervals-for-grri"
+id="toc-bootstrap-confidence-intervals-for-grri">9.4 Bootstrap
+Confidence Intervals for GRRI</a></li>
+<li><a href="#when-ml-weighting-adds-value-for-grri"
+id="toc-when-ml-weighting-adds-value-for-grri">9.5 When ML Weighting
+Adds Value for GRRI</a></li>
+</ul></li>
+<li><a href="#historically-informed-monte-carlo-simulation"
+id="toc-historically-informed-monte-carlo-simulation">10.
+Historically-Informed Monte Carlo Simulation</a>
+<ul>
+<li><a href="#motivation-1" id="toc-motivation-1">10.1
+Motivation</a></li>
+<li><a href="#historical-distribution-calibration"
+id="toc-historical-distribution-calibration">10.2 Historical
+Distribution Calibration</a></li>
+<li><a href="#regime-conditional-simulation"
+id="toc-regime-conditional-simulation">10.3 Regime-Conditional
+Simulation</a></li>
+<li><a href="#cross-pillar-shock-propagation-matrix"
+id="toc-cross-pillar-shock-propagation-matrix">10.4 Cross-Pillar Shock
+Propagation Matrix</a></li>
+<li><a href="#validation-against-known-historical-episodes"
+id="toc-validation-against-known-historical-episodes">10.5 Validation
+Against Known Historical Episodes</a></li>
+<li><a href="#implementation-note" id="toc-implementation-note">10.6
+Implementation Note</a></li>
+</ul></li>
+<li><a href="#independence-structure-and-dependence-analysis"
+id="toc-independence-structure-and-dependence-analysis">11. Independence
+Structure and Dependence Analysis</a>
+<ul>
+<li><a href="#the-independence-assumption"
+id="toc-the-independence-assumption">11.1 The Independence
+Assumption</a></li>
+<li><a href="#dependence-metrics" id="toc-dependence-metrics">11.2
+Dependence Metrics</a></li>
+<li><a href="#cross-pillar-dependence-analysis-protocol"
+id="toc-cross-pillar-dependence-analysis-protocol">11.3 Cross-Pillar
+Dependence Analysis Protocol</a></li>
+<li><a href="#known-embedded-correlations-and-mitigation"
+id="toc-known-embedded-correlations-and-mitigation">11.4 Known Embedded
+Correlations and Mitigation</a></li>
+<li><a href="#decorrelation-framework-transplanting-macs-approach"
+id="toc-decorrelation-framework-transplanting-macs-approach">11.5
+Decorrelation Framework: Transplanting MAC’s Approach</a></li>
+<li><a href="#entropy-based-redundancy-analysis"
+id="toc-entropy-based-redundancy-analysis">11.6 Entropy-Based Redundancy
+Analysis</a></li>
+<li><a href="#expected-outcomes-and-implications"
+id="toc-expected-outcomes-and-implications">11.7 Expected Outcomes and
+Implications</a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">12. Conclusion</a></li>
+<li><a href="#references" id="toc-references">References</a>
+<ul>
+<li><a href="#additional-references-sections-911"
+id="toc-additional-references-sections-911">Additional References
+(Sections 9–11)</a></li>
+</ul></li>
+<li><a href="#appendix-a-data-file-inventory"
+id="toc-appendix-a-data-file-inventory">Appendix A: Data File
+Inventory</a></li>
+<li><a href="#appendix-b-transformation-reference"
+id="toc-appendix-b-transformation-reference">Appendix B: Transformation
+Reference</a></li>
+<li><a href="#appendix-c-minimum-data-requirements-by-period"
+id="toc-appendix-c-minimum-data-requirements-by-period">Appendix C:
+Minimum Data Requirements by Period</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1
+id="extending-the-global-risk-and-resilience-index-historical-proxy-chains-for-long-run-country-level-resilience-measurement">Extending
+the Global Risk and Resilience Index: Historical Proxy Chains for
+Long-Run Country-Level Resilience Measurement</h1>
+<p><strong>Martyn Brush, FGF Research</strong></p>
+<p><strong>Working Paper — February 2026</strong></p>
+<p><em>Confidential Draft</em></p>
+<hr />
+<h2 id="abstract">Abstract</h2>
+<p>The Global Risk and Resilience Index (GRRI) quantifies country-level
+structural resilience across four orthogonal pillars — political
+stability, economic robustness, social cohesion, and environmental
+exposure — and transforms the composite score into a transmission
+modifier that scales the market impact of exogenous shocks within the
+Margin Absorption Capacity (MAC) framework. Until now, the GRRI has
+relied on modern data sources whose temporal coverage is limited: the
+World Bank Worldwide Governance Indicators (WGI) begin in 1996, the IMF
+World Economic Outlook (WEO) in 1980, the UNDP Human Development Index
+(HDI) in 1990, and the INFORM Climate Risk Index only in 2012. This
+paper presents a systematic extension of the GRRI backward through time
+by constructing historically-anchored proxy chains that draw on twelve
+publicly available academic datasets spanning 1789–2025. We document for
+each proxy its source, coverage period, normalisation transformation,
+estimated correlation with its modern counterpart, country coverage,
+academic justification, and licensing terms. Particular attention is
+given to whether each dataset is free to use for commercial purposes,
+enabling practitioners and product teams to assess which data may be
+incorporated into commercial risk products without additional licensing
+negotiation.</p>
+<p>Beyond the historical extension, this paper develops three
+methodological enhancements transplanted from the MAC analytics toolkit:
+<strong>(1)</strong> adaptive pillar weighting using gradient boosting
+with leave-one-out cross-validation, calibrated against historical
+crisis outcomes from Reinhart-Rogoff; <strong>(2)</strong>
+historically-informed Monte Carlo simulation with empirically-calibrated
+distributions and copula-estimated cross-pillar dependencies; and
+<strong>(3)</strong> a formal independence structure analysis using
+Mutual Information, the Hilbert–Schmidt Independence Criterion (HSIC),
+and the Maximal Information Coefficient (MIC) to quantify embedded
+correlations between pillars — particularly those arising from shared
+underlying datasets — with decorrelation strategies adapted from MAC’s
+private credit pipeline.</p>
+<p><strong>Keywords:</strong> country risk, resilience measurement,
+historical proxies, geopolitical risk, composite indices, data
+licensing, Monte Carlo simulation, pillar independence, mutual
+information, HSIC</p>
+<hr />
+<h2 id="introduction">1. Introduction</h2>
+<h3 id="motivation">1.1 Motivation</h3>
+<p>The MAC framework’s core equation,</p>
+<p><span class="math display">\[\text{Market Impact} = \text{Shock}
+\times \text{GRRI Modifier} \times f(\text{MAC})\]</span></p>
+<p>positions the GRRI modifier as a multiplicative scaling factor that
+compresses (for resilient countries) or amplifies (for fragile
+countries) the transmission of financial shocks. The modifier is derived
+from a logistic transformation of the composite GRRI resilience
+score:</p>
+<p><span class="math display">\[\text{modifier} = \frac{2}{1 +
+\exp\bigl(s \cdot (R - m)\bigr)}\]</span></p>
+<p>where <span class="math inline">\(R \in [0,1]\)</span> is the
+resilience score, <span class="math inline">\(s = 4.0\)</span> is the
+steepness parameter, and <span class="math inline">\(m = 0.5\)</span> is
+the neutral midpoint. When <span class="math inline">\(R &gt;
+0.5\)</span>, the modifier compresses shocks (<span
+class="math inline">\(&lt; 1.0\times\)</span>); when <span
+class="math inline">\(R &lt; 0.5\)</span>, it amplifies them (<span
+class="math inline">\(&gt; 1.0\times\)</span>).</p>
+<p>The MAC framework has been validated across 117 years of financial
+history (1907–2025) using detailed proxy chains for its seven
+financial-market pillars (liquidity, valuation, positioning, volatility,
+policy, contagion, and private credit). The GRRI, however, has not
+benefited from the same rigour: its four country-resilience pillars have
+been evaluated only with modern data, limiting backtesting to
+approximately 20 years and preventing validation against the very crises
+— the Great Depression, the two World Wars, the Bretton Woods collapse,
+the Latin American debt crisis — that most severely tested national
+resilience.</p>
+<h3 id="contribution">1.2 Contribution</h3>
+<p>This paper makes three contributions:</p>
+<ol type="1">
+<li><p><strong>Proxy chain architecture.</strong> We identify, for each
+GRRI pillar, a cascade of progressively older datasets that can
+substitute for the modern indicator when the latter is unavailable. Each
+chain is documented with a <code>GRRIProxyConfig</code> data structure
+specifying the target indicator, proxy series, transformation,
+correlation estimate, country coverage, academic reference, and
+caveats.</p></li>
+<li><p><strong>Licensing audit.</strong> For each dataset, we determine
+whether it is (a) freely downloadable without registration, (b) freely
+downloadable with registration, (c) freely available for academic use
+only, or (d) commercially licensable. This distinction is critical for
+any organisation considering deployment in a commercial risk
+product.</p></li>
+<li><p><strong>Implementation.</strong> We provide a production-grade
+Python module (<code>grri_mac.grri.historical_sources</code>) containing
+data loaders, per-pillar scorers, and a composite
+<code>GRRIHistoricalProvider</code> class that mirrors the design of the
+MAC <code>HistoricalDataProvider</code>, enabling seamless
+integration.</p></li>
+</ol>
+<h3 id="coverage-summary">1.3 Coverage Summary</h3>
+<table>
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 20%" />
+<col style="width: 15%" />
+<col style="width: 28%" />
+<col style="width: 14%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Pillar</th>
+<th>Modern Indicator</th>
+<th>Modern Start</th>
+<th>Primary Historical Proxy</th>
+<th>Proxy Start</th>
+<th>Extension</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Political</td>
+<td>WGI Rule of Law</td>
+<td>1996</td>
+<td>Polity5 polity2 / V-Dem polyarchy</td>
+<td>1800 / 1789</td>
+<td><strong>+196 years</strong></td>
+</tr>
+<tr>
+<td>Economic</td>
+<td>IMF WEO Real GDP Growth</td>
+<td>1980</td>
+<td>Maddison Project GDP per capita</td>
+<td>1820</td>
+<td><strong>+160 years</strong></td>
+</tr>
+<tr>
+<td>Social</td>
+<td>UNDP HDI</td>
+<td>1990</td>
+<td>Crafts-style HDI proxy (Maddison + V-Dem suffrage)</td>
+<td>1870</td>
+<td><strong>+120 years</strong></td>
+</tr>
+<tr>
+<td>Environmental</td>
+<td>INFORM Climate Risk</td>
+<td>2012</td>
+<td>EM-DAT disasters + HadCRUT5 temperature</td>
+<td>1900 / 1850</td>
+<td><strong>+112 years</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="theoretical-framework">2. Theoretical Framework</h2>
+<h3 id="the-grri-pillar-model">2.1 The GRRI Pillar Model</h3>
+<p>The GRRI decomposes country-level resilience into four
+equally-weighted pillars:</p>
+<p><span class="math display">\[R = w_P \cdot P + w_E \cdot E + w_S
+\cdot S + w_N \cdot N\]</span></p>
+<p>where <span class="math inline">\(P\)</span>, <span
+class="math inline">\(E\)</span>, <span
+class="math inline">\(S\)</span>, and <span
+class="math inline">\(N\)</span> denote the political, economic, social,
+and environmental pillar scores respectively, each normalised to <span
+class="math inline">\([0,1]\)</span>, and <span
+class="math inline">\(w_P = w_E = w_S = w_N = 0.25\)</span> in the
+baseline specification.</p>
+<p>Each pillar is itself a composite of sub-indicators. The key
+challenge for historical extension is finding proxy series that
+approximate these sub-indicators across periods where the modern data
+sources do not exist.</p>
+<h3 id="proxy-chain-design-principles">2.2 Proxy Chain Design
+Principles</h3>
+<p>Following the precedent established in the MAC historical extension
+(Schwert, 1989; Shiller, 2000; NBER Macrohistory Database), we adopt
+five design principles:</p>
+<ol type="1">
+<li><strong>Documented correlation.</strong> Each proxy must have an
+estimated correlation with its target indicator during the overlap
+period. We require <span class="math inline">\(r \geq 0.50\)</span> for
+inclusion.</li>
+<li><strong>Transparent transformation.</strong> The mapping from proxy
+scale to target scale (typically <span
+class="math inline">\([0,1]\)</span>) is documented and implemented
+programmatically.</li>
+<li><strong>Graceful degradation.</strong> When fewer sub-indicators are
+available for a pillar, the composite score is re-weighted over the
+available components rather than imputed. A minimum of two pillars with
+data is required to compute a composite GRRI.</li>
+<li><strong>Provenance tracking.</strong> Every pillar score reports
+which datasets contributed to its computation.</li>
+<li><strong>Cache-aware lazy loading.</strong> Data files are loaded on
+first access and cached in memory, following the same pattern used in
+the MAC <code>HistoricalDataProvider</code>.</li>
+</ol>
+<p>The following diagram shows the complete proxy chain architecture
+linking historical sources to GRRI pillars:</p>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Modern[&quot;Modern Data (1990+)&quot;]
+        WGI[&quot;WGI Rule of Law&lt;br/&gt;(1996+)&quot;]
+        WEO[&quot;IMF WEO GDP&lt;br/&gt;(1980+)&quot;]
+        HDI[&quot;UNDP HDI&lt;br/&gt;(1990+)&quot;]
+        INFORM[&quot;INFORM Climate&lt;br/&gt;(2012+)&quot;]
+    end
+
+    subgraph Mid[&quot;Mid-Century Proxies (1945–1990)&quot;]
+        P5[&quot;Polity5 polity2&lt;br/&gt;(1800–2018)&quot;]
+        COW[&quot;COW Wars&lt;br/&gt;(1816–2007)&quot;]
+        GARR[&quot;Garriga CBI&lt;br/&gt;(1970–2012)&quot;]
+        UCDP[&quot;UCDP Deaths&lt;br/&gt;(1946+)&quot;]
+    end
+
+    subgraph Deep[&quot;Deep Historical (pre-1945)&quot;]
+        VDEM[&quot;V-Dem Polyarchy&lt;br/&gt;(1789+)&quot;]
+        MAD[&quot;Maddison GDP/pc&lt;br/&gt;(1820+)&quot;]
+        SCHW[&quot;Schwert Vol&lt;br/&gt;(1802–1987)&quot;]
+        NBER[&quot;NBER Macro&lt;br/&gt;(1857+)&quot;]
+    end
+
+    subgraph Environment[&quot;Environmental Chain&quot;]
+        EMDAT[&quot;EM-DAT Disasters&lt;br/&gt;(1900+)&quot;]
+        HAD[&quot;HadCRUT5 Temp&lt;br/&gt;(1850+)&quot;]
+    end
+
+    subgraph GRRI[&quot;GRRI Composite&quot;]
+        P[&quot;Political&lt;br/&gt;Pillar&quot;]
+        E[&quot;Economic&lt;br/&gt;Pillar&quot;]
+        S[&quot;Social&lt;br/&gt;Pillar&quot;]
+        N[&quot;Environmental&lt;br/&gt;Pillar&quot;]
+        COMP[&quot;R = 0.25P + 0.25E&lt;br/&gt; + 0.25S + 0.25N&quot;]
+        MOD[&quot;Modifier =&lt;br/&gt;2/(1+exp(4(R−0.5)))&quot;]
+    end
+
+    WGI --&gt; P
+    P5 --&gt; P
+    VDEM --&gt; P
+    COW --&gt; P
+
+    WEO --&gt; E
+    MAD --&gt; E
+    NBER --&gt; E
+    GARR --&gt; E
+
+    HDI --&gt; S
+    MAD -.-&gt;|&quot;GDP/pc for&lt;br/&gt;HDI proxy&quot;| S
+    VDEM -.-&gt;|&quot;Suffrage&quot;| S
+
+    INFORM --&gt; N
+    EMDAT --&gt; N
+    HAD --&gt; N
+
+    P --&gt; COMP
+    E --&gt; COMP
+    S --&gt; COMP
+    N --&gt; COMP
+    COMP --&gt; MOD</code></pre>
+<p><em>Figure 1. GRRI proxy chain architecture. Solid arrows indicate
+primary data flows; dashed arrows show shared datasets creating embedded
+correlations between pillars (see Section 11).</em></p>
+<h3 id="minimum-pillar-constraint">2.3 Minimum-Pillar Constraint</h3>
+<p>For periods where only two or three pillars can be scored (e.g.,
+before 1900, when environmental data is sparse), we re-normalise the
+weights over the available pillars:</p>
+<p><span class="math display">\[R = \frac{\sum_{i \in \mathcal{A}} w_i
+\cdot S_i}{\sum_{i \in \mathcal{A}} w_i}\]</span></p>
+<p>where <span class="math inline">\(\mathcal{A}\)</span> is the set of
+pillars with at least one scored sub-indicator. We require <span
+class="math inline">\(|\mathcal{A}| \geq 2\)</span> as a precondition;
+if fewer than two pillars have data, <code>get_historical_grri()</code>
+returns <code>None</code>.</p>
+<hr />
+<h2 id="data-sources-and-licensing">3. Data Sources and Licensing</h2>
+<p>This section documents every dataset used in the historical GRRI
+extension. For each source, we provide the coverage period, geographic
+scope, licensing terms, and an explicit assessment of whether the data
+may be used in a commercial product.</p>
+<h3 id="licensing-classification">3.1 Licensing Classification</h3>
+<p>We use the following taxonomy:</p>
+<table>
+<colgroup>
+<col style="width: 43%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr>
+<th>Label</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FREE-OPEN</strong></td>
+<td>Freely downloadable, no registration, permissive licence (CC-BY,
+public domain, or equivalent). Safe for commercial use.</td>
+</tr>
+<tr>
+<td><strong>FREE-REG</strong></td>
+<td>Freely downloadable after registration but with a permissive or
+academic licence that does not prohibit commercial use. Verify licence
+text before deployment.</td>
+</tr>
+<tr>
+<td><strong>ACADEMIC</strong></td>
+<td>Freely available for academic/research use; commercial use requires
+separate licence negotiation or is prohibited.</td>
+</tr>
+<tr>
+<td><strong>COMMERCIAL</strong></td>
+<td>Requires paid licence for any use.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="political-pillar-data-sources">3.2 Political Pillar Data
+Sources</h3>
+<h4 id="polity5-project-center-for-systemic-peace">3.2.1 Polity5 Project
+(Center for Systemic Peace)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td><code>polity2</code> composite regime score (−10 to +10)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1800–2018, 167 countries</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://www.systemicpeace.org/inscrdata.html</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>XLS/CSV</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Linear: <span class="math inline">\((polity2 + 10) / 20 \to
+[0,1]\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation with WGI</strong></td>
+<td><span class="math inline">\(r \approx 0.82\)</span> (overlap
+1996–2018)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN.</strong> The datasets are listed as publicly
+available for download without registration. The Center for Systemic
+Peace encourages citation but does not impose a restrictive licence. No
+paywall, no terms-of-use page requiring acceptance.
+<strong>Commercialisable with citation.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Marshall, M.G. &amp; Gurr, T.R. (2020). <em>Polity5: Political
+Regime Characteristics and Transitions, 1800–2018.</em></td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Polity5 measures executive constraints and political competition; it
+does not capture rule of law per se. Correlation with WGI is strong for
+democracies but weaker for hybrid regimes. Special codes (−66
+interregnum, −77 anarchy, −88 transition) must be excluded from
+time-series analysis.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="varieties-of-democracy-v-dem-institute">3.2.2 Varieties of
+Democracy (V-Dem) Institute</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicators</strong></td>
+<td><code>v2x_polyarchy</code> (electoral democracy, 0–1),
+<code>v2x_rule</code> (rule of law, 0–1), <code>v2x_civlib</code> (civil
+liberties, 0–1), <code>v2x_suffr</code> (suffrage share, 0–1),
+<code>v2x_freexp</code> (freedom of expression, 0–1)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1789–present, 202 countries</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://v-dem.net/data/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV (full country-year core dataset, ~100 MB)</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Direct (already on 0–1 scale)</td>
+</tr>
+<tr>
+<td><strong>Correlation with WGI</strong></td>
+<td><span class="math inline">\(r \approx 0.91\)</span> for
+<code>v2x_rule</code>; <span class="math inline">\(r \approx
+0.93\)</span> for <code>v2x_polyarchy</code> vs. WGI Voice &amp;
+Accountability</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-REG (Creative Commons).</strong> V-Dem data is freely
+available under a CC-BY-SA 4.0 licence after creating a free account.
+The CC-BY-SA licence permits commercial use provided the data is
+attributed and derivative works are shared under the same licence.
+<strong>Commercialisable with attribution and share-alike.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Coppedge, M. et al. (2023). <em>V-Dem Codebook v14.</em> Varieties
+of Democracy Institute, University of Gothenburg.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Expert-coded historical data; pre-1900 scores rely on retrospective
+judgement of historical records and should be treated as ordinal rather
+than cardinal. Inter-coder reliability is lower before 1900. The full
+dataset is large (~100 MB); for production use a pre-filtered extract of
+G20 countries and selected indicators is recommended.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="correlates-of-war-cow-war-data">3.2.3 Correlates of War (COW)
+War Data</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Interstate and civil war participation; battle-death estimates</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1816–2007 (v4.0); supplemented by UCDP for 1946+</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://correlatesofwar.org/data-sets/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Log-scaled battle deaths: <span class="math inline">\(\min(1.0,
+\log_{10}(\text{deaths} + 1) / 6.0)\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation with UCDP</strong></td>
+<td><span class="math inline">\(r \approx 0.85\)</span> during overlap
+(1946–2007)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN.</strong> The COW project makes its data freely
+available for download without registration. The project requests
+citation and notification of publications but does not impose a
+restrictive licence. <strong>Commercialisable with
+citation.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Sarkees, M.R. &amp; Wayman, F. (2010). <em>Resort to War:
+1816–2007.</em> CQ Press.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Covers interstate and civil wars only; sub-state violence and
+one-sided killings are excluded. Battle-death estimates for pre-1900
+conflicts carry significant uncertainty.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="uppsala-conflict-data-programme-ucdp">3.2.4 Uppsala Conflict
+Data Programme (UCDP)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Battle-related deaths; conflict events</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1946–present, global</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://ucdp.uu.se/downloads/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV (ZIP archive)</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Log-scaled battle deaths, as per COW</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN (CC-BY 4.0).</strong> Data is available for
+download without registration under Creative Commons Attribution 4.0
+International. <strong>Commercialisable with attribution.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Pettersson, T. &amp; Öberg, M. (2020). <em>Organized violence,
+1989–2019.</em> Journal of Peace Research, 57(4).</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Begins 1946; for earlier conflict data, COW provides coverage.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="economic-pillar-data-sources">3.3 Economic Pillar Data
+Sources</h3>
+<h4 id="maddison-project-database-ggdc-university-of-groningen">3.3.1
+Maddison Project Database (GGDC, University of Groningen)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>GDP per capita in 2011 international dollars (PPP)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1820–present, 169 countries (2020 release)</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://www.rug.nl/ggdc/historicaldevelopment/maddison/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>XLSX (Excel workbook with multiple sheets)</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>5-year compound annual growth rate (CAGR), normalised: <span
+class="math inline">\((\text{CAGR} + 0.10) / 0.20 \to [0,1]\)</span>.
+Also used as economic complexity proxy via log-scaling: <span
+class="math inline">\((\ln(\text{GDPpc}) - 5) / 6 \to
+[0,1]\)</span>.</td>
+</tr>
+<tr>
+<td><strong>Correlation with IMF WEO</strong></td>
+<td><span class="math inline">\(r \approx 0.78\)</span> for growth rates
+(overlap 1980–2018)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN.</strong> The Maddison Project Database is
+publicly available for download without registration. The dataset is
+made available for research and “wider use”. Citation is requested.
+There is no explicit restrictive licence. <strong>Commercialisable with
+citation.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Bolt, J. &amp; van Zanden, J.L. (2020). <em>Maddison style estimates
+of the evolution of the world economy: A new 2020 update.</em> Maddison
+Project Working Paper WP-15, University of Groningen.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Pre-1870 estimates are benchmarked and interpolated; annual growth
+rates should be treated as approximate. PPP adjustments for early
+periods are subject to index-number problems. Country coverage thins
+before 1870.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="measuringworth-us-gdp-officer-williamson">3.3.2 MeasuringWorth
+US GDP (Officer &amp; Williamson)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>US nominal GDP (1790+)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1790–present, US only</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://www.measuringworth.com/datasets/usgdp/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Deflate by CPI (Shiller or MeasuringWorth CPI), compute real growth
+→ normalise to [0,1]</td>
+</tr>
+<tr>
+<td><strong>Correlation with IMF WEO</strong></td>
+<td><span class="math inline">\(r \approx 0.70\)</span> (overlap
+1980–present, after CPI deflation)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>ACADEMIC / RESTRICTED.</strong> MeasuringWorth permits free
+use for <em>academic and non-profit research</em>. Commercial use
+requires explicit licence from Samuel H. Williamson. Terms of Use state:
+“The datasets are copyrighted and may not be used for commercial
+purposes without permission.” <strong>Not freely commercialisable.
+Contact required for commercial licence.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Johnston, L. &amp; Williamson, S.H. (2023). <em>What Was the U.S.
+GDP Then?</em> MeasuringWorth.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>US only. Pre-1870 GDP estimates are rough. Nominal GDP requires CPI
+deflation, which introduces additional uncertainty. Already used in the
+MAC framework’s historical extension.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="reinhart-rogoff-crisis-database">3.3.3 Reinhart-Rogoff Crisis
+Database</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Binary crisis indicators: banking, currency, sovereign default
+(external and domestic), inflation, stock market crash</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1800–present, 70 countries</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://www.carmenreinhart.com/data</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>XLS/CSV</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Count of crisis types in 5-year window, normalised: <span
+class="math inline">\(\min(1.0, \text{count} / 5)\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation</strong></td>
+<td><span class="math inline">\(r \approx 0.85\)</span> with modern
+crisis databases (Laeven &amp; Valencia, 2020)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN.</strong> The dataset is posted on Reinhart’s
+personal academic website for public download. No login, no paywall, no
+restrictive licence. Citation is expected per academic convention.
+<strong>Commercialisable with citation.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Reinhart, C.M. &amp; Rogoff, K.S. (2009). <em>This Time Is
+Different: Eight Centuries of Financial Folly.</em> Princeton University
+Press.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Binary indicators (crisis / no crisis) lose intensity information.
+Some crisis dates are debated in the literature (e.g., the 1998 Russian
+crisis is coded differently by different authors). Country naming
+conventions require harmonisation.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="shiller-cpi-and-equity-data-yale">3.3.4 Shiller CPI and Equity
+Data (Yale)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Consumer Price Index, S&amp;P Composite, CAPE ratio, long-term
+interest rates (GS10)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1871–present, US</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>http://www.econ.yale.edu/~shiller/data.htm</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>XLS</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>CPI used for deflation; CAPE and GS10 used in MAC framework</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN.</strong> Data is publicly posted on Robert
+Shiller’s Yale website for free download. No licence restrictions
+stated. <strong>Commercialisable with citation.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Shiller, R.J. (2000). <em>Irrational Exuberance.</em> Princeton
+University Press. (Updated data at Yale.)</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>US only. Already used extensively in the MAC framework.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="garriga-central-bank-independence-index">3.3.5 Garriga Central
+Bank Independence Index</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>CBI index (0–1) based on legal independence measures</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1970–2017, 182 countries</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://sites.google.com/site/carogarriga/cbi-data-1</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV/DTA (Stata)</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Direct (already on 0–1 scale)</td>
+</tr>
+<tr>
+<td><strong>Correlation</strong></td>
+<td><span class="math inline">\(r = 1.0\)</span> (direct measurement of
+CBI, not a proxy)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-REG (Academic).</strong> The dataset is freely
+downloadable from Garriga’s academic website. Designed for academic
+research. No explicit commercial licence terms are stated — the standard
+expectation is citation. Given the absence of a restrictive commercial
+clause and the academic distribution model, cautious commercial users
+should <strong>seek written confirmation from the author</strong> before
+embedding in a paid product. <strong>Commercialisable subject to author
+confirmation.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Garriga, A.C. (2016). <em>Central Bank Independence in the World: A
+New Dataset.</em> International Interactions, 42(5), 849–868.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Ends 2017; post-2017 scores must be extrapolated or sourced from
+alternative CBI databases. Pre-1970 CBI must be approximated
+heuristically—see Section 4.2.3.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="harvard-global-sanctions-database-gsdb">3.3.6 Harvard Global
+Sanctions Database (GSDB)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Sanctions episodes (sender, target, type, start/end year)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1950–2022, global</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://doi.org/10.7910/DVN/SVR5W7 (Harvard Dataverse)</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV/DTA</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Count of active sanctions → ordinal severity</td>
+</tr>
+<tr>
+<td><strong>Correlation</strong></td>
+<td><span class="math inline">\(r \approx 0.90\)</span> with other
+sanctions databases (HSE, TIES)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN (CC0 1.0).</strong> Published on Harvard Dataverse
+under CC0 Public Domain Dedication. This is the most permissive licence
+available—no restrictions whatsoever. <strong>Fully commercialisable
+without restriction.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Felbermayr, G. et al. (2020). <em>The Global Sanctions Data
+Base.</em> European Economic Review, 131, 103561.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Coverage begins 1950; pre-WW2 sanctions are not coded.
+Transaction-level data on trade disruption is not available, only
+episode-level metadata.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="social-pillar-data-sources">3.4 Social Pillar Data Sources</h3>
+<h4 id="v-dem-suffrage-and-civil-liberties">3.4.1 V-Dem Suffrage and
+Civil Liberties</h4>
+<p>The V-Dem indicators <code>v2x_suffr</code> (suffrage share) and
+<code>v2x_civlib</code> (civil liberties) are cross-listed between the
+political and social pillars. See Section 3.2.2 for licensing
+details.</p>
+<p><strong>Social Pillar Usage:</strong> - <code>v2x_suffr</code> is
+used as a proxy for the education/empowerment dimension of HDI
+(following Crafts, 1997) - <code>v2x_civlib</code> captures the social
+cohesion and rights dimension</p>
+<p><strong>Licence:</strong> <strong>FREE-REG (CC-BY-SA 4.0).</strong>
+See Section 3.2.2.</p>
+<h4 id="crafts-style-historical-hdi-proxy">3.4.2 Crafts-Style Historical
+HDI Proxy</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Composite HDI proxy from GDP per capita (income) + suffrage
+(education/empowerment)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1820–1989 (where both Maddison and V-Dem overlap)</td>
+</tr>
+<tr>
+<td><strong>Construction</strong></td>
+<td><span class="math inline">\(\text{HDI proxy} =
+\frac{1}{2}\bigl[\text{normalised GDP/pc} + \text{V-Dem
+suffrage}\bigr]\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation with UNDP HDI</strong></td>
+<td><span class="math inline">\(r \approx 0.75\)</span> (overlap
+1990–2018)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>Derived.</strong> Uses Maddison (FREE-OPEN) + V-Dem
+(CC-BY-SA 4.0). The composite inherits the most restrictive licence:
+<strong>CC-BY-SA 4.0.</strong> Commercialisable with attribution and
+share-alike.</td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Crafts, N.F.R. (1997). <em>The Human Development Index and Changes
+in Standards of Living: Some Historical Comparisons.</em> European
+Review of Economic History, 1(3), 299–322.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Missing life-expectancy dimension entirely; uses suffrage as
+education/empowerment proxy. Pre-1870 data is very sparse. The proxy is
+weakest for countries where income growth and democratic participation
+diverge significantly (e.g., Gulf states).</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="mitchells-international-historical-statistics-unemployment">3.4.3
+Mitchell’s International Historical Statistics (Unemployment)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Unemployment rate (%)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>~1919–1959 for major economies (UK, US, Germany, France)</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>Published by Palgrave Macmillan</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>Book; requires manual transcription into CSV</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Inverted for resilience: <span class="math inline">\(\max(0, \min(1,
+1 - (\text{rate} - 3) / 17))\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation with ILO</strong></td>
+<td><span class="math inline">\(r \approx 0.80\)</span> (overlap for
+countries with long BLS or ONS series)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>COMMERCIAL.</strong> Mitchell’s <em>International Historical
+Statistics</em> is a copyrighted Palgrave Macmillan publication. Data
+transcribed from the book may be used in research under fair use, but
+large-scale digitisation and commercial redistribution would require
+publisher permission. Individual data points cited in research are
+covered by fair use / fair dealing. <strong>Not freely commercialisable
+in bulk. Individual data points may be used under fair
+use.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Mitchell, B.R. (2013). <em>International Historical Statistics.</em>
+7th edition. Palgrave Macmillan.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Pre-WW2 unemployment statistics are often based on trade-union
+reports or administrative data, not household surveys. Definitions vary
+across countries and periods. Coverage is patchy for some
+countries.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="environmental-pillar-data-sources">3.5 Environmental Pillar Data
+Sources</h3>
+<h4 id="em-dat-international-disaster-database-cred">3.5.1 EM-DAT
+International Disaster Database (CRED)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Disaster events: deaths, affected population, economic damages</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1900–present, global</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://www.emdat.be/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV (downloadable after free registration)</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>Log-scaled 5-year death total: <span class="math inline">\(\min(1.0,
+\log_{10}(\text{deaths} + 1) / 6.0)\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation with INFORM</strong></td>
+<td><span class="math inline">\(r \approx 0.65\)</span> (overlap
+2012–present; indirect, as INFORM incorporates EM-DAT as an input)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-REG (Non-Commercial).</strong> EM-DAT requires free
+registration. The licence states: “EM-DAT data is available free of
+charge for academic, non-commercial and public use. Commercial use of
+the data requires prior agreement.” <strong>Not freely commercialisable.
+Commercial licence required from CRED.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Guha-Sapir, D. et al. (2023). <em>EM-DAT: The International Disaster
+Database.</em> Centre for Research on the Epidemiology of Disasters
+(CRED), UCLouvain, Brussels.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Pre-1960 disaster reporting is incomplete, especially for developing
+countries. Under-reporting biases severity downward for historical
+periods. Economic damage figures before 1970 are unreliable and should
+not be used.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="hadcrut5-global-temperature-anomaly-uk-met-office-cru">3.5.2
+HadCRUT5 Global Temperature Anomaly (UK Met Office / CRU)</h4>
+<table>
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Indicator</strong></td>
+<td>Global mean surface temperature anomaly (°C relative to 1961–1990
+baseline)</td>
+</tr>
+<tr>
+<td><strong>Coverage</strong></td>
+<td>1850–present, global mean (not country-specific)</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>https://www.metoffice.gov.uk/hadobs/hadcrut5/</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>CSV (annual and monthly versions)</td>
+</tr>
+<tr>
+<td><strong>Transformation</strong></td>
+<td>30-year rate of change normalised: <span
+class="math inline">\(\delta = T_t - T_{t-30}\)</span>, score <span
+class="math inline">\(= \min(1, \delta / 2.0)\)</span></td>
+</tr>
+<tr>
+<td><strong>Correlation with INFORM</strong></td>
+<td><span class="math inline">\(r \approx 0.60\)</span> (indirect;
+captures macro trend only)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>FREE-OPEN (Open Government Licence v3).</strong> The UK Met
+Office publishes HadCRUT5 under the Open Government Licence, which
+permits commercial use, adaptation, and redistribution provided the
+source is acknowledged. <strong>Fully commercialisable with
+attribution.</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>Morice, C.P. et al. (2021). <em>An Updated Assessment of
+Near-Surface Temperature Change From 1850: The HadCRUT5 Data Set.</em>
+Journal of Geophysical Research: Atmospheres, 126(3),
+e2019JD032361.</td>
+</tr>
+<tr>
+<td><strong>Caveats</strong></td>
+<td>Global mean temperature is not country-specific; relationship
+between global trend and country-level climate risk is indirect. Mainly
+captures the macro trend of increasing climate instability.
+Country-level exposure data (e.g., Notre Dame ND-GAIN) begins only in
+1995.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="proxy-chain-architecture-by-pillar">4. Proxy Chain Architecture
+by Pillar</h2>
+<h3 id="political-pillar">4.1 Political Pillar</h3>
+<p>The political pillar measures governance quality, democratic
+accountability, and absence of violent conflict. The modern indicator is
+the World Bank WGI (1996+), which aggregates multiple perception-based
+surveys.</p>
+<p><strong>Proxy cascade:</strong></p>
+<pre><code>WGI Rule of Law (1996–present)
+    ↓ (pre-1996)
+V-Dem v2x_rule (1789+, r ≈ 0.91)
+    ↓ (if V-Dem unavailable)
+Polity5 polity2 (1800+, r ≈ 0.82)
+    ↓ (supplementary)
+V-Dem v2x_polyarchy as democracy index (1789+, r ≈ 0.93)
+V-Dem v2x_civlib as civil liberties (1789+, r ≈ 0.90)
+COW/UCDP conflict intensity as inverse conflict (1816+, r ≈ 0.85)</code></pre>
+<p><strong>Composite political score:</strong></p>
+<p><span class="math display">\[P = \frac{1}{|\mathcal{C}_P|}\sum_{j \in
+\mathcal{C}_P} c_j\]</span></p>
+<p>where <span class="math inline">\(\mathcal{C}_P \subseteq
+\{\text{governance}, \text{democracy}, \text{civil liberties}, 1 -
+\text{conflict}\}\)</span> is the set of available sub-components for
+the country-year.</p>
+<h3 id="economic-pillar">4.2 Economic Pillar</h3>
+<p>The economic pillar captures GDP growth trajectory, economic
+diversity/complexity, central bank independence, fiscal space, and
+crisis vulnerability.</p>
+<h4 id="gdp-growth-proxy">4.2.1 GDP Growth Proxy</h4>
+<p>The Maddison Project provides GDP per capita in constant 2011
+international dollars, enabling computation of compound annual growth
+rates (CAGR) over rolling windows:</p>
+<p><span class="math display">\[g =
+\left(\frac{\text{GDP}_{t}}{\text{GDP}_{t-5}}\right)^{1/5} -
+1\]</span></p>
+<p>Normalised to <span class="math inline">\([0,1]\)</span> with <span
+class="math inline">\(-10\%\)</span> mapping to <span
+class="math inline">\(0\)</span> and <span
+class="math inline">\(+10\%\)</span> mapping to <span
+class="math inline">\(1\)</span>:</p>
+<p><span class="math display">\[\text{score} = \frac{g +
+0.10}{0.20}\]</span></p>
+<h4 id="economic-complexity-proxy">4.2.2 Economic Complexity Proxy</h4>
+<p>For periods before the Harvard Growth Lab Economic Complexity Index
+(ECI, 1995+), we use log GDP per capita as a proxy:</p>
+<p><span class="math display">\[\text{complexity} =
+\frac{\ln(\text{GDPpc}) - 5}{6}\]</span></p>
+<p>This is justified by the strong empirical correlation (<span
+class="math inline">\(r \approx 0.72\)</span>) between GDP per capita
+and the ECI documented in Hidalgo &amp; Hausmann (2009), though it does
+not capture the trade-composition dimension directly. Resource-rich
+economies with high GDP but low export diversification (e.g., Saudi
+Arabia, Nigeria) are systematically overrated by this proxy.</p>
+<h4 id="central-bank-independence-pre-1970-heuristic">4.2.3 Central Bank
+Independence: Pre-1970 Heuristic</h4>
+<p>The Garriga CBI index provides data from 1970–2017. For earlier
+periods, we assign heuristic scores based on institutional features
+documented in Friedman &amp; Schwartz (1963):</p>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Period</th>
+<th>Condition</th>
+<th>CBI Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pre-1913 (US)</td>
+<td>No central bank</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>Pre-1913 (UK)</td>
+<td>Bank of England operating under gold standard</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>Pre-1913 (France)</td>
+<td>Banque de France, government-directed</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>Pre-1913 (Germany)</td>
+<td>Reichsbank, semi-independent</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>Pre-1913 (default)</td>
+<td>Most countries lacked CB or had government-directed
+institutions</td>
+<td>0.3</td>
+</tr>
+<tr>
+<td>1914–1944</td>
+<td>Wartime—most CBs under government direction</td>
+<td>0.3</td>
+</tr>
+<tr>
+<td>1945–1969</td>
+<td>Post-war moderate independence in advanced economies</td>
+<td>0.4</td>
+</tr>
+</tbody>
+</table>
+<p>These heuristic scores are explicitly flagged in the provenance
+metadata as “CBI heuristic (pre-1970)” and carry a correlation estimate
+of only <span class="math inline">\(r \approx 0.50\)</span>.</p>
+<h4 id="crisis-fragility">4.2.4 Crisis Fragility</h4>
+<p>The Reinhart-Rogoff crisis database provides binary indicators for
+six crisis types. We compute a rolling 5-year crisis count and
+normalise:</p>
+<p><span class="math display">\[\text{fragility} = \min\left(1.0,\;
+\frac{\sum_{s=t-5}^{t+5} \sum_{k \in K}
+\mathbb{1}[\text{crisis}_{s,k}]}{5}\right)\]</span></p>
+<p>where <span class="math inline">\(K = \{\text{banking, currency,
+sovereign}_{\text{ext}}, \text{sovereign}_{\text{dom}}, \text{inflation,
+stock crash}\}\)</span>.</p>
+<p><strong>Composite economic score:</strong></p>
+<p><span class="math display">\[E = \sum_{j} w_j^E \cdot c_j^E \bigg/
+\sum_{j} w_j^E \qquad w_j^E = 0.20 \;\forall j\]</span></p>
+<p>Components: GDP growth, economic diversity, CBI, fiscal space
+(composite of growth + inverse crisis), inverse crisis fragility.</p>
+<h3 id="social-pillar">4.3 Social Pillar</h3>
+<p>The social pillar measures human development, social capital
+(political participation), employment, and civil rights.</p>
+<p><strong>Components:</strong></p>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>Sub-indicator</th>
+<th>Source</th>
+<th>Weight</th>
+<th>Transformation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HDI proxy</td>
+<td>Maddison GDP/pc + V-Dem suffrage</td>
+<td>0.30</td>
+<td>Average of normalised income + suffrage</td>
+</tr>
+<tr>
+<td>Suffrage</td>
+<td>V-Dem <code>v2x_suffr</code></td>
+<td>0.25</td>
+<td>Direct (0–1)</td>
+</tr>
+<tr>
+<td>Unemployment (inverted)</td>
+<td>Mitchell / BLS / ILO</td>
+<td>0.25</td>
+<td><span class="math inline">\(\max(0, 1 - (\text{rate} - 3) /
+17)\)</span></td>
+</tr>
+<tr>
+<td>Civil liberties</td>
+<td>V-Dem <code>v2x_civlib</code></td>
+<td>0.20</td>
+<td>Direct (0–1)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="environmental-pillar">4.4 Environmental Pillar</h3>
+<p>The environmental pillar is necessarily thinner for historical
+periods. Modern INFORM Risk (2012+) integrates hazard exposure,
+vulnerability, and coping capacity across ~30 sub-indicators. Our
+historical proxy reduces this to two components:</p>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>Sub-indicator</th>
+<th>Source</th>
+<th>Weight</th>
+<th>Transformation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Disaster severity (inverted)</td>
+<td>EM-DAT</td>
+<td>0.60</td>
+<td><span class="math inline">\(1 - \min(1,
+\log_{10}(\text{deaths}+1)/6)\)</span></td>
+</tr>
+<tr>
+<td>Climate anomaly rate (inverted)</td>
+<td>HadCRUT5</td>
+<td>0.40</td>
+<td><span class="math inline">\(1 - \min(1, \delta_{30\text{yr}} /
+2.0)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Limitation:</strong> The historical environmental score
+captures physical hazard realization (disasters) and the macro climate
+trend but does not capture vulnerability, coping capacity, or green
+transition progress. Before 1900, when EM-DAT coverage begins, this
+pillar defaults to climate data alone (1850–1899) or is excluded
+entirely (pre-1850).</p>
+<hr />
+<h2 id="licensing-summary-for-commercial-use">5. Licensing Summary for
+Commercial Use</h2>
+<p>The following table provides a consolidated view of data licensing
+relevant to commercial deployment.</p>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 16%" />
+<col style="width: 15%" />
+<col style="width: 19%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>Data Source</th>
+<th>Pillar(s)</th>
+<th>Coverage</th>
+<th>Licence Type</th>
+<th>Commercialisable?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Polity5</strong></td>
+<td>Political</td>
+<td>1800–2018</td>
+<td>FREE-OPEN</td>
+<td><strong>Yes</strong>, with citation</td>
+</tr>
+<tr>
+<td><strong>V-Dem</strong></td>
+<td>Political, Social</td>
+<td>1789–present</td>
+<td>FREE-REG (CC-BY-SA 4.0)</td>
+<td><strong>Yes</strong>, with attribution + share-alike</td>
+</tr>
+<tr>
+<td><strong>COW Wars</strong></td>
+<td>Political</td>
+<td>1816–2007</td>
+<td>FREE-OPEN</td>
+<td><strong>Yes</strong>, with citation</td>
+</tr>
+<tr>
+<td><strong>UCDP</strong></td>
+<td>Political</td>
+<td>1946–present</td>
+<td>FREE-OPEN (CC-BY 4.0)</td>
+<td><strong>Yes</strong>, with attribution</td>
+</tr>
+<tr>
+<td><strong>Maddison Project</strong></td>
+<td>Economic, Social</td>
+<td>1820–present</td>
+<td>FREE-OPEN</td>
+<td><strong>Yes</strong>, with citation</td>
+</tr>
+<tr>
+<td><strong>MeasuringWorth</strong></td>
+<td>Economic</td>
+<td>1790–present (US)</td>
+<td>ACADEMIC</td>
+<td><strong>No</strong> without separate licence</td>
+</tr>
+<tr>
+<td><strong>Reinhart-Rogoff</strong></td>
+<td>Economic</td>
+<td>1800–present</td>
+<td>FREE-OPEN</td>
+<td><strong>Yes</strong>, with citation</td>
+</tr>
+<tr>
+<td><strong>Shiller (Yale)</strong></td>
+<td>Economic</td>
+<td>1871–present (US)</td>
+<td>FREE-OPEN</td>
+<td><strong>Yes</strong>, with citation</td>
+</tr>
+<tr>
+<td><strong>Garriga CBI</strong></td>
+<td>Economic</td>
+<td>1970–2017</td>
+<td>FREE-REG (Academic)</td>
+<td><strong>Probably</strong>, verify with author</td>
+</tr>
+<tr>
+<td><strong>GSDB Sanctions</strong></td>
+<td>Economic</td>
+<td>1950–2022</td>
+<td>FREE-OPEN (CC0 1.0)</td>
+<td><strong>Yes</strong>, unrestricted</td>
+</tr>
+<tr>
+<td><strong>Mitchell’s Stats</strong></td>
+<td>Social</td>
+<td>~1919–1959</td>
+<td>COMMERCIAL</td>
+<td><strong>No</strong> without publisher licence</td>
+</tr>
+<tr>
+<td><strong>EM-DAT</strong></td>
+<td>Environmental</td>
+<td>1900–present</td>
+<td>FREE-REG (Non-Commercial)</td>
+<td><strong>No</strong> without CRED licence</td>
+</tr>
+<tr>
+<td><strong>HadCRUT5</strong></td>
+<td>Environmental</td>
+<td>1850–present</td>
+<td>FREE-OPEN (OGL v3)</td>
+<td><strong>Yes</strong>, with attribution</td>
+</tr>
+</tbody>
+</table>
+<h3 id="minimum-viable-commercial-configuration">5.1 Minimum Viable
+Commercial Configuration</h3>
+<p>For a commercial product seeking to avoid all restrictive licences,
+the following “fully free” subset provides coverage:</p>
+<ul>
+<li><strong>Political Pillar:</strong> Polity5 + V-Dem (CC-BY-SA) + COW
++ UCDP → 1789–present</li>
+<li><strong>Economic Pillar:</strong> Maddison + Reinhart-Rogoff +
+Shiller + GSDB → 1820–present (1871 for Shiller CPI)</li>
+<li><strong>Social Pillar:</strong> V-Dem suffrage + civil liberties
+(CC-BY-SA) + Maddison GDP/pc (as HDI proxy) → 1820–present</li>
+<li><strong>Environmental Pillar:</strong> HadCRUT5 → 1850–present</li>
+</ul>
+<p>This configuration omits MeasuringWorth (1790 US GDP), Mitchell
+(unemployment), EM-DAT (disasters), and requires caution with Garriga
+(CBI). The primary sacrifice is the loss of the EM-DAT disaster
+component of the environmental pillar and pre-1820 US GDP data.</p>
+<h3 id="v-dem-cc-by-sa-4.0-implications">5.2 V-Dem CC-BY-SA 4.0
+Implications</h3>
+<p>V-Dem is the most heavily used dataset in the GRRI extension
+(political governance, democracy, civil liberties, suffrage). Its
+CC-BY-SA 4.0 licence requires that derivative works incorporating V-Dem
+data be shared under the same or a compatible licence. For a commercial
+risk product, this means:</p>
+<ol type="1">
+<li><strong>Attribution</strong> must be provided to the V-Dem Institute
+in documentation and disclosures.</li>
+<li><strong>Share-alike</strong> requires that the specific derived
+indicators (not the entire product) be available under CC-BY-SA terms if
+distributed.</li>
+</ol>
+<p>In practice, most commercial implementations can satisfy share-alike
+by publishing the methodology and transformation of V-Dem data (as this
+paper does) while keeping the proprietary weighting, composite scoring,
+and product interface proprietary. Legal counsel should review the
+specific deployment architecture.</p>
+<hr />
+<h2 id="implementation-architecture">6. Implementation Architecture</h2>
+<h3 id="module-structure">6.1 Module Structure</h3>
+<p>The implementation follows the design pattern established in the MAC
+framework’s <code>HistoricalDataProvider</code>:</p>
+<pre><code>grri_mac/grri/
+    __init__.py              # Module exports
+    modifier.py              # GRRI → modifier logistic transformation
+    data_fetchers.py         # Modern API clients (IMF, WGI, HDI, V-Dem)
+    historical_sources.py    # Historical data loaders + GRRIHistoricalProvider
+    historical_proxies.py    # Proxy chain documentation (GRRIProxyConfig)</code></pre>
+<h3 id="grrihistoricalprovider-class">6.2 GRRIHistoricalProvider
+Class</h3>
+<p>The <code>GRRIHistoricalProvider</code> class is the primary
+interface for consumers:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> grri_mac.grri.historical_sources <span class="im">import</span> GRRIHistoricalProvider</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>provider <span class="op">=</span> GRRIHistoricalProvider()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Single country-year</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> provider.get_historical_grri(<span class="st">&quot;USA&quot;</span>, <span class="dv">1929</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Returns: {</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   &quot;country&quot;: &quot;USA&quot;,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   &quot;year&quot;: 1929,</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   &quot;resilience&quot;: 0.6842,</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#   &quot;modifier&quot;: 0.6321,</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#   &quot;pillar_scores&quot;: {&quot;political&quot;: 0.85, &quot;economic&quot;: 0.52, ...},</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#   &quot;provenance&quot;: {&quot;political&quot;: [&quot;Polity5 (1800-2018)&quot;, ...], ...}</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Time series</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> provider.get_historical_grri_timeseries(<span class="st">&quot;GBR&quot;</span>, <span class="dv">1850</span>, <span class="dv">1950</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Returns DataFrame: year | resilience | modifier | political | economic | social | environmental</span></span></code></pre></div>
+<h3 id="data-loading-protocol">6.3 Data Loading Protocol</h3>
+<p>Each data loader follows a defensive pattern:</p>
+<ol type="1">
+<li>Check for expected file on disk; return <code>None</code> if
+absent.</li>
+<li>Parse CSV/XLS with standardised column normalisation.</li>
+<li>Filter by country code (supporting multiple naming
+conventions).</li>
+<li>Log the number of observations loaded.</li>
+<li>Cache result in the provider’s <code>_cache</code> dictionary.</li>
+</ol>
+<p>This enables graceful degradation: if a dataset is not downloaded,
+the corresponding sub-indicator is simply omitted from the composite,
+and the weights are re-normalised over available components.</p>
+<h3 id="data-acquisition">6.4 Data Acquisition</h3>
+<p>A companion script, <code>download_grri_historical_data.py</code>,
+automates acquisition of publicly downloadable datasets:</p>
+<ul>
+<li><strong>Auto-download:</strong> HadCRUT5 (Met Office CSV), Maddison
+(XLSX), UCDP (ZIP archive from Uppsala)</li>
+<li><strong>Manual download</strong> (requires registration or gated
+access): Polity5, V-Dem, COW, Reinhart-Rogoff, EM-DAT, Garriga CBI,
+GSDB</li>
+</ul>
+<p>The <code>--check</code> flag reports which datasets are present and
+which are missing; the <code>--manual-instructions</code> flag prints
+detailed step-by-step download instructions for gated datasets.</p>
+<hr />
+<h2 id="validation-considerations">7. Validation Considerations</h2>
+<h3 id="overlap-period-validation">7.1 Overlap-Period Validation</h3>
+<p>For each proxy chain, the correlation estimate is computed during the
+overlap period where both the proxy and the modern indicator are
+available. These correlations should be re-validated as modern data
+extends:</p>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 30%" />
+<col style="width: 24%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>Proxy → Target</th>
+<th>Overlap Period</th>
+<th>Reported <span class="math inline">\(r\)</span></th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Polity5 → WGI</td>
+<td>1996–2018</td>
+<td>0.82</td>
+<td>Cross-sectional across 167 countries</td>
+</tr>
+<tr>
+<td>V-Dem rule → WGI</td>
+<td>1996–2023</td>
+<td>0.91</td>
+<td>202 countries</td>
+</tr>
+<tr>
+<td>V-Dem polyarchy → WGI V&amp;A</td>
+<td>1996–2023</td>
+<td>0.93</td>
+<td>202 countries</td>
+</tr>
+<tr>
+<td>Maddison GDP growth → IMF WEO</td>
+<td>1980–2018</td>
+<td>0.78</td>
+<td>169 countries, 5yr CAGR</td>
+</tr>
+<tr>
+<td>EM-DAT severity → INFORM</td>
+<td>2012–2023</td>
+<td>0.65</td>
+<td>Indirect; short overlap</td>
+</tr>
+<tr>
+<td>HadCRUT5 trend → INFORM</td>
+<td>2012–2023</td>
+<td>0.60</td>
+<td>Very indirect</td>
+</tr>
+</tbody>
+</table>
+<h3 id="historical-stress-testing">7.2 Historical Stress Testing</h3>
+<p>The extended GRRI can be validated against known episodes of
+country-level resilience failure:</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 10%" />
+<col style="width: 27%" />
+<col style="width: 29%" />
+</colgroup>
+<thead>
+<tr>
+<th>Episode</th>
+<th>Country</th>
+<th>Year</th>
+<th>Expected GRRI</th>
+<th>Key Proxy Test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Weimar hyperinflation</td>
+<td>DEU</td>
+<td>1923</td>
+<td>Very Low (&lt;0.3)</td>
+<td>R-R inflation crisis + Polity5 instability</td>
+</tr>
+<tr>
+<td>Great Depression onset</td>
+<td>USA</td>
+<td>1930</td>
+<td>Moderate → Low</td>
+<td>Maddison GDP decline + unemployment</td>
+</tr>
+<tr>
+<td>UK leaves gold standard</td>
+<td>GBR</td>
+<td>1931</td>
+<td>Moderate</td>
+<td>Polity5 stable democracy + economic stress</td>
+</tr>
+<tr>
+<td>Argentina military coups</td>
+<td>ARG</td>
+<td>1976</td>
+<td>Low</td>
+<td>Polity5 −9 + R-R crises</td>
+</tr>
+<tr>
+<td>Japan post-bubble</td>
+<td>JPN</td>
+<td>1992</td>
+<td>Moderate-High</td>
+<td>Stable Polity + declining GDP growth</td>
+</tr>
+<tr>
+<td>Russian default</td>
+<td>RUS</td>
+<td>1998</td>
+<td>Low</td>
+<td>Polity5 transition + R-R multiple crises</td>
+</tr>
+</tbody>
+</table>
+<h3 id="known-limitations">7.3 Known Limitations</h3>
+<ol type="1">
+<li><p><strong>Environmental pillar is thin before 1900.</strong> EM-DAT
+starts 1900; HadCRUT5 starts 1850. Between 1850–1899, only the climate
+trend component is available. Before 1850, the environmental pillar is
+excluded entirely, and the GRRI is computed from three pillars.</p></li>
+<li><p><strong>Social pillar misses health and education before
+1990.</strong> The Crafts-style HDI proxy uses income and suffrage but
+lacks life expectancy and literacy data. This is the single largest
+source of measurement error.</p></li>
+<li><p><strong>Expert-coded historical data.</strong> Both Polity5 and
+V-Dem rely on expert retrospective coding for their earliest
+observations. Inter-coder reliability statistics are available from
+V-Dem; Polity5 does not publish reliability metrics for pre-1900
+periods.</p></li>
+<li><p><strong>Pre-1870 data is very sparse.</strong> Before 1870, only
+Polity5, V-Dem, COW, and Maddison (for a handful of countries) provide
+data. The GRRI for this period should be treated as indicative rather
+than precise.</p></li>
+<li><p><strong>Country boundary changes.</strong> Historical datasets
+use contemporaneous country definitions, which do not always map cleanly
+to modern ISO-3 codes. Germany before 1871, Austria-Hungary before 1918,
+and the Soviet Union require careful country-matching logic.</p></li>
+</ol>
+<hr />
+<h2 id="comparison-with-mac-historical-extension">8. Comparison with MAC
+Historical Extension</h2>
+<p>The GRRI historical extension parallels the MAC framework’s
+historical proxy chains but addresses a fundamentally different
+measurement domain:</p>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 34%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>MAC Proxies</th>
+<th>GRRI Proxies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Domain</strong></td>
+<td>Financial-market microstructure (spreads, vol, leverage)</td>
+<td>Country-level structural resilience</td>
+</tr>
+<tr>
+<td><strong>Temporal granularity</strong></td>
+<td>Weekly/monthly (interpolated from monthly NBER data)</td>
+<td>Annual (matching source granularity)</td>
+</tr>
+<tr>
+<td><strong>Primary era challenge</strong></td>
+<td>Pre-Fed (before 1913): no central bank, no modern credit
+markets</td>
+<td>Pre-WGI (before 1996): no governance surveys</td>
+</tr>
+<tr>
+<td><strong>Most transformative source</strong></td>
+<td>Schwert (1989) volatility, 1802–1987</td>
+<td>Polity5 + V-Dem, 1789–present</td>
+</tr>
+<tr>
+<td><strong>Weakest era</strong></td>
+<td>1802–1857 (only Schwert vol + gold prices)</td>
+<td>Pre-1870 (only political + sparse economics)</td>
+</tr>
+<tr>
+<td><strong>Design pattern</strong></td>
+<td><code>HistoricalDataProvider</code> with <code>_lookup()</code>
+helper</td>
+<td><code>GRRIHistoricalProvider</code> with
+<code>_lookup_annual()</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both extensions use the same <code>ProxyConfig</code> /
+<code>GRRIProxyConfig</code> data structure pattern and the same
+cache-aware lazy-loading architecture.</p>
+<hr />
+<h2 id="adaptive-pillar-weighting-for-grri">9. Adaptive Pillar Weighting
+for GRRI</h2>
+<h3 id="motivation-beyond-equal-weights">9.1 Motivation: Beyond Equal
+Weights</h3>
+<p>The baseline GRRI uses equal weights across its four pillars (<span
+class="math inline">\(w_j = 0.25\)</span>). This is a robust default —
+interpretable, unbiased, and requiring no training data. However, MAC’s
+experience demonstrates that ML-optimised weights can substantially
+improve crisis prediction. MAC’s gradient boosting weight optimisation
+on 14 crisis scenarios (Section 6.2 of the MAC Methodology Document)
+identified positioning (22%) as the dominant pillar and policy (9%) as
+the weakest, with LOOCV <span class="math inline">\(R^2\)</span>
+confirming the improvement over equal weighting.</p>
+<p>The question is whether the same class of techniques can be applied
+to GRRI’s four pillars — Political, Economic, Social, Environmental —
+given the structural differences between the two frameworks.</p>
+<p>The following diagram provides an overview of the three
+methodological enhancements (Sections 9–11) and their
+interconnection:</p>
+<pre class="mermaid"><code>flowchart TD
+    subgraph Data[&quot;Historical Pillar Scores&quot;]
+        HS[&quot;4 GRRI Pillars&lt;br/&gt;1870–2025&quot;]
+        CRISIS[&quot;Crisis Labels&lt;br/&gt;(Reinhart-Rogoff)&quot;]
+    end
+
+    subgraph Weighting[&quot;Adaptive Pillar Weighting (§9)&quot;]
+        AUG[&quot;Augmentation&lt;br/&gt;bootstrap + noise&quot;]
+        GBM[&quot;Gradient Boosting&lt;br/&gt;(GBM or XGBoost)&quot;]
+        FEAT[&quot;4 base features&lt;br/&gt;+ 3 interactions&quot;]
+        LOO[&quot;Leave-One-Out&lt;br/&gt;Cross-Validation&quot;]
+        WT[&quot;Optimised Weights&lt;br/&gt;wₚ, wₑ, wₛ, wₙ&quot;]
+    end
+
+    subgraph MonteCarlo[&quot;Monte Carlo Simulation (§10)&quot;]
+        DIST[&quot;Per-pillar&lt;br/&gt;distributions&lt;br/&gt;(skew-t / GPD)&quot;]
+        COP[&quot;Copula&lt;br/&gt;(Gaussian/t)&quot;]
+        SIM[&quot;10,000 joint&lt;br/&gt;pillar draws&quot;]
+        GRRI_MC[&quot;GRRI(ω)&lt;br/&gt;distribution&quot;]
+        CI[&quot;95% CI and&lt;br/&gt;tail risk VaR&quot;]
+    end
+
+    subgraph Independence[&quot;Independence Analysis (§11)&quot;]
+        MI_G[&quot;MI / NMI&lt;br/&gt;pairwise&quot;]
+        HSIC_G[&quot;HSIC&lt;br/&gt;kernel test&quot;]
+        MIC_G[&quot;MIC&lt;br/&gt;grid search&quot;]
+        TC_G[&quot;Total Correlation&lt;br/&gt;system redundancy&quot;]
+        DEC_G[&quot;Decorrelation&lt;br/&gt;if NMI &gt; 0.35&quot;]
+    end
+
+    HS --&gt; AUG
+    CRISIS --&gt; AUG
+    AUG --&gt; GBM
+    GBM --&gt; FEAT
+    FEAT --&gt; LOO
+    LOO --&gt; WT
+
+    HS --&gt; DIST
+    DIST --&gt; COP
+    COP --&gt; SIM
+    SIM --&gt; GRRI_MC
+    GRRI_MC --&gt; CI
+
+    HS --&gt; MI_G
+    HS --&gt; HSIC_G
+    HS --&gt; MIC_G
+    MI_G --&gt; TC_G
+    HSIC_G --&gt; TC_G
+    MIC_G --&gt; TC_G
+    TC_G --&gt; DEC_G
+
+    DEC_G -.-&gt;|&quot;orthogonalised&lt;br/&gt;pillars&quot;| GBM
+    DEC_G -.-&gt;|&quot;updated copula&lt;br/&gt;parameters&quot;| COP</code></pre>
+<p><em>Figure 2. Overview of the three methodological enhancements.
+Dependence analysis (§11) feeds back into both adaptive weighting (§9)
+and Monte Carlo (§10) by providing orthogonalised pillar scores and
+empirically-calibrated copula parameters.</em></p>
+<h3 id="mac-weighting-methodology-transplantable-components">9.2 MAC
+Weighting Methodology (Transplantable Components)</h3>
+<p>MAC’s weight optimisation pipeline
+(<code>grri_mac.mac.ml_weights</code>,
+<code>grri_mac.mac.ml_weights_xgb</code>) consists of three
+components:</p>
+<p><strong>1. Feature Interaction Encoding.</strong> Beyond the base
+pillar scores, pairwise interaction features (products of pillar pairs)
+are included as additional regressors. For MAC’s 7 pillars, this adds 6
+theory-driven interaction pairs — e.g.,
+<code>positioning × volatility</code> captures forced unwinding
+dynamics, <code>policy × contagion</code> captures constrained
+intervention during global crises.</p>
+<p>For GRRI’s 4 pillars, the interaction space is smaller: <span
+class="math inline">\(\binom{4}{2} = 6\)</span> pairs, exhaustively:</p>
+<table>
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 64%" />
+</colgroup>
+<thead>
+<tr>
+<th>Interaction</th>
+<th>Hypothesised Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Political × Economic</td>
+<td>Regime instability amplifies financial fragility (e.g., sovereign
+default during revolution)</td>
+</tr>
+<tr>
+<td>Political × Social</td>
+<td>Governance failure compounds social stress (e.g., authoritarian
+response to inequality)</td>
+</tr>
+<tr>
+<td>Political × Environmental</td>
+<td>Weak governance impairs disaster response capacity</td>
+</tr>
+<tr>
+<td>Economic × Social</td>
+<td>Poverty amplifies social fragility; inequality destabilises
+growth</td>
+</tr>
+<tr>
+<td>Economic × Environmental</td>
+<td>Environmental shocks compound economic weakness (e.g., agricultural
+failures)</td>
+</tr>
+<tr>
+<td>Social × Environmental</td>
+<td>Marginalised populations bear disproportionate environmental
+risk</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2. Gradient Boosting Regressor.</strong> A shallow gradient
+boosting regressor (<code>max_depth=2</code>,
+<code>n_estimators=50</code>, <code>learning_rate=0.1</code>) is fit to
+predict a target variable (crisis severity or resilience outcome) from
+the feature matrix. Feature importances are extracted and normalised to
+produce pillar weights.</p>
+<p><strong>3. XGBoost with Bayesian Hyperparameter Search.</strong> The
+<code>XGBWeightOptimizer</code> extends this with Optuna-based
+hyperparameter search across learning rate, tree depth, regularisation,
+and subsampling parameters, using 5-fold time-series
+cross-validation.</p>
+<p><strong>4. Leave-One-Out Cross-Validation (LOOCV).</strong> Given a
+small training set (MAC uses 14–35 crisis scenarios), LOOCV provides an
+honest out-of-sample performance estimate. Each scenario is held out
+once, and the model is retrained on the remaining <span
+class="math inline">\(N-1\)</span> observations.</p>
+<h3 id="adaptation-to-grri">9.3 Adaptation to GRRI</h3>
+<p>Applying these techniques to GRRI requires:</p>
+<p><strong>Training targets.</strong> While MAC targets crisis severity
+(a continuous 0–1 score derived from the Crisis Severity Rubric), GRRI
+targets must reflect how well a country’s resilience profile predicted
+actual crisis outcomes. Candidate targets include:</p>
+<ul>
+<li><strong>GDP drawdown depth</strong> during identified crises
+(Maddison/Reinhart-Rogoff)</li>
+<li><strong>Regime change within <span class="math inline">\(k\)</span>
+years</strong> (Polity5 transitions)</li>
+<li><strong>Conflict onset probability</strong> (COW/UCDP)</li>
+<li><strong>Composite crisis incidence</strong> from Reinhart-Rogoff
+(banking + currency + debt crises)</li>
+</ul>
+<p><strong>Training set construction.</strong> The historical extension
+provides 155 years of annual data (1870–2025). Known crisis events can
+be identified from Reinhart-Rogoff (which flags banking crises, currency
+crises, debt crises, and inflation crises by country-year). For 5 major
+countries with full coverage, this yields approximately 30–50 crisis
+observations — substantially more than MAC’s 14-scenario training
+set.</p>
+<p><strong>Proposed GRRI weight optimisation pipeline:</strong></p>
+<p><span class="math display">\[\hat{w} = \arg\min_{w} \sum_{i=1}^{N}
+\mathcal{L}\!\left(\text{GRRI}_{w}(i),\;
+\text{CrisisTarget}(i)\right)\]</span></p>
+<p>where <span class="math inline">\(\text{GRRI}_{w}(i) = \sum_{j=1}^{4}
+w_j \cdot P_j(i) + \sum_{(j,k)} w_{jk} \cdot P_j(i) \cdot
+P_k(i)\)</span> and <span class="math inline">\(\mathcal{L}\)</span> is
+the mean squared error loss under LOOCV.</p>
+<h3 id="bootstrap-confidence-intervals-for-grri">9.4 Bootstrap
+Confidence Intervals for GRRI</h3>
+<p>MAC’s <code>bootstrap_mac_ci()</code> function
+(<code>grri_mac.mac.confidence</code>) simultaneously perturbs three
+uncertainty sources:</p>
+<ol type="1">
+<li><strong>Indicator measurement error</strong> — proxy-tier-dependent
+Gaussian noise (<span class="math inline">\(\sigma = 0.01\)</span> for
+native data to <span class="math inline">\(\sigma = 0.15\)</span> for
+expert estimates)</li>
+<li><strong>Weight instability</strong> — Gaussian perturbation of ML
+weights (<span class="math inline">\(\sigma = 0.03\)</span>)</li>
+<li><strong>Calibration factor uncertainty</strong> — perturbed <span
+class="math inline">\(\alpha\)</span> from LOOCV residual variance</li>
+</ol>
+<p>For GRRI, the dominant uncertainty source is <strong>proxy
+measurement error</strong>, which is substantially larger than for MAC.
+Recommended noise tiers for GRRI:</p>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 48%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Data Quality</th>
+<th><span class="math inline">\(\sigma\)</span> (noise std)</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Direct measurement</td>
+<td>0.02</td>
+<td>Polity5 score (1800+), Maddison GDP (1820+)</td>
+</tr>
+<tr>
+<td>Derived composite</td>
+<td>0.05</td>
+<td>Economic diversity proxy, Social Development Index</td>
+</tr>
+<tr>
+<td>Historical estimate</td>
+<td>0.10</td>
+<td>Pre-1900 temperature anomalies, unemployment estimates</td>
+</tr>
+<tr>
+<td>Expert heuristic</td>
+<td>0.15</td>
+<td>Pre-gold-standard CB independence, pre-EM-DAT disasters</td>
+</tr>
+</tbody>
+</table>
+<p>The bootstrap for a single GRRI score would generate <span
+class="math inline">\(B = 1000\)</span> replicates:</p>
+<p><span class="math display">\[\text{GRRI}^{(b)} = \sum_{j=1}^{4}
+\widetilde{w}_j^{(b)} \cdot \text{clip}\!\left(P_j + \epsilon_j^{(b)},
+0, 1\right), \quad \epsilon_j^{(b)} \sim \mathcal{N}(0,
+\sigma_j^2)\]</span></p>
+<p>yielding 80%, 90%, and 95% confidence bands. We expect wider bands
+for pre-1900 observations (<span class="math inline">\(\text{CI}_{90}
+\approx \pm 0.12\)</span>) than for post-1970 ones (<span
+class="math inline">\(\text{CI}_{90} \approx \pm 0.04\)</span>),
+reflecting the proxy chain’s progressive degradation.</p>
+<h3 id="when-ml-weighting-adds-value-for-grri">9.5 When ML Weighting
+Adds Value for GRRI</h3>
+<p>MAC’s experience provides a calibrated expectation. ML weights
+improved MAC’s RMSE by ~10% over equal weights, but only in the modern
+era (2006+) with all 7 pillars active. In the pre-1971 historical
+period, equal weights were retained because:</p>
+<ul>
+<li>Fewer active pillars reduce the degrees of freedom for
+optimisation</li>
+<li>Proxy noise swamps the signal that ML could extract</li>
+<li>Era-specific structural changes (gold standard, Bretton Woods) mean
+that weights optimised on one era may not transfer</li>
+</ul>
+<p><strong>Recommendation for GRRI:</strong> Begin with equal weights as
+the production default. Use ML-optimised weights only when: 1. At least
+3 of 4 pillars have non-heuristic data (post-1900 for most countries) 2.
+The LOOCV <span class="math inline">\(R^2\)</span> exceeds 0.30
+(demonstrating that the optimiser captures signal, not noise) 3. The
+weight deviation from equal is large enough to matter (average <span
+class="math inline">\(|w_j - 0.25| &gt; 0.05\)</span>)</p>
+<hr />
+<h2 id="historically-informed-monte-carlo-simulation">10.
+Historically-Informed Monte Carlo Simulation</h2>
+<h3 id="motivation-1">10.1 Motivation</h3>
+<p>MAC’s Monte Carlo module
+(<code>grri_mac.predictive.monte_carlo</code>) simulates shock
+propagation under different regime states, demonstrating that the same
+exogenous shock produces qualitatively different outcomes depending on
+current absorption capacity. A 2<span
+class="math inline">\(\sigma\)</span> liquidity shock under Ample
+conditions produces ~30% direct impact with minimal spillover; under
+Breach conditions, the same shock produces ~90% direct impact with 70%
+spillover, amplified 4×.</p>
+<p>The GRRI historical extension creates a unique opportunity: with 155
+years of annual pillar-level data across multiple countries, we can
+<strong>calibrate Monte Carlo simulations using historically observed
+distributions</strong> rather than assumed parameters.</p>
+<h3 id="historical-distribution-calibration">10.2 Historical
+Distribution Calibration</h3>
+<p>The standard Monte Carlo approach uses assumed distributions for
+shock parameters. The historically-informed approach replaces these with
+empirical distributions derived from the GRRI time series.</p>
+<p><strong>Step 1: Extract pillar-level change
+distributions.</strong></p>
+<p>For each pillar <span class="math inline">\(j\)</span> and country
+<span class="math inline">\(c\)</span>, compute the first
+differences:</p>
+<p><span class="math display">\[\Delta P_{j,c}(t) = P_{j,c}(t) -
+P_{j,c}(t-1)\]</span></p>
+<p>over the full 1870–2025 period. This yields ~155 observations per
+pillar per country, or ~775 pooled observations across 5 core countries
+(US, UK, France, Germany, Japan).</p>
+<p><strong>Step 2: Fit parametric distributions.</strong></p>
+<p>Annual GRRI pillar changes are expected to be: -
+<strong>Politically</strong>: Heavy-tailed (rare regime changes produce
+extreme jumps). Fit a <span
+class="math inline">\(t\)</span>-distribution or stable distribution. -
+<strong>Economically</strong>: Moderately fat-tailed. Fit a
+normal-inverse Gaussian or skew-<span class="math inline">\(t\)</span>.
+- <strong>Socially</strong>: Approximately normal (slow-moving indices).
+Fit normal with variance <span class="math inline">\(\sigma^2\)</span>.
+- <strong>Environmentally</strong>: Right-skewed (disaster years). Fit a
+mixture model: normal baseline + rare Poisson-intensity shocks.</p>
+<p><strong>Step 3: Estimate cross-pillar dependency
+structure.</strong></p>
+<p>Rather than assuming independence or fixed correlations, compute the
+empirical copula from the multivariate <span
+class="math inline">\((\Delta P_1, \Delta P_2, \Delta P_3, \Delta
+P_4)\)</span> vector. A Gaussian copula provides a reasonable starting
+point; a <span class="math inline">\(t\)</span>-copula captures tail
+dependence more accurately.</p>
+<h3 id="regime-conditional-simulation">10.3 Regime-Conditional
+Simulation</h3>
+<p>Following MAC’s regime taxonomy, define GRRI regimes:</p>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 22%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr>
+<th>GRRI Level</th>
+<th>Regime</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="math inline">\(\geq 0.70\)</span></td>
+<td><strong>Resilient</strong></td>
+<td>Strong institutional buffers; shocks absorbed</td>
+</tr>
+<tr>
+<td>0.50–0.70</td>
+<td><strong>Moderate</strong></td>
+<td>Partial buffers; some shock amplification</td>
+</tr>
+<tr>
+<td>0.30–0.50</td>
+<td><strong>Fragile</strong></td>
+<td>Weakened institutions; significant amplification</td>
+</tr>
+<tr>
+<td><span class="math inline">\(&lt; 0.30\)</span></td>
+<td><strong>Brittle</strong></td>
+<td>Institutional collapse risk; non-linear regime</td>
+</tr>
+</tbody>
+</table>
+<p>The Monte Carlo simulation then proceeds:</p>
+<ol type="1">
+<li>Sample initial GRRI state vector <span
+class="math inline">\(\mathbf{P}_0 = (P_1^0, P_2^0, P_3^0,
+P_4^0)\)</span></li>
+<li>Determine regime from composite GRRI score</li>
+<li>Apply regime-dependent transmission coefficients (analogous to MAC’s
+<code>TRANSMISSION_COEFFICIENTS</code>):</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Regime</th>
+<th>Direct Impact</th>
+<th>Cross-Pillar Spillover</th>
+<th>Amplification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Resilient</td>
+<td>0.25</td>
+<td>0.10</td>
+<td>1.0×</td>
+</tr>
+<tr>
+<td>Moderate</td>
+<td>0.45</td>
+<td>0.25</td>
+<td>1.5×</td>
+</tr>
+<tr>
+<td>Fragile</td>
+<td>0.70</td>
+<td>0.50</td>
+<td>2.5×</td>
+</tr>
+<tr>
+<td>Brittle</td>
+<td>0.90</td>
+<td>0.75</td>
+<td>4.0×</td>
+</tr>
+</tbody>
+</table>
+<ol start="4" type="1">
+<li>Draw shock vector <span
+class="math inline">\(\boldsymbol{\Delta}\)</span> from the
+historically-calibrated copula</li>
+<li>Apply MAC’s non-linear threshold effects: when any pillar breaches
+its critical level, transmission accelerates</li>
+<li>Compute <span class="math inline">\(\mathbf{P}_1 =
+\text{clip}(\mathbf{P}_0 + \boldsymbol{\Delta}, 0, 1)\)</span></li>
+<li>Repeat for <span class="math inline">\(T\)</span> periods to
+generate paths; aggregate over <span class="math inline">\(B\)</span>
+bootstrap iterations</li>
+</ol>
+<h3 id="cross-pillar-shock-propagation-matrix">10.4 Cross-Pillar Shock
+Propagation Matrix</h3>
+<p>MAC’s <code>INTERACTION_MATRIX</code>
+(<code>grri_mac.predictive.shock_propagation</code>) defines how stress
+in one pillar cascades to others. For GRRI, the propagation matrix
+encodes historically-observed transmission channels:</p>
+<p><span class="math display">\[\mathbf{A}_{\text{GRRI}} =
+\begin{pmatrix}
+0.00 &amp; 0.35 &amp; 0.40 &amp; 0.10 \\
+0.30 &amp; 0.00 &amp; 0.25 &amp; 0.20 \\
+0.25 &amp; 0.30 &amp; 0.00 &amp; 0.15 \\
+0.10 &amp; 0.25 &amp; 0.20 &amp; 0.00
+\end{pmatrix}\]</span></p>
+<p>where rows are shock source pillars (Political, Economic, Social,
+Environmental) and columns are receiving pillars. Key transmission
+channels:</p>
+<ul>
+<li><strong>Political → Social (0.40):</strong> Regime instability
+erodes civil liberties, education, health spending</li>
+<li><strong>Political → Economic (0.35):</strong> Regime change disrupts
+trade, investment, monetary policy</li>
+<li><strong>Economic → Political (0.30):</strong> Economic crisis
+precipitates government collapse (Weimar, Argentina)</li>
+<li><strong>Economic → Social (0.30):</strong> Recession increases
+unemployment, inequality, mortality</li>
+<li><strong>Social → Political (0.25):</strong> Inequality and unrest
+trigger regime transitions</li>
+<li><strong>Environmental → Economic (0.25):</strong> Natural disasters
+destroy capital stock, disrupt agriculture</li>
+</ul>
+<p>These coefficients can be calibrated empirically from the historical
+time series using vector autoregression (VAR) on the annual pillar
+scores.</p>
+<h3 id="validation-against-known-historical-episodes">10.5 Validation
+Against Known Historical Episodes</h3>
+<p>The Monte Carlo framework can be validated by comparing simulated
+distributions against observed pillar trajectories during known crisis
+episodes:</p>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 32%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Episode</th>
+<th>Year(s)</th>
+<th>Expected Dynamics</th>
+<th>Validation Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>World War I</td>
+<td>1914–1918</td>
+<td>Political → Economic → Social cascade</td>
+<td>Simulated cascade captures GDP decline and regime transitions</td>
+</tr>
+<tr>
+<td>Great Depression</td>
+<td>1929–1933</td>
+<td>Economic → Political → Social cascade</td>
+<td>Simulated economic shock propagates to political instability
+(Weimar)</td>
+</tr>
+<tr>
+<td>World War II</td>
+<td>1939–1945</td>
+<td>Multi-pillar simultaneous shock</td>
+<td>Simulated extreme draws match observed ΔP magnitudes</td>
+</tr>
+<tr>
+<td>Decolonisation era</td>
+<td>1945–1970</td>
+<td>Political regime changes → social transformation</td>
+<td>Simulated political shocks produce social pillar improvements (in
+some cases)</td>
+</tr>
+<tr>
+<td>Oil crises</td>
+<td>1973–1979</td>
+<td>Environmental/Economic → Political</td>
+<td>Simulated energy shock cascades match observed patterns</td>
+</tr>
+<tr>
+<td>Fall of USSR</td>
+<td>1989–1991</td>
+<td>Political → Economic → Social cascade</td>
+<td>Simulated regime collapse produces economic and social
+deterioration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-note">10.6 Implementation Note</h3>
+<p>The proposed Monte Carlo module would extend
+<code>grri_mac.predictive.monte_carlo.MonteCarloSimulator</code> with: -
+A <code>GRRIMonteCarloSimulator</code> subclass that uses 4 pillars
+instead of 6 - Historical distribution loaders from
+<code>GRRIHistoricalProvider.get_historical_grri_timeseries()</code> -
+Copula estimation using rank-transformed empirical data -
+Regime-conditional transmission using the GRRI interaction matrix</p>
+<p>The implementation is straightforward given the existing MAC
+infrastructure; the primary value-add is the historical calibration
+rather than assumed parameters.</p>
+<hr />
+<h2 id="independence-structure-and-dependence-analysis">11. Independence
+Structure and Dependence Analysis</h2>
+<h3 id="the-independence-assumption">11.1 The Independence
+Assumption</h3>
+<p>Equal pillar weighting implicitly assumes that the four GRRI pillars
+capture <strong>orthogonal</strong> dimensions of resilience. If two
+pillars are strongly correlated, equal weighting effectively
+double-counts the shared signal, biasing the composite. MAC addresses
+this for its private credit pillar via explicit decorrelation (rolling
+OLS against equity/credit factors,
+<code>grri_mac.pillars.private_credit_decorrelation</code>), extracting
+the orthogonal residual before scoring.</p>
+<p>For GRRI, the question is more structural: the same underlying
+datasets contribute to multiple pillars. Specifically:</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 24%" />
+<col style="width: 29%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Primary Pillar</th>
+<th>Secondary Pillar</th>
+<th>Shared Information</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maddison GDP/capita</td>
+<td>Economic (growth)</td>
+<td>Social (HDI proxy)</td>
+<td>Income level drives both economic and social scores</td>
+</tr>
+<tr>
+<td>V-Dem</td>
+<td>Political (governance, democracy)</td>
+<td>Social (civil liberties, suffrage)</td>
+<td>V-Dem’s liberal component index spans both political rights and
+social participation</td>
+</tr>
+<tr>
+<td>Polity5</td>
+<td>Political (regime type)</td>
+<td>Social (constraints)</td>
+<td>Executive constraints affect both governance quality and social
+freedom</td>
+</tr>
+<tr>
+<td>HadCRUT5</td>
+<td>Environmental (climate)</td>
+<td>Economic (agriculture)</td>
+<td>Temperature anomalies affect both environmental exposure and
+economic output</td>
+</tr>
+</tbody>
+</table>
+<p>This creates <strong>embedded correlations</strong> that must be
+quantified before weights can be interpreted.</p>
+<h3 id="dependence-metrics">11.2 Dependence Metrics</h3>
+<p>We propose three complementary metrics, each capturing a different
+aspect of statistical dependence. The following diagram summarises what
+each metric captures and its blind spots:</p>
+<pre class="mermaid"><code>flowchart TD
+    subgraph Metrics[&quot;Three Complementary Metrics&quot;]
+        direction TB
+        MI[&quot;&lt;b&gt;Mutual Information&lt;/b&gt;&lt;br/&gt;I(X;Y) = H(X)+H(Y)−H(X,Y)&lt;br/&gt;• Model-free, entropy-based&lt;br/&gt;• Captures ALL dependence&lt;br/&gt;• = 0 ⟺ independence&quot;]
+        HSIC[&quot;&lt;b&gt;HSIC&lt;/b&gt;&lt;br/&gt;tr(K_X H K_Y H) / (n−1)²&lt;br/&gt;• Kernel-based (RKHS)&lt;br/&gt;• Powerful for complex shapes&lt;br/&gt;• Permutation p-value&quot;]
+        MIC[&quot;&lt;b&gt;MIC&lt;/b&gt;&lt;br/&gt;max I(X;Y)/log₂ min(n_x,n_y)&lt;br/&gt;• Equitable explorer&lt;br/&gt;• Same score = same noise&lt;br/&gt;• Detects any functional form&quot;]
+    end
+
+    subgraph Captures[&quot;What Each Captures&quot;]
+        direction TB
+        C1[&quot;MI: Total shared&lt;br/&gt;information (bits)&quot;]
+        C2[&quot;HSIC: Distribution-level&lt;br/&gt;embedding similarity&quot;]
+        C3[&quot;MIC: Functional vs&lt;br/&gt;random relationship&quot;]
+    end
+
+    subgraph Blind[&quot;Blind Spots&quot;]
+        direction TB
+        B1[&quot;MI: Bin-sensitive&lt;br/&gt;with small N&quot;]
+        B2[&quot;HSIC: Bandwidth&lt;br/&gt;choice matters&quot;]
+        B3[&quot;MIC: Computational&lt;br/&gt;cost O(n^2α)&quot;]
+    end
+
+    MI --&gt; C1
+    HSIC --&gt; C2
+    MIC --&gt; C3
+
+    MI --&gt; B1
+    HSIC --&gt; B2
+    MIC --&gt; B3
+
+    C1 --&gt; AGREE{&quot;All three&lt;br/&gt;agree?&quot;}
+    C2 --&gt; AGREE
+    C3 --&gt; AGREE
+
+    AGREE --&gt;|&quot;Yes: high&quot;| DEP[&quot;Strong dependence&lt;br/&gt;→ decorrelate&quot;]
+    AGREE --&gt;|&quot;Yes: low&quot;| IND[&quot;Independent&lt;br/&gt;→ orthogonal ✓&quot;]
+    AGREE --&gt;|&quot;No&quot;| INV[&quot;Investigate:&lt;br/&gt;non-linear structure&quot;]</code></pre>
+<p><em>Figure 3. Decision framework for interpreting dependence metric
+agreement. When all three metrics agree, the conclusion is unambiguous;
+disagreement signals non-standard dependence structures requiring
+further investigation.</em></p>
+<h4 id="mutual-information-mi">11.2.1 Mutual Information (MI)</h4>
+<p>Mutual information quantifies the total (linear + non-linear)
+dependence between two random variables:</p>
+<p><span class="math display">\[I(X; Y) = \sum_{x \in \mathcal{X}}
+\sum_{y \in \mathcal{Y}} p(x, y) \log\!\frac{p(x, y)}{p(x)\,
+p(y)}\]</span></p>
+<p>For continuous pillar scores, we discretise into <span
+class="math inline">\(k\)</span> equiprobable bins (recommended <span
+class="math inline">\(k = \lceil N^{1/3} \rceil\)</span> for <span
+class="math inline">\(N\)</span> observations, i.e., <span
+class="math inline">\(k \approx 5\)</span> for 155 years) and compute
+the empirical MI. Alternatively, use a <span
+class="math inline">\(k\)</span>-NN estimator (Kraskov et al., 2004)
+which avoids binning artefacts.</p>
+<p><strong>Interpretation:</strong> <span class="math inline">\(I(X; Y)
+= 0\)</span> implies independence; <span class="math inline">\(I(X; Y) =
+H(X)\)</span> implies <span class="math inline">\(X\)</span> is fully
+determined by <span class="math inline">\(Y\)</span>. Normalised MI
+<span class="math inline">\(\text{NMI} = 2I(X;Y) / (H(X) +
+H(Y))\)</span> ranges from 0 to 1.</p>
+<p><strong>Expected findings for GRRI:</strong></p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 43%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Pair</th>
+<th>Expected NMI</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Political–Economic</td>
+<td>0.15–0.30</td>
+<td>Moderate: regime stability correlates with growth, but not
+deterministically</td>
+</tr>
+<tr>
+<td>Political–Social</td>
+<td>0.25–0.40</td>
+<td>High: V-Dem and Polity5 span both pillars; liberal democracy ↔︎ civil
+liberties</td>
+</tr>
+<tr>
+<td>Political–Environmental</td>
+<td>0.05–0.10</td>
+<td>Low: governance and climate are largely independent</td>
+</tr>
+<tr>
+<td>Economic–Social</td>
+<td>0.20–0.35</td>
+<td>Moderate-high: GDP/capita drives HDI proxy; Maddison is shared</td>
+</tr>
+<tr>
+<td>Economic–Environmental</td>
+<td>0.08–0.15</td>
+<td>Low-moderate: HadCRUT affects agriculture → GDP only indirectly</td>
+</tr>
+<tr>
+<td>Social–Environmental</td>
+<td>0.05–0.12</td>
+<td>Low: EM-DAT deaths correlate weakly with social development</td>
+</tr>
+</tbody>
+</table>
+<h4 id="hsic-hilbertschmidt-independence-criterion">11.2.2 HSIC
+(Hilbert–Schmidt Independence Criterion)</h4>
+<p>HSIC is a kernel-based measure of statistical dependence that
+operates in a reproducing kernel Hilbert space (RKHS). Unlike MI, it
+does not require discretisation and naturally captures non-linear
+dependencies.</p>
+<p><span class="math display">\[\text{HSIC}(X, Y) = \frac{1}{(n-1)^2}
+\text{tr}(\mathbf{K}_X \mathbf{H} \mathbf{K}_Y \mathbf{H})\]</span></p>
+<p>where <span class="math inline">\(\mathbf{K}_X\)</span> and <span
+class="math inline">\(\mathbf{K}_Y\)</span> are RBF kernel matrices
+computed on the pillar score vectors, <span
+class="math inline">\(\mathbf{H} = \mathbf{I} -
+\frac{1}{n}\mathbf{1}\mathbf{1}^\top\)</span> is the centering matrix,
+and <span class="math inline">\(n\)</span> is the number of
+observations.</p>
+<p><strong>Implementation:</strong> For RBF kernels <span
+class="math inline">\(k(x, x&#39;) = \exp(-\|x - x&#39;\|^2 /
+2\sigma^2)\)</span>, the bandwidth <span
+class="math inline">\(\sigma\)</span> is set using the median heuristic:
+<span class="math inline">\(\sigma = \text{median}(\|x_i -
+x_j\|)\)</span>.</p>
+<p><strong>Permutation test:</strong> To assess significance, permute
+one pillar’s scores <span class="math inline">\(M = 1000\)</span> times
+and recompute HSIC. If the observed HSIC exceeds the 95th percentile of
+the null distribution, the pillars are significantly dependent.</p>
+<p><strong>Advantages over MI:</strong> - No binning required -
+Consistent test of independence (converges with sample size) - Captures
+all orders of dependence (not just pairwise)</p>
+<h4 id="mic-maximal-information-coefficient">11.2.3 MIC (Maximal
+Information Coefficient)</h4>
+<p>MIC (Reshef et al., 2011) is an equitability-based measure that
+captures a wide range of functional and non-functional associations with
+equal power.</p>
+<p><span class="math display">\[\text{MIC}(X, Y) = \max_{|G| &lt; B(n)}
+\frac{I^*(X, Y; G)}{\log \min(|G_X|, |G_Y|)}\]</span></p>
+<p>where <span class="math inline">\(I^*(X, Y; G)\)</span> is the
+maximum MI achieved over all bivariate grids <span
+class="math inline">\(G\)</span> of bounded cardinality <span
+class="math inline">\(B(n) = n^{0.6}\)</span>, and <span
+class="math inline">\(|G_X|\)</span>, <span
+class="math inline">\(|G_Y|\)</span> are the grid dimensions.</p>
+<p><strong>Interpretation:</strong> MIC ∈ [0, 1]. MIC ≈ 0 implies
+independence; MIC ≈ 1 implies a deterministic (possibly non-linear)
+relationship. The <strong>equitability</strong> property means that MIC
+assigns similar scores to relationships of similar noise level,
+regardless of the functional form.</p>
+<p><strong>Python implementation:</strong> Available via the
+<code>minepy</code> package (Albanese et al., 2013), which provides
+<code>MINE</code> statistics including MIC, MAS (Maximum Asymmetry
+Score), and MEV (Maximum Edge Value).</p>
+<h3 id="cross-pillar-dependence-analysis-protocol">11.3 Cross-Pillar
+Dependence Analysis Protocol</h3>
+<p>We propose the following analysis pipeline:</p>
+<p><strong>Step 1: Compute pairwise metrics.</strong> For each of the 6
+pillar pairs and each of the 3 metrics (MI, HSIC, MIC), compute the
+dependence statistic on the full 1870–2025 time series, separately for:
+- Pooled (all countries) - Per-country (US, UK, France, Germany,
+Japan)</p>
+<p><strong>Step 2: Temporal stability analysis.</strong> Compute rolling
+dependence metrics over 30-year windows to assess whether the
+correlation structure is stationary:</p>
+<p><span class="math display">\[\text{NMI}_{30}(t) =
+\text{NMI}\!\left(P_j[t-30:t],\; P_k[t-30:t]\right)\]</span></p>
+<p>This reveals whether, e.g., the Political–Social correlation
+strengthened after the UN Declaration of Human Rights (1948) or the end
+of the Cold War (1991).</p>
+<p><strong>Step 3: Significance testing.</strong> For each pair, conduct
+a permutation test (1000 bootstraps) and report <span
+class="math inline">\(p\)</span>-values.</p>
+<p><strong>Step 4: Conditional independence.</strong> Test whether <span
+class="math inline">\(P_j \perp P_k \mid P_l\)</span> — i.e., whether
+the dependence between two pillars vanishes after conditioning on a
+third. This distinguishes direct dependence from confounded
+dependence.</p>
+<h3 id="known-embedded-correlations-and-mitigation">11.4 Known Embedded
+Correlations and Mitigation</h3>
+<p>Based on the data source analysis in Section 3, we identify three
+embedded correlations requiring attention:</p>
+<p><strong>Correlation 1: Maddison GDP ↔︎ Social Development
+Index.</strong></p>
+<p>Maddison GDP per capita appears in the Economic pillar (via
+<code>get_economic_diversity_proxy()</code>) and in the Social pillar
+(via the HDI proxy, which uses GDP/capita as one of three
+components).</p>
+<p><em>Mitigation options:</em> - <strong>Residual scoring:</strong>
+Regress Social Development Index on GDP/capita and use the residual as
+the social component, analogous to MAC’s private credit decorrelation -
+<strong>Component exclusion:</strong> Remove the income component from
+the HDI proxy within the Social pillar, retaining only life expectancy
+and education metrics - <strong>Weight adjustment:</strong> If MI
+between Economic and Social pillars exceeds a threshold (e.g., NMI &gt;
+0.35), reduce the combined weight to avoid double-counting</p>
+<p><strong>Correlation 2: V-Dem Political ↔︎ V-Dem Social.</strong></p>
+<p>V-Dem’s liberal component index (<code>v2x_liberal</code>) and its
+civil liberties index contribute to both the Political and Social
+pillars.</p>
+<p><em>Mitigation options:</em> - <strong>Indicator separation:</strong>
+Assign V-Dem electoral democracy (<code>v2x_polyarchy</code>) and
+executive constraints to the Political pillar exclusively, and civil
+liberties (<code>v2x_clpol</code>) and suffrage to the Social pillar
+exclusively - <strong>PCA decomposition:</strong> Extract principal
+components from V-Dem indicators and assign orthogonal components to
+separate pillars - <strong>Regularisation:</strong> Accept the overlap
+but apply a penalty <span class="math inline">\(\pi_{\text{overlap}} =
+\lambda \cdot \text{NMI}(P_{\text{pol}}, P_{\text{soc}})\)</span> to the
+composite score</p>
+<p><strong>Correlation 3: HadCRUT5 Temperature ↔︎ Economic
+Output.</strong></p>
+<p>Temperature anomalies affect agricultural output (and hence GDP)
+particularly in the pre-industrial era, creating a physical channel of
+dependence.</p>
+<p><em>Mitigation:</em> This is a <strong>causal</strong> (not
+artefactual) correlation — environmental stress genuinely causes
+economic damage. It should not be decorrelated, as it reflects a
+real-world transmission mechanism. However, it should be
+<strong>documented</strong> so that users understand that part of the
+GRRI’s sensitivity to environmental shocks is already captured in the
+economic pillar.</p>
+<h3 id="decorrelation-framework-transplanting-macs-approach">11.5
+Decorrelation Framework: Transplanting MAC’s Approach</h3>
+<p>MAC’s private credit decorrelation pipeline
+(<code>grri_mac.pillars.private_credit_decorrelation.PrivateCreditDecorrelator</code>)
+provides a template:</p>
+<ol type="1">
+<li><strong>Rolling OLS:</strong> Regress the dependent signal on the
+confounding factors</li>
+<li><strong>Extract residual:</strong> <span
+class="math inline">\(\epsilon_t = y_t - \hat{y}_t\)</span> is the
+orthogonal (pillar-specific) component</li>
+<li><strong>Standardise:</strong> <span class="math inline">\(z_t =
+\epsilon_t / \sigma(\epsilon)_{\text{rolling}}\)</span></li>
+<li><strong>EWMA smooth:</strong> Apply exponentially-weighted moving
+average to reduce noise</li>
+</ol>
+<p>For GRRI, the analogous pipeline for the Social pillar would be:</p>
+<p><span class="math display">\[\text{Social}_{\text{raw}}(t) = \beta_0
++ \beta_1 \cdot \text{GDP/capita}(t) + \beta_2 \cdot \text{Polity5}(t) +
+\epsilon(t)\]</span></p>
+<p><span class="math display">\[\text{Social}_{\text{orthogonal}}(t) =
+\sigma^{-1}(\epsilon) \cdot \epsilon(t)\]</span></p>
+<p>This removes the Economic and Political components from the Social
+pillar score, isolating the <strong>genuinely social</strong> signal
+(health, education, civil liberties net of income and governance).</p>
+<h3 id="entropy-based-redundancy-analysis">11.6 Entropy-Based Redundancy
+Analysis</h3>
+<p>Beyond pairwise dependence, we can assess the <strong>total
+redundancy</strong> in the 4-pillar system using total correlation
+(Watanabe, 1960):</p>
+<p><span class="math display">\[C(P_1, P_2, P_3, P_4) = \sum_{j=1}^{4}
+H(P_j) - H(P_1, P_2, P_3, P_4)\]</span></p>
+<p>where <span class="math inline">\(H(\cdot)\)</span> denotes entropy.
+Total correlation <span class="math inline">\(C = 0\)</span> implies the
+four pillars are jointly independent; <span class="math inline">\(C &gt;
+0\)</span> quantifies the bits of shared information.</p>
+<p>The <strong>dual total correlation</strong> (Han, 1975) decomposes
+this further:</p>
+<p><span class="math display">\[D(P_1, P_2, P_3, P_4) = H(P_1, P_2, P_3,
+P_4) - \sum_{j=1}^{4} H(P_j \mid P_{\neg j})\]</span></p>
+<p>Together, <span class="math inline">\(C\)</span> and <span
+class="math inline">\(D\)</span> characterise whether the redundancy is
+dominated by pairwise correlations (high <span
+class="math inline">\(C\)</span>, low <span
+class="math inline">\(D\)</span>) or synergistic interactions (high
+<span class="math inline">\(D\)</span>).</p>
+<h3 id="expected-outcomes-and-implications">11.7 Expected Outcomes and
+Implications</h3>
+<p>Based on the structural analysis of data sources and known overlaps,
+we hypothesise:</p>
+<ol type="1">
+<li><p><strong>Political–Social will show the highest
+dependence</strong> (NMI ~ 0.30–0.40) due to shared V-Dem indicators.
+This pair is the primary candidate for decorrelation.</p></li>
+<li><p><strong>Economic–Social will show moderate dependence</strong>
+(NMI ~ 0.20–0.30) due to shared Maddison GDP. Residual scoring of the
+Social pillar’s income component would reduce this.</p></li>
+<li><p><strong>Environmental will be approximately independent</strong>
+of other pillars (NMI &lt; 0.10), confirming that it captures a
+genuinely distinct dimension.</p></li>
+<li><p><strong>Total correlation will be modest</strong> (estimated
+<span class="math inline">\(C \approx 0.5\)</span>–<span
+class="math inline">\(1.0\)</span> bits), suggesting that the 4-pillar
+structure captures mostly non-redundant information despite the data
+overlaps.</p></li>
+<li><p><strong>The decorrelation benefit will be moderate</strong> —
+expected RMSE improvement of 3–8% on crisis prediction tasks, smaller
+than MAC’s ML weight improvement (~10%) because GRRI’s equal weights are
+already a reasonable approximation for a 4-pillar system.</p></li>
+</ol>
+<p>If these hypotheses are confirmed empirically, the recommended
+production configuration is:</p>
+<ul>
+<li><strong>Default:</strong> Equal weights (0.25 each), no
+decorrelation — simple, interpretable, robust</li>
+<li><strong>Research/advanced:</strong> Decorrelated Social pillar +
+ML-optimised weights where LOOCV <span class="math inline">\(R^2 &gt;
+0.30\)</span></li>
+<li><strong>Always report:</strong> Pairwise NMI and HSIC as
+diagnostics, flagging any pair with NMI &gt; 0.35</li>
+</ul>
+<hr />
+<h2 id="conclusion">12. Conclusion</h2>
+<p>The historical extension of the GRRI enables resilience-adjusted
+backtesting of the MAC framework across the full 1870–2025 period with
+four-pillar coverage, and from 1800 with political and economic pillars
+alone. The extension is built entirely from publicly available academic
+datasets, of which the majority are freely commercialisable with
+attribution. Three datasets (MeasuringWorth, Mitchell, EM-DAT) require
+separate licensing for commercial use; the remainder are available under
+open or permissive licences.</p>
+<p>The key insight that enables this extension is that modern governance
+indicators (WGI, HDI, INFORM) are relatively recent constructions, but
+the phenomena they measure — regime stability, economic growth, social
+development, environmental exposure — have been studied and quantified
+by political scientists, economic historians, and climatologists for
+decades. By mapping these older measurement traditions onto the GRRI
+pillar structure with explicit normalisation and documented
+correlations, we obtain backward-compatible resilience scores that
+degrade gracefully as data thins.</p>
+<p>Beyond backward extension, this paper identifies three avenues for
+methodological enhancement drawn from the MAC framework’s analytics
+toolkit: <strong>(1)</strong> Adaptive pillar weighting using gradient
+boosting and LOO cross-validation, transplantable where sufficient
+crisis observations exist (post-1900); <strong>(2)</strong>
+Historically-informed Monte Carlo simulation using
+empirically-calibrated distributions and copula-estimated cross-pillar
+dependencies, offering a principled alternative to assumed shock
+parameters; <strong>(3)</strong> Independence structure analysis using
+MI, HSIC, and MIC to quantify embedded correlations — particularly the
+Political–Social overlap via shared V-Dem indicators and the
+Economic–Social overlap via shared Maddison GDP — with decorrelation
+strategies adapted from MAC’s private credit pipeline.</p>
+<p>The implementation is production-grade, with 38 unit tests covering
+data loaders, scoring normalisation, proxy-chain completeness, composite
+calculation, and modifier integration. All source code is available in
+the <code>grri_mac.grri</code> module.</p>
+<hr />
+<h2 id="references">References</h2>
+<p>Bolt, J. &amp; van Zanden, J.L. (2020). Maddison style estimates of
+the evolution of the world economy: A new 2020 update. <em>Maddison
+Project Working Paper WP-15</em>, University of Groningen.</p>
+<p>Coppedge, M. et al. (2023). V-Dem Codebook v14. Varieties of
+Democracy Institute, University of Gothenburg.</p>
+<p>Crafts, N.F.R. (1997). The Human Development Index and Changes in
+Standards of Living: Some Historical Comparisons. <em>European Review of
+Economic History</em>, 1(3), 299–322.</p>
+<p>Felbermayr, G. et al. (2020). The Global Sanctions Data Base.
+<em>European Economic Review</em>, 131, 103561.</p>
+<p>Friedman, M. &amp; Schwartz, A.J. (1963). <em>A Monetary History of
+the United States, 1867–1960.</em> Princeton University Press.</p>
+<p>Garriga, A.C. (2016). Central Bank Independence in the World: A New
+Dataset. <em>International Interactions</em>, 42(5), 849–868.</p>
+<p>Guha-Sapir, D. et al. (2023). EM-DAT: The International Disaster
+Database. Centre for Research on the Epidemiology of Disasters (CRED),
+UCLouvain, Brussels.</p>
+<p>Hidalgo, C.A. &amp; Hausmann, R. (2009). The building blocks of
+economic complexity. <em>PNAS</em>, 106(26), 10570–10575.</p>
+<p>Johnston, L. &amp; Williamson, S.H. (2023). What Was the U.S. GDP
+Then? MeasuringWorth.</p>
+<p>Marshall, M.G. &amp; Gurr, T.R. (2020). Polity5: Political Regime
+Characteristics and Transitions, 1800–2018. Center for Systemic
+Peace.</p>
+<p>Mitchell, B.R. (2013). <em>International Historical Statistics.</em>
+7th edition. Palgrave Macmillan.</p>
+<p>Morice, C.P. et al. (2021). An Updated Assessment of Near-Surface
+Temperature Change From 1850: The HadCRUT5 Data Set. <em>Journal of
+Geophysical Research: Atmospheres</em>, 126(3), e2019JD032361.</p>
+<p>Pettersson, T. &amp; Öberg, M. (2020). Organized violence, 1989–2019.
+<em>Journal of Peace Research</em>, 57(4), 597–613.</p>
+<p>Reinhart, C.M. &amp; Rogoff, K.S. (2009). <em>This Time Is Different:
+Eight Centuries of Financial Folly.</em> Princeton University Press.</p>
+<p>Sarkees, M.R. &amp; Wayman, F. (2010). <em>Resort to War:
+1816–2007.</em> CQ Press.</p>
+<p>Schwert, G.W. (1989). Why Does Stock Market Volatility Change Over
+Time? <em>Journal of Finance</em>, 44(5), 1115–1153.</p>
+<p>Shiller, R.J. (2000). <em>Irrational Exuberance.</em> Princeton
+University Press.</p>
+<p>Teorell, J. et al. (2019). Measuring Polyarchy Across the Globe,
+1900–2017. <em>Studies in Comparative International Development</em>,
+54(1), 71–95.</p>
+<h3 id="additional-references-sections-911">Additional References
+(Sections 9–11)</h3>
+<p>Albanese, D. et al. (2013). Minerva and minepy: a C engine for the
+MINE suite and its R, Python and MATLAB wrappers.
+<em>Bioinformatics</em>, 29(3), 407–408.</p>
+<p>Breiman, L. (2001). Random Forests. <em>Machine Learning</em>, 45(1),
+5–32.</p>
+<p>Friedman, J.H. (2001). Greedy Function Approximation: A Gradient
+Boosting Machine. <em>Annals of Statistics</em>, 29(5), 1189–1232.</p>
+<p>Gretton, A., Bousquet, O., Smola, A. &amp; Schölkopf, B. (2005).
+Measuring Statistical Dependence with Hilbert-Schmidt Norms. In
+<em>Algorithmic Learning Theory</em> (ALT), LNCS 3734, pp. 63–77.</p>
+<p>Han, T.S. (1975). Linear dependence structure of the entropy space.
+<em>Information and Control</em>, 29(4), 337–368.</p>
+<p>Kraskov, A., Stögbauer, H. &amp; Grassberger, P. (2004). Estimating
+Mutual Information. <em>Physical Review E</em>, 69(6), 066138.</p>
+<p>Reshef, D.N. et al. (2011). Detecting Novel Associations in Large
+Data Sets. <em>Science</em>, 334(6062), 1518–1524.</p>
+<p>Sklar, A. (1959). Fonctions de répartition à <span
+class="math inline">\(n\)</span> dimensions et leurs marges.
+<em>Publications de l’Institut Statistique de l’Université de
+Paris</em>, 8, 229–231.</p>
+<p>Watanabe, S. (1960). Information Theoretical Analysis of Multivariate
+Correlation. <em>IBM Journal of Research and Development</em>, 4(1),
+66–82.</p>
+<hr />
+<h2 id="appendix-a-data-file-inventory">Appendix A: Data File
+Inventory</h2>
+<p>All datasets are expected in <code>data/historical/grri/</code> with
+the following directory structure:</p>
+<pre><code>data/historical/grri/
+├── polity5/
+│   └── p5v2018.csv              # Polity5 regime scores
+├── vdem/
+│   └── vdem_core.csv            # V-Dem filtered extract
+├── cow/
+│   └── wars.csv                 # COW interstate/civil war data
+├── maddison/
+│   └── mpd2020.csv (or .xlsx)   # Maddison Project GDP per capita
+├── reinhart_rogoff/
+│   └── crises.csv               # Crisis indicator panel
+├── emdat/
+│   └── emdat_public.csv         # EM-DAT disaster records
+├── hadcrut/
+│   └── hadcrut5_annual.csv      # Global temperature anomaly
+├── garriga/
+│   └── cbi_index.csv            # Central Bank Independence index
+├── gsdb/
+│   └── sanctions.csv            # Global Sanctions Database
+├── ucdp/
+│   └── ucdp_brd.csv             # UCDP battle-related deaths
+└── unemployment/
+    ├── usa.csv                  # US unemployment rate
+    ├── gbr.csv                  # UK unemployment rate
+    └── ...                      # Additional countries</code></pre>
+<h2 id="appendix-b-transformation-reference">Appendix B: Transformation
+Reference</h2>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 29%" />
+<col style="width: 31%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th>Proxy</th>
+<th>Input Range</th>
+<th>Output Range</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Polity5 polity2</td>
+<td>[−10, +10]</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\((x + 10) / 20\)</span></td>
+</tr>
+<tr>
+<td>V-Dem indices</td>
+<td>[0, 1]</td>
+<td>[0, 1]</td>
+<td>Direct</td>
+</tr>
+<tr>
+<td>COW battle deaths</td>
+<td>[0, ∞)</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\(\min(1, \log_{10}(x+1) /
+6)\)</span></td>
+</tr>
+<tr>
+<td>Maddison GDP growth (CAGR)</td>
+<td>[−∞, +∞]</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\((g + 0.10) / 0.20\)</span>, clipped</td>
+</tr>
+<tr>
+<td>Log GDP/pc (complexity)</td>
+<td>[0, ∞)</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\((\ln(x) - 5) / 6\)</span>, clipped</td>
+</tr>
+<tr>
+<td>Garriga CBI</td>
+<td>[0, 1]</td>
+<td>[0, 1]</td>
+<td>Direct</td>
+</tr>
+<tr>
+<td>R-R crisis count (5yr)</td>
+<td>[0, ∞)</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\(\min(1, n/5)\)</span></td>
+</tr>
+<tr>
+<td>EM-DAT deaths (5yr)</td>
+<td>[0, ∞)</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\(\min(1, \log_{10}(x+1) /
+6)\)</span></td>
+</tr>
+<tr>
+<td>HadCRUT5 anomaly delta</td>
+<td>[−∞, +∞]</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\(\min(1, \delta_{30\text{yr}} /
+2.0)\)</span>, clipped</td>
+</tr>
+<tr>
+<td>Unemployment rate</td>
+<td>[0, 100]</td>
+<td>[0, 1]</td>
+<td><span class="math inline">\(1 - (r - 3) / 17\)</span>, clipped</td>
+</tr>
+<tr>
+<td>Suffrage share</td>
+<td>[0, 1]</td>
+<td>[0, 1]</td>
+<td>Direct</td>
+</tr>
+</tbody>
+</table>
+<h2 id="appendix-c-minimum-data-requirements-by-period">Appendix C:
+Minimum Data Requirements by Period</h2>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 36%" />
+<col style="width: 25%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>Period</th>
+<th>Pillars Available</th>
+<th>Minimum Data</th>
+<th>Confidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1789–1815</td>
+<td>Political only</td>
+<td>V-Dem only → single pillar, GRRI returns None</td>
+<td>Insufficient</td>
+</tr>
+<tr>
+<td>1816–1819</td>
+<td>Political</td>
+<td>V-Dem + COW → still single pillar</td>
+<td>Insufficient</td>
+</tr>
+<tr>
+<td>1820–1849</td>
+<td>Political, Economic</td>
+<td>V-Dem/Polity5 + Maddison → <strong>2 pillars</strong></td>
+<td>Low</td>
+</tr>
+<tr>
+<td>1850–1869</td>
+<td>Pol, Econ, Env (climate only)</td>
+<td>+ HadCRUT5 → <strong>3 pillars</strong></td>
+<td>Low–Moderate</td>
+</tr>
+<tr>
+<td>1870–1899</td>
+<td>Pol, Econ, Social (partial), Env (climate)</td>
+<td>+ HDI proxy → <strong>3–4 pillars</strong></td>
+<td>Moderate</td>
+</tr>
+<tr>
+<td>1900–1945</td>
+<td>All four pillars</td>
+<td>+ EM-DAT, unemployment</td>
+<td>Moderate</td>
+</tr>
+<tr>
+<td>1946–1969</td>
+<td>All four pillars</td>
+<td>+ UCDP, approaching modern depth</td>
+<td>Moderate–Good</td>
+</tr>
+<tr>
+<td>1970–1989</td>
+<td>All four pillars</td>
+<td>+ Garriga CBI</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>1990–2011</td>
+<td>All four pillars</td>
+<td>+ UNDP HDI (overlap calibration)</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>2012–present</td>
+<td>All four pillars (modern)</td>
+<td>Full modern data</td>
+<td>Excellent</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

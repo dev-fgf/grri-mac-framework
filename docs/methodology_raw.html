@@ -7,230 +7,169 @@
   <meta name="author" content="Martyn Brush, FGF Research" />
   <title>Margin Absorption Capacity (MAC) Framework: Detailed Methodology</title>
   <style>
-
-    /* ── Professional academic styling ─────────────────────── */
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     html {
       color: #1a1a1a;
-      background-color: #fff;
+      background-color: #fdfdfd;
     }
     body {
       margin: 0 auto;
-      max-width: 52em;
-      padding: 40px 60px 80px 60px;
-      font-family: "Georgia", "Times New Roman", serif;
-      font-size: 11.5pt;
-      line-height: 1.6;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
       text-rendering: optimizeLegibility;
       font-kerning: normal;
     }
-    h1, h2, h3, h4 {
-      font-family: "Helvetica Neue", "Arial", sans-serif;
-      color: #1a1a1a;
-      margin-top: 1.8em;
-      margin-bottom: 0.5em;
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
     }
-    h1 { font-size: 1.8em; border-bottom: 2px solid #2c3e50; padding-bottom: 0.3em; }
-    h2 { font-size: 1.4em; border-bottom: 1px solid #bdc3c7; padding-bottom: 0.2em; }
-    h3 { font-size: 1.15em; }
-    h4 { font-size: 1.0em; font-style: italic; }
-
-    /* Title block */
-    header#title-block-header {
-      text-align: center;
-      margin-bottom: 2em;
-      padding-bottom: 1em;
-      border-bottom: 3px double #2c3e50;
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
     }
-    header#title-block-header h1 {
-      font-size: 2.0em;
-      border-bottom: none;
-      margin-bottom: 0.2em;
-    }
-
-    /* Table of contents */
-    nav#TOC {
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      padding: 1em 1.5em;
-      margin: 1.5em 0 2em 0;
-      font-family: "Helvetica Neue", "Arial", sans-serif;
-      font-size: 0.9em;
-    }
-    nav#TOC > ul { margin: 0; }
-    nav#TOC a { color: #2c3e50; text-decoration: none; }
-    nav#TOC a:hover { text-decoration: underline; }
-
-    /* Tables */
-    table {
-      border-collapse: collapse;
-      width: 100%;
+    p {
       margin: 1em 0;
-      font-size: 0.92em;
     }
-    thead tr {
-      background: #2c3e50;
-      color: white;
+    a {
+      color: #1a1a1a;
     }
-    th, td {
-      padding: 8px 12px;
-      text-align: left;
-      border-bottom: 1px solid #dee2e6;
+    a:visited {
+      color: #1a1a1a;
     }
-    tbody tr:nth-child(even) {
-      background: #f8f9fa;
+    img {
+      max-width: 100%;
     }
-    tbody tr:hover {
-      background: #e9ecef;
+    svg {
+      height: auto;
+      max-width: 100%;
     }
-
-    /* Code and pre */
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
     code {
-      font-family: "SF Mono", "Consolas", "Monaco", monospace;
-      font-size: 0.88em;
-      background: #f4f4f4;
-      padding: 1px 4px;
-      border-radius: 3px;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
     }
     pre {
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      padding: 12px 16px;
-      overflow-x: auto;
-      font-size: 0.85em;
+      margin: 1em 0;
+      overflow: auto;
     }
     pre code {
-      background: none;
       padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
     }
-
-    /* Mermaid diagrams */
-    .mermaid-container {
-      background: #fafbfc;
-      border: 1px solid #e1e4e8;
-      border-radius: 6px;
-      padding: 16px;
-      margin: 1.5em 0;
-      text-align: center;
-      overflow-x: auto;
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
     }
-
-    /* Math */
-    .MathJax_Display { margin: 1em 0 !important; }
-
-    /* Blockquotes */
-    blockquote {
-      border-left: 4px solid #2c3e50;
-      margin: 1em 0;
-      padding: 0.5em 1em;
-      background: #f8f9fa;
-      font-style: italic;
-    }
-
-    /* Horizontal rules */
     hr {
       border: none;
-      border-top: 1px solid #dee2e6;
-      margin: 2em 0;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
     }
-
-    /* Links */
-    a { color: #2980b9; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    /* Strong/emphasis in tables */
-    strong { font-weight: 700; }
-
-    /* Footer */
-    body > p:last-of-type {
-      font-style: italic;
-      color: #666;
-      border-top: 1px solid #dee2e6;
-      padding-top: 1em;
-      margin-top: 3em;
-      font-size: 0.9em;
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
     }
-
-    /* ── Print styles ──────────────────────────────────────── */
-    @media print {
-      body {
-        max-width: none;
-        padding: 0;
-        font-size: 10pt;
-        line-height: 1.4;
-      }
-      h1, h2, h3 { page-break-after: avoid; }
-      table, figure, .mermaid-container { page-break-inside: avoid; }
-      thead { display: table-header-group; }
-      nav#TOC { display: none; }
-      a { color: #1a1a1a; }
-      a[href^="http"]::after {
-        content: none;  /* Don't print URLs inline */
-      }
-      thead tr {
-        background: #ddd !important;
-        color: #1a1a1a !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      tbody tr:nth-child(even) {
-        background: #f5f5f5 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .mermaid-container {
-        border: 1px solid #ccc;
-      }
+    table caption {
+      margin-bottom: 0.75em;
     }
-
-    @page {
-      margin: 2cm;
-      @bottom-center {
-        content: "MAC Framework v7.1 — Confidential Draft  |  GRS © FGF";
-        font-size: 8pt;
-        color: #999;
-      }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
     }
-
-    /* ── Confidential Draft watermark ──────────────────────── */
-    @media print {
-      body::after {
-        content: "CONFIDENTIAL DRAFT";
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-35deg);
-        font-size: 4em;
-        font-family: "Helvetica Neue", Arial, sans-serif;
-        font-weight: 700;
-        color: rgba(200, 0, 0, 0.09);
-        letter-spacing: 0.1em;
-        pointer-events: none;
-        z-index: 9999;
-        white-space: nowrap;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
     }
-    /* On-screen watermark too */
-    body::after {
-      content: "CONFIDENTIAL DRAFT";
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-35deg);
-      font-size: 4em;
-      font-family: "Helvetica Neue", Arial, sans-serif;
-      font-weight: 700;
-      color: rgba(200, 0, 0, 0.07);
-      letter-spacing: 0.1em;
-      pointer-events: none;
-      z-index: 9999;
-      white-space: nowrap;
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
     }
-
-</style>
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
   <script defer=""
   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
   type="text/javascript"></script>
@@ -3509,53 +3448,49 @@ tightening cycles reduce volatility up to a point, then amplify it)</li>
 <p>Three complementary metrics address these blind spots.</p>
 <p>The following diagram shows the complete analysis pipeline and its
 downstream connections:</p>
-<div class="mermaid-container">
-<pre class="mermaid">
-flowchart TD
-    subgraph Input["Input: Pillar Score History"]
-        PS["7 Pillar Score<br/>Time Series"]
+<pre class="mermaid"><code>flowchart TD
+    subgraph Input[&quot;Input: Pillar Score History&quot;]
+        PS[&quot;7 Pillar Score&lt;br/&gt;Time Series&quot;]
     end
 
-    subgraph Pairwise["Pairwise Analysis (21 pairs)"]
-        MI["Mutual Information<br/>I(X;Y) — bits"]
-        NMI["Normalised MI<br/>NMI ∈ [0,1]"]
-        HSIC["HSIC (RBF kernel)<br/>median heuristic σ"]
-        PERM["Permutation Test<br/>1000 permutations"]
-        MIC["MIC Grid Search<br/>B(n) = n^0.6"]
-        PEAR["Pearson ρ<br/>(linear baseline)"]
+    subgraph Pairwise[&quot;Pairwise Analysis (21 pairs)&quot;]
+        MI[&quot;Mutual Information&lt;br/&gt;I(X;Y) — bits&quot;]
+        NMI[&quot;Normalised MI&lt;br/&gt;NMI ∈ [0,1]&quot;]
+        HSIC[&quot;HSIC (RBF kernel)&lt;br/&gt;median heuristic σ&quot;]
+        PERM[&quot;Permutation Test&lt;br/&gt;1000 permutations&quot;]
+        MIC[&quot;MIC Grid Search&lt;br/&gt;B(n) = n^0.6&quot;]
+        PEAR[&quot;Pearson ρ&lt;br/&gt;(linear baseline)&quot;]
     end
 
-    subgraph System["System-Level Redundancy"]
-        TC["Watanabe Total<br/>Correlation C (bits)"]
-        DTC["Han Dual Total<br/>Correlation D (bits)"]
+    subgraph System[&quot;System-Level Redundancy&quot;]
+        TC[&quot;Watanabe Total&lt;br/&gt;Correlation C (bits)&quot;]
+        DTC[&quot;Han Dual Total&lt;br/&gt;Correlation D (bits)&quot;]
     end
 
-    subgraph Decisions["Downstream Decisions"]
-        D1["Decorrelation<br/>Candidates"]
-        D2["Interaction Feature<br/>Validation"]
-        D3["Monte Carlo<br/>Correlation Update"]
+    subgraph Decisions[&quot;Downstream Decisions&quot;]
+        D1[&quot;Decorrelation&lt;br/&gt;Candidates&quot;]
+        D2[&quot;Interaction Feature&lt;br/&gt;Validation&quot;]
+        D3[&quot;Monte Carlo&lt;br/&gt;Correlation Update&quot;]
     end
 
-    PS --> MI
-    PS --> HSIC
-    PS --> MIC
-    PS --> PEAR
-    MI --> NMI
-    HSIC --> PERM
-    PS --> TC
-    PS --> DTC
+    PS --&gt; MI
+    PS --&gt; HSIC
+    PS --&gt; MIC
+    PS --&gt; PEAR
+    MI --&gt; NMI
+    HSIC --&gt; PERM
+    PS --&gt; TC
+    PS --&gt; DTC
 
-    NMI -->|"NMI > 0.2"| D1
-    PERM -->|"p < 0.05"| D1
-    PERM -->|"p > 0.05"| D2
-    PEAR -->|"gap > 0.15<br/>from hardcoded"| D3
-    MIC -->|"MIC ≫ |ρ|"| D3
+    NMI --&gt;|&quot;NMI &gt; 0.2&quot;| D1
+    PERM --&gt;|&quot;p &lt; 0.05&quot;| D1
+    PERM --&gt;|&quot;p &gt; 0.05&quot;| D2
+    PEAR --&gt;|&quot;gap &gt; 0.15&lt;br/&gt;from hardcoded&quot;| D3
+    MIC --&gt;|&quot;MIC ≫ |ρ|&quot;| D3
 
-    D1 -->|"Apply OLS residual<br/>extraction"| DEC["Decorrelated<br/>Pillar Scores"]
-    D2 -->|"Remove noise<br/>features"| MLW["ML Weight<br/>Optimiser"]
-    D3 -->|"Update Cholesky<br/>decomposition"| MC["Monte Carlo<br/>Simulator"]
-</pre>
-</div>
+    D1 --&gt;|&quot;Apply OLS residual&lt;br/&gt;extraction&quot;| DEC[&quot;Decorrelated&lt;br/&gt;Pillar Scores&quot;]
+    D2 --&gt;|&quot;Remove noise&lt;br/&gt;features&quot;| MLW[&quot;ML Weight&lt;br/&gt;Optimiser&quot;]
+    D3 --&gt;|&quot;Update Cholesky&lt;br/&gt;decomposition&quot;| MC[&quot;Monte Carlo&lt;br/&gt;Simulator&quot;]</code></pre>
 <p><em>Figure 18.1. Cross-pillar dependence analysis pipeline. Three
 metrics (MI, HSIC, MIC) plus Pearson correlation feed into three
 downstream decisions: decorrelation, interaction feature validation, and
@@ -3746,45 +3681,41 @@ to 1”)</td>
 Weight Optimisation</h3>
 <p>The decorrelation pipeline follows a detect–decorrelate–validate
 loop:</p>
-<div class="mermaid-container">
-<pre class="mermaid">
-flowchart LR
-    subgraph Detect["1. Detect Dependence"]
-        PAIR["All 21 pillar<br/>pairs"]
-        MI_D["MI / NMI"]
-        HSIC_D["HSIC + permutation<br/>p-value"]
-        FLAG["Flag pairs:<br/>NMI>0.2 AND p<0.05"]
+<pre class="mermaid"><code>flowchart LR
+    subgraph Detect[&quot;1. Detect Dependence&quot;]
+        PAIR[&quot;All 21 pillar&lt;br/&gt;pairs&quot;]
+        MI_D[&quot;MI / NMI&quot;]
+        HSIC_D[&quot;HSIC + permutation&lt;br/&gt;p-value&quot;]
+        FLAG[&quot;Flag pairs:&lt;br/&gt;NMI&gt;0.2 AND p&lt;0.05&quot;]
     end
 
-    subgraph Decorrelate["2. Decorrelate"]
-        OLS["Rolling OLS<br/>y = β₀ + β₁x + ε"]
-        RES["Extract residual ε"]
-        STD["Standardise:<br/>z = ε / σ(ε)"]
-        EWMA["EWMA smooth<br/>(halflife=12)"]
+    subgraph Decorrelate[&quot;2. Decorrelate&quot;]
+        OLS[&quot;Rolling OLS&lt;br/&gt;y = β₀ + β₁x + ε&quot;]
+        RES[&quot;Extract residual ε&quot;]
+        STD[&quot;Standardise:&lt;br/&gt;z = ε / σ(ε)&quot;]
+        EWMA[&quot;EWMA smooth&lt;br/&gt;(halflife=12)&quot;]
     end
 
-    subgraph Validate["3. Validate"]
-        RE_MI["Re-compute MI<br/>on residuals"]
-        CHECK{"NMI < 0.10?"}
-        PASS["✓ Pass: use<br/>decorrelated scores"]
-        ITER["↻ Add more<br/>regressors"]
+    subgraph Validate[&quot;3. Validate&quot;]
+        RE_MI[&quot;Re-compute MI&lt;br/&gt;on residuals&quot;]
+        CHECK{&quot;NMI &lt; 0.10?&quot;}
+        PASS[&quot;✓ Pass: use&lt;br/&gt;decorrelated scores&quot;]
+        ITER[&quot;↻ Add more&lt;br/&gt;regressors&quot;]
     end
 
-    PAIR --> MI_D
-    PAIR --> HSIC_D
-    MI_D --> FLAG
-    HSIC_D --> FLAG
-    FLAG --> OLS
-    OLS --> RES
-    RES --> STD
-    STD --> EWMA
-    EWMA --> RE_MI
-    RE_MI --> CHECK
-    CHECK -->|"Yes"| PASS
-    CHECK -->|"No"| ITER
-    ITER --> OLS
-</pre>
-</div>
+    PAIR --&gt; MI_D
+    PAIR --&gt; HSIC_D
+    MI_D --&gt; FLAG
+    HSIC_D --&gt; FLAG
+    FLAG --&gt; OLS
+    OLS --&gt; RES
+    RES --&gt; STD
+    STD --&gt; EWMA
+    EWMA --&gt; RE_MI
+    RE_MI --&gt; CHECK
+    CHECK --&gt;|&quot;Yes&quot;| PASS
+    CHECK --&gt;|&quot;No&quot;| ITER
+    ITER --&gt; OLS</code></pre>
 <p><em>Figure 18.2. Decorrelation pipeline for redundant pillar pairs.
 Flagged pairs undergo OLS residual extraction, standardisation, and EWMA
 smoothing, then are re-tested for residual dependence.</em></p>
@@ -3899,24 +3830,5 @@ MIC (Reshef), TC (Watanabe)</em> <em>Data Sources: FRED, NBER
 Macrohistory, Schwert (1989), Shiller (Yale), Bank of England,
 MeasuringWorth, FINRA</em> <em>Document Author: FGF Research</em>
 <em>Last Updated: February 2026</em></p>
-
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'base',
-    themeVariables: {
-      primaryColor: '#e8f4fd',
-      primaryBorderColor: '#2980b9',
-      secondaryColor: '#fdf2e9',
-      tertiaryColor: '#eafaf1',
-      fontFamily: '"Helvetica Neue", Arial, sans-serif',
-      fontSize: '13px'
-    },
-    flowchart: { curve: 'basis', padding: 15 },
-    sequence: { actorMargin: 50, messageMargin: 40 }
-  });
-</script>
-
 </body>
 </html>
