@@ -84,6 +84,115 @@ POLITICAL_PROXIES: Dict[str, List[GRRIProxyConfig]] = {
             ),
         ),
     ],
+    "governance_effectiveness": [
+        GRRIProxyConfig(
+            target_indicator="WGI Government Effectiveness (-2.5 to 2.5)",
+            proxy_series="WGI GE estimate (rescaled 0-1)",
+            source="World Bank Worldwide Governance Indicators",
+            start_date="1996",
+            end_date=None,
+            pillar="political",
+            transformation="linear: (ge + 2.5) / 5.0 → 0-1",
+            correlation_estimate=1.0,
+            coverage_countries="215 economies",
+            academic_reference=(
+                "Kaufmann, D., Kraay, A. & Mastruzzi, M. (2011). The Worldwide "
+                "Governance Indicators: Methodology and Analytical Issues. "
+                "Hague Journal on the Rule of Law, 3(2), 220-246."
+            ),
+            caveats=(
+                "Biennial data 1996-2002, annual from 2003.  Composite of "
+                "perceptions-based indicators; may lag structural changes."
+            ),
+        ),
+        GRRIProxyConfig(
+            target_indicator="WGI Government Effectiveness (pre-1996)",
+            proxy_series="GDP per capita + expert heuristics",
+            source="Own construction from Maddison + Besley & Persson (2011)",
+            start_date="1820",
+            end_date="1995",
+            pillar="political",
+            transformation="log(GDP/capita) rescaled + expert anchors",
+            correlation_estimate=0.72,
+            coverage_countries="Major economies (expert anchors), 169 (GDP proxy)",
+            academic_reference=(
+                "Besley, T. & Persson, T. (2011). Pillars of Prosperity: "
+                "The Political Economics of Development Clusters. "
+                "Princeton University Press. — Establishes GDP/state capacity link."
+            ),
+            caveats=(
+                "GDP per capita correlates with state capacity (r≈0.82 with WGI GE) "
+                "but is not identical.  Expert historical anchors available only "
+                "for major economies (US, UK, DE, JP, CN, FR, RU, SAU, ARE)."
+            ),
+        ),
+    ],
+    "political_stability": [
+        GRRIProxyConfig(
+            target_indicator="WGI Political Stability & Absence of Violence",
+            proxy_series="WGI PV estimate (rescaled 0-1)",
+            source="World Bank Worldwide Governance Indicators",
+            start_date="1996",
+            end_date=None,
+            pillar="political",
+            transformation="linear: (pv + 2.5) / 5.0 → 0-1",
+            correlation_estimate=1.0,
+            coverage_countries="215 economies",
+            academic_reference=(
+                "Kaufmann, D., Kraay, A. & Mastruzzi, M. (2011). WGI."
+            ),
+            caveats="Same methodology caveats as WGI GE.",
+        ),
+        GRRIProxyConfig(
+            target_indicator="WGI Political Stability (pre-1996)",
+            proxy_series="Regime type stability + conflict intensity proxy",
+            source="Own construction from Polity5 + COW/UCDP",
+            start_date="1816",
+            end_date="1995",
+            pillar="political",
+            transformation="regime stability baseline ± conflict penalty + durability bonus",
+            correlation_estimate=0.68,
+            coverage_countries="167 countries (Polity5 coverage)",
+            academic_reference=(
+                "Goldstone, J.A. et al. (2010). A Global Model for Forecasting "
+                "Political Instability. AJPS 54(1). — Demonstrates anocracies "
+                "are most unstable regime type."
+            ),
+            caveats=(
+                "Proxy captures structural instability risk from regime type "
+                "but cannot detect event-driven destabilisation (coups, "
+                "assassinations) until they are reflected in regime scores."
+            ),
+        ),
+    ],
+    "regime_type": [
+        GRRIProxyConfig(
+            target_indicator="Regime type classification with stability ranking",
+            proxy_series="Polity5 polity2 + WGI GE → regime taxonomy",
+            source="Own construction from Polity5 + WGI + Goldstone (2010)",
+            start_date="1800",
+            end_date=None,
+            pillar="political",
+            transformation=(
+                "Classify into Full Democracy / Democracy / Open Anocracy / "
+                "Closed Anocracy / Consolidated Autocracy / Full Autocracy / "
+                "Failed-Occupied.  Each type has calibrated stability baseline "
+                "adjusted by governance effectiveness and regime durability."
+            ),
+            correlation_estimate=0.75,
+            coverage_countries="167+ countries",
+            academic_reference=(
+                "Hegre, H. et al. (2001). Toward a Democratic Civil Peace? "
+                "APSR 95(1). — Shows inverted-U relationship between regime "
+                "type and conflict risk (anocracies most conflict-prone)."
+            ),
+            caveats=(
+                "Distinguishing 'consolidated autocracy' from 'closed anocracy' "
+                "requires governance effectiveness data (WGI or proxy).  "
+                "Pre-1996 classification relies on GDP/capita heuristics."
+            ),
+        ),
+    ],
     "conflict": [
         GRRIProxyConfig(
             target_indicator="UCDP Battle-Related Deaths",
@@ -124,6 +233,38 @@ POLITICAL_PROXIES: Dict[str, List[GRRIProxyConfig]] = {
             caveats=(
                 "Expert-coded historical data; conceptual differences between "
                 "electoral democracy and voice/accountability."
+            ),
+        ),
+    ],
+    "geopolitical_momentum": [
+        GRRIProxyConfig(
+            target_indicator="Geopolitical deterioration signal",
+            proxy_series="Political pillar N-year rate of change",
+            source="Own construction (mirrors MAC DETERIORATING logic)",
+            start_date="1803",
+            end_date=None,
+            pillar="political",
+            transformation=(
+                "3yr/5yr/10yr deltas in political pillar score. "
+                "WATCH: 3yr Δ < −0.05; DETERIORATING: 3yr Δ < −0.10; "
+                "ACUTE: 3yr Δ < −0.20. Structural decline overlay if "
+                "10yr Δ < −0.15."
+            ),
+            correlation_estimate=0.70,
+            coverage_countries="All countries with political pillar coverage",
+            academic_reference=(
+                "Goldstone, J.A. et al. (2010). A Global Model for Forecasting "
+                "Political Instability. AJPS 54(1). — Rate-of-change in "
+                "institutional quality is a stronger predictor of instability "
+                "than level alone."
+            ),
+            caveats=(
+                "Momentum signal requires at minimum 3 years of prior data. "
+                "Annual resolution means rapid events (<1yr) may not trigger "
+                "momentum warnings until the following year's data update. "
+                "Cannot detect truly exogenous shocks (9/11-type terrorism, "
+                "natural disasters) that have no political-institutional "
+                "precursor."
             ),
         ),
     ],
@@ -502,6 +643,10 @@ def get_all_required_files() -> Dict[str, str]:
         "data/historical/grri/ucdp/ucdp_brd.csv": (
             "UCDP battle-related deaths. "
             "Download from https://ucdp.uu.se/downloads/"
+        ),
+        "data/historical/grri/wgi/wgi_data.csv": (
+            "World Bank Worldwide Governance Indicators (all 6 dimensions). "
+            "Download from https://info.worldbank.org/governance/wgi/"
         ),
         "data/historical/grri/unemployment/usa.csv": (
             "US historical unemployment rate (Mitchell / BLS). "

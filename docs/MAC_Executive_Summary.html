@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC Framework — Executive Summary</title>
+<style>
+  /* ── Base ────────────────────────────────────────────── */
+  html { color: #1a1a1a; background: #fff; }
+  body {
+    margin: 0 auto; max-width: 50em;
+    padding: 50px 60px 80px 60px;
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 12pt; line-height: 1.7;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .title-block {
+    text-align: center;
+    margin-bottom: 2.5em;
+    padding-bottom: 1.2em;
+    border-bottom: 3px double #2c3e50;
+  }
+  .title-block h1 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 2em; color: #2c3e50;
+    margin-bottom: 0.15em;
+  }
+  .title-block .subtitle {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.1em; color: #555;
+    margin: 0.3em 0;
+  }
+  .title-block .meta {
+    font-size: 0.92em; color: #888;
+    margin-top: 0.6em;
+  }
+
+  /* ── Headings ───────────────────────────────────────── */
+  h2 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.35em; color: #2c3e50;
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 0.2em;
+    margin-top: 2em;
+  }
+  h3 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.1em; color: #34495e;
+    margin-top: 1.4em;
+  }
+
+  /* ── Key stat boxes ─────────────────────────────────── */
+  .stats-row {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    margin: 1.5em 0;
+  }
+  .stat-box {
+    flex: 1 1 140px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px 18px;
+    text-align: center;
+  }
+  .stat-box .number {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 2em; font-weight: 700;
+    color: #2980b9;
+    display: block;
+  }
+  .stat-box .label {
+    font-size: 0.85em; color: #666;
+    margin-top: 4px;
+  }
+
+  /* ── Pillar cards ───────────────────────────────────── */
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px; margin: 1.5em 0;
+  }
+  .pillar-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 18px 20px;
+    background: #fafbfc;
+    border-left: 4px solid #2980b9;
+  }
+  .pillar-card h4 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1em; margin: 0 0 0.4em 0;
+    color: #2c3e50;
+  }
+  .pillar-card p {
+    font-size: 0.92em; color: #444;
+    margin: 0;
+  }
+
+  /* ── Traffic-light table ────────────────────────────── */
+  table {
+    border-collapse: collapse; width: 100%;
+    margin: 1em 0; font-size: 0.93em;
+  }
+  thead tr { background: #2c3e50; color: #fff; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #dee2e6; }
+  tbody tr:nth-child(even) { background: #f8f9fa; }
+  .status-comfortable { color: #27ae60; font-weight: 700; }
+  .status-cautious     { color: #f39c12; font-weight: 700; }
+  .status-deteriorating{ color: #e67e22; font-weight: 700; }
+  .status-stretched    { color: #e74c3c; font-weight: 700; }
+  .status-critical     { color: #c0392b; font-weight: 700; }
+
+  /* ── Callout box ────────────────────────────────────── */
+  .callout {
+    border-left: 4px solid #2980b9;
+    background: #eaf4fc;
+    padding: 14px 18px;
+    margin: 1.5em 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95em;
+  }
+  .callout.warning {
+    border-left-color: #e74c3c;
+    background: #fdf0ef;
+  }
+
+  /* ── Flow diagram ───────────────────────────────────── */
+  .flow {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 8px;
+    margin: 1.5em 0; font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.95em;
+  }
+  .flow-box {
+    background: #e8f4fd; border: 1px solid #2980b9;
+    border-radius: 6px; padding: 10px 18px;
+    text-align: center; font-weight: 600; color: #2c3e50;
+  }
+  .flow-arrow { font-size: 1.4em; color: #2980b9; }
+
+  /* ── Footer ─────────────────────────────────────────── */
+  .footer {
+    margin-top: 3em; padding-top: 1em;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.85em; color: #888;
+    text-align: center;
+  }
+
+  /* ── Watermark ──────────────────────────────────────── */
+  body::after {
+    content: "CONFIDENTIAL DRAFT";
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%,-50%) rotate(-35deg);
+    font-size: 4em;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    color: rgba(200,0,0,0.06);
+    letter-spacing: 0.1em;
+    pointer-events: none; z-index: 9999;
+    white-space: nowrap;
+  }
+
+  /* ── Print ──────────────────────────────────────────── */
+  @media print {
+    body { max-width: none; padding: 0; font-size: 10.5pt; }
+    .stat-box .number { color: #2c3e50; }
+    thead tr { background: #ddd !important; color: #1a1a1a !important;
+               -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tbody tr:nth-child(even) { background: #f5f5f5 !important;
+               -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pillar-card { page-break-inside: avoid; }
+    body::after {
+      color: rgba(200,0,0,0.08);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+  @page {
+    margin: 2cm;
+    @bottom-center {
+      content: "MAC Framework — Confidential Draft  |  GRS © FGF";
+      font-size: 8pt; color: #999;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="title-block">
+  <h1>Margin Absorption Capacity (MAC) Framework</h1>
+  <div class="subtitle">Executive Summary for Non-Technical Readers</div>
+  <div class="meta">Martyn Brush, FGF Research &nbsp;·&nbsp; February 2026 &nbsp;·&nbsp; Confidential Draft</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>What is MAC?</h2>
+
+<p>
+  The MAC framework is an <strong>early-warning system for financial market stress</strong>.
+  It answers a simple but critical question:
+</p>
+
+<div class="callout">
+  <strong>"If a shock hits markets right now, how well can the financial system absorb it?"</strong>
+</div>
+
+<p>
+  MAC produces a single score between <strong>0 and 1</strong>.
+  A high score (near 1.0) means markets have plenty of buffers — shocks are absorbed smoothly.
+  A low score (near 0) means buffers are depleted — even a modest shock could trigger a cascading crisis.
+</p>
+
+<p>
+  Think of MAC as a <strong>structural health check</strong> for financial markets, updated in real time,
+  using publicly available data.  It does not predict <em>what</em> will go wrong, but tells you
+  <em>how bad it will be when something does</em>.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Key Results at a Glance</h2>
+
+<div class="stats-row">
+  <div class="stat-box">
+    <span class="number">117</span>
+    <span class="label">years of validation<br>(1907–2025)</span>
+  </div>
+  <div class="stat-box">
+    <span class="number">41</span>
+    <span class="label">historical crises<br>tested against</span>
+  </div>
+  <div class="stat-box">
+    <span class="number">76%</span>
+    <span class="label">crises correctly<br>flagged in advance</span>
+  </div>
+  <div class="stat-box">
+    <span class="number">100%</span>
+    <span class="label">Treasury hedge failures<br>predicted by positioning</span>
+  </div>
+</div>
+
+<p>
+  For context, a naïve baseline (using VIX alone) detects only 27% of these crises.
+  MAC's 76% true-positive rate represents a <strong>+49 percentage-point improvement</strong>.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>How It Works — The Seven Pillars</h2>
+
+<p>
+  MAC monitors seven independent dimensions of market health.  Each pillar asks a
+  plain-language question about a specific type of "buffer":
+</p>
+
+<div class="pillar-grid">
+  <div class="pillar-card">
+    <h4>1. Liquidity</h4>
+    <p>Can markets trade without prices jumping wildly?  Measures funding costs and dealer capacity.</p>
+  </div>
+  <div class="pillar-card">
+    <h4>2. Valuation</h4>
+    <p>Are investors being paid enough to take risk?  Detects both complacency (spreads too tight) and panic (spreads too wide).</p>
+  </div>
+  <div class="pillar-card">
+    <h4>3. Positioning</h4>
+    <p>Is leverage manageable?  Tracks crowded trades — especially the Treasury basis trade — that cause forced selling in a downturn.</p>
+  </div>
+  <div class="pillar-card">
+    <h4>4. Volatility</h4>
+    <p>Is volatility at a healthy level?  Too low signals complacency; too high signals crisis.  Extended calm periods get penalised.</p>
+  </div>
+  <div class="pillar-card">
+    <h4>5. Policy</h4>
+    <p>Can the central bank respond?  If rates are already near zero and the balance sheet is large, there's less firepower left.</p>
+  </div>
+  <div class="pillar-card">
+    <h4>6. Contagion</h4>
+    <p>Is stress spreading across borders?  Monitors dollar funding costs, emerging-market capital flows, global banking health, <strong>crypto–equity correlation</strong>, and <strong>crypto futures leverage</strong> (open interest).  Rising BTC–S&amp;P correlation signals correlated risk-on positioning across traditional and digital asset classes.</p>
+  </div>
+  <div class="pillar-card">
+    <h4>7. Private Credit</h4>
+    <p>Is the $1.7 trillion private credit market hiding problems?  Uses publicly traded proxies since direct data is quarterly at best.</p>
+  </div>
+</div>
+
+<p>
+  Each pillar produces its own 0–1 score.  These are combined into the overall MAC score
+  using weights determined by a machine-learning model trained on 41 historical crisis scenarios.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>How the Score Flows</h2>
+
+<div class="flow">
+  <div class="flow-box">30+ Data<br>Indicators</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-box">7 Pillar<br>Scores</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-box">Composite<br>MAC (0–1)</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-box">Status &amp;<br>Multiplier</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-box">Action<br>Guidance</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>The Traffic-Light Status System</h2>
+
+<p>
+  Rather than asking users to interpret a raw score, MAC translates the number into a
+  <strong>five-level status</strong> that incorporates not just the current level but also
+  whether conditions are <em>improving or deteriorating</em>:
+</p>
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>What It Means</th><th>Suggested Action</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="status-comfortable">COMFORTABLE</td>
+      <td>Buffers are ample (MAC &gt; 0.65). Markets can absorb large shocks.</td>
+      <td>Maintain strategic allocation</td>
+    </tr>
+    <tr>
+      <td class="status-cautious">CAUTIOUS</td>
+      <td>Buffers are adequate but thinner (MAC 0.50–0.65).</td>
+      <td>Review risk, prepare contingencies</td>
+    </tr>
+    <tr>
+      <td class="status-deteriorating">DETERIORATING</td>
+      <td>Buffers are thinning <em>quickly</em> — MAC is in the cautious range but falling.</td>
+      <td>Reduce equity beta, raise cash</td>
+    </tr>
+    <tr>
+      <td class="status-stretched">STRETCHED</td>
+      <td>Buffers are dangerously low (MAC 0.35–0.50). Modest shocks could cause disruption.</td>
+      <td>Defensive positioning, hedge tails</td>
+    </tr>
+    <tr>
+      <td class="status-critical">CRITICAL</td>
+      <td>Buffers are near or at zero (MAC &lt; 0.35). Regime break risk is high.</td>
+      <td>Maximum defence, preserve capital</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warning">
+  <strong>Regime Break (MAC &lt; 0.20):</strong> When the score falls this low, MAC declares that
+  normal forecasting models no longer apply.  The framework switches from providing point estimates
+  to flagging that non-linear, cascading dynamics are likely — analogous to a circuit breaker.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>What Makes MAC Different?</h2>
+
+<h3>Versus single indicators (VIX, credit spreads)</h3>
+<p>
+  Individual stress gauges only measure one dimension.  The VIX tells you about equity volatility
+  but nothing about leverage, policy capacity, or private credit.  MAC combines all seven
+  dimensions, catching crises that single indicators miss.
+</p>
+
+<h3>Versus other composite indices</h3>
+<p>
+  Most financial-conditions indices are <em>coincident</em> — they tell you that a crisis is happening.
+  MAC is designed to be a <em>leading indicator</em>, measuring whether the <strong>conditions for a crisis exist</strong>
+  before the shock arrives.
+</p>
+
+<h3>A critical finding: positioning predicts hedge failure</h3>
+<p>
+  In every modern crisis where Treasury bonds <strong>failed to act as a safe haven</strong>
+  (March 2020, September 2022, October 2023), MAC's positioning pillar was already in breach.
+  This 100% correlation means MAC can warn you in advance when your "hedges might not hedge."
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>The Country Dimension — GRRI</h2>
+<p>
+  The MAC score measures market-wide stress, but the <em>same</em> market shock hits different countries differently.
+  The <strong>Global Risk and Resilience Index (GRRI)</strong> adjusts MAC's output based on a country's structural
+  resilience — political stability, economic strength, social cohesion, and environmental exposure.
+</p>
+<p>
+  A resilient country (e.g. Norway) <em>dampens</em> the shock impact; a fragile country (e.g. a politically unstable
+  emerging market) <em>amplifies</em> it.  The combined equation is:
+</p>
+
+<div class="callout">
+  <strong>Market Impact = Shock &times; Country Modifier &times; MAC Multiplier</strong>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>What About Gold and Oil?</h2>
+
+<p>
+  A common question is whether MAC directly tracks commodity prices — gold, oil, and others.
+  The short answer: <strong>MAC does not track commodity prices as standalone inputs</strong>, and this is by design.
+</p>
+
+<div class="callout">
+  <strong>MAC measures the system's capacity to absorb shocks, not the shocks themselves.</strong>
+  A $20/barrel oil spike is the shock.  MAC tells you how bad the consequences will be.
+</div>
+
+<p>
+  That said, the <em>effects</em> of commodity price moves are comprehensively captured across multiple pillars:
+</p>
+
+<table>
+  <thead>
+    <tr><th>Commodity Effect</th><th>Where MAC Captures It</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Oil shock → inflation spike</td>
+      <td><strong>Policy pillar:</strong> Core PCE deviation from target; 5y5y TIPS breakeven inflation expectations.  An oil-driven inflation surge constrains the Fed's ability to cut rates, reducing policy buffer.</td>
+    </tr>
+    <tr>
+      <td>Oil shock → credit stress</td>
+      <td><strong>Valuation pillar:</strong> High-yield OAS widens (energy issuers are ~15% of HY index); IG spreads widen on contagion.  Both are scored in real time.</td>
+    </tr>
+    <tr>
+      <td>Gold surge → safe-haven demand</td>
+      <td><strong>Volatility pillar:</strong> VIX typically rises alongside gold safe-haven flows; realised–implied vol gap widens.  <strong>Liquidity pillar:</strong> Flight-to-quality compresses Treasury yields and funding costs.</td>
+    </tr>
+    <tr>
+      <td>Commodity-driven EM stress</td>
+      <td><strong>Contagion pillar:</strong> EM reserve coverage (Guidotti-Greenspan ratio) deteriorates for commodity-importing nations; cross-currency basis widens.  <strong>GRRI modifier:</strong> Commodity-dependent countries score lower on the economic resilience pillar.</td>
+    </tr>
+    <tr>
+      <td>Oil price collapse → energy sector leverage</td>
+      <td><strong>Private Credit pillar:</strong> BDC price/NAV discounts widen on energy exposure; leveraged loan ETFs (BKLN/SRLN) decline; SLOOS tightening accelerates to energy-exposed borrowers.</td>
+    </tr>
+    <tr>
+      <td>Gold standard constraints (historical)</td>
+      <td><strong>Policy pillar (historical):</strong> Gold reserve ratio directly constrains policy scoring in the 1907–1934 backtest period, capping policy buffer at 0.55 under gold standard regimes.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  In short, MAC doesn't need a "gold pillar" or "oil pillar" because commodity shocks propagate
+  <em>through</em> the seven existing pillars — inflation constrains policy, credit stress hits valuation,
+  safe-haven flows move volatility, and EM exposure shows up in contagion.  Tracking the commodity
+  price itself would be measuring the <em>cause</em>; MAC measures the <em>consequence</em> — which is what
+  determines portfolio impact.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Data and Transparency</h2>
+
+<p>
+  MAC is built entirely on <strong>publicly available data</strong> from official sources — the Federal Reserve
+  (FRED), CFTC, NBER, Shiller/Yale, Bank of England, and others.  No proprietary feeds or black-box
+  models are required.  The framework is fully documented, reproducible, and backtested across
+  117 years of market history, spanning world wars, gold standard transitions, Bretton Woods, stagflation,
+  the Great Moderation, the GFC, COVID, and the 2022–24 hiking cycle.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Summary</h2>
+
+<table>
+  <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td>What it measures</td><td>The financial system's capacity to absorb shocks</td></tr>
+    <tr><td>Output</td><td>A single 0–1 score + five-level status + action guidance</td></tr>
+    <tr><td>Dimensions</td><td>7 independent pillars covering liquidity, valuation, positioning, volatility, policy, contagion, and private credit</td></tr>
+    <tr><td>Country adjustment</td><td>GRRI modifier for 190+ countries (4 resilience pillars)</td></tr>
+    <tr><td>Validation</td><td>117 years, 41 crises, 76% detection rate (vs. 27% baseline)</td></tr>
+    <tr><td>Data sources</td><td>100% publicly available (FRED, CFTC, NBER, Shiller, BoE, etc.)</td></tr>
+    <tr><td>Update frequency</td><td>Real-time (weekly composite, daily for most pillars)</td></tr>
+    <tr><td>Key insight</td><td>Positioning breach → Treasury hedge failure (100% correlation)</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="footer">
+  Martyn Brush, FGF Research &nbsp;·&nbsp; February 2026 &nbsp;·&nbsp; Confidential Draft &nbsp;·&nbsp; GRS &copy; FGF
+</div>
+
+</body>
+</html>

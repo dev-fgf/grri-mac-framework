@@ -787,6 +787,12 @@ def load_ucdp_conflicts() -> Optional[pd.DataFrame]:
         return None
 
 
+def load_wgi_data_wrapper() -> Optional[pd.DataFrame]:
+    """Wrapper to load WGI data from governance_quality module."""
+    from grri_mac.grri.governance_quality import load_wgi_data
+    return load_wgi_data()
+
+
 # =============================================================================
 # Composite Historical GRRI Provider
 # Unified interface mirroring HistoricalDataProvider from
@@ -934,36 +940,107 @@ class GRRIHistoricalProvider:
         self, country_code: str, year: int
     ) -> Optional[float]:
         """
-        Composite political pillar score (0–1, higher = more resilient).
+        Enhanced political pillar score (0–1, higher = more resilient).
 
-        Components (equal weight):
-            - Governance / rule of law
-            - Democracy index
-            - Civil liberties
-            - Inverse conflict risk
+        Uses the governance_quality module to compute a regime-aware,
+        multi-dimensional score that properly handles non-democratic
+        regimes.  See ``governance_quality.compute_enhanced_political_score``
+        for the full methodology.
+
+        Components (weighted):
+            - Governance Effectiveness  25%  (WGI GE or proxy)
+            - Political Stability       25%  (WGI PV or regime proxy)
+            - Institutional Quality     25%  (Rule of Law + Regulatory)
+            - Conflict Risk (inv)       15%  (COW/UCDP)
+            - Regime Stability          10%  (Regime type + durability)
+
+        Also computes geopolitical momentum signal (stored in cache).
         """
-        components = []
+        from grri_mac.grri.governance_quality import (
+            compute_enhanced_political_score,
+            get_wgi_scores,
+            EnhancedPoliticalScore,
+        )
 
-        governance = self.get_governance_score(country_code, year)
-        if governance is not None:
-            components.append(governance)
+        # Gather inputs
+        polity2 = None
+        polity_series = self._get_or_load(
+            f"polity5_{country_code}",
+            lambda: get_polity2_series(country_code),
+        )
+        if polity_series is not None:
+            polity2 = self._lookup_annual(polity_series, year)
 
-        democracy = self.get_democracy_index(country_code, year)
-        if democracy is not None:
-            components.append(democracy)
+        vdem_poly = None
+        vdem_poly_series = self._get_or_load(
+            f"vdem_polyarchy_{country_code}",
+            lambda: get_vdem_series(country_code, "v2x_polyarchy"),
+        )
+        if vdem_poly_series is not None:
+            vdem_poly = self._lookup_annual(vdem_poly_series, year)
 
-        civlib = self.get_civil_liberties(country_code, year)
-        if civlib is not None:
-            components.append(civlib)
+        vdem_rule = None
+        vdem_rule_series = self._get_or_load(
+            f"vdem_rule_{country_code}",
+            lambda: get_vdem_series(country_code, "v2x_rule"),
+        )
+        if vdem_rule_series is not None:
+            vdem_rule = self._lookup_annual(vdem_rule_series, year)
+
+        vdem_civlib = None
+        vdem_civlib_series = self._get_or_load(
+            f"vdem_civlib_{country_code}",
+            lambda: get_vdem_series(country_code, "v2x_civlib"),
+        )
+        if vdem_civlib_series is not None:
+            vdem_civlib = self._lookup_annual(vdem_civlib_series, year)
 
         conflict = self.get_conflict_risk(country_code, year)
-        if conflict is not None:
-            components.append(1.0 - conflict)  # Invert: low conflict = high score
 
-        if not components:
-            return None
+        # WGI scores (1996+)
+        wgi = self._get_or_load("wgi_data", lambda: load_wgi_data_wrapper())
+        wgi_scores = None
+        if wgi is not None:
+            wgi_scores = get_wgi_scores(country_code, year, wgi)
 
-        return float(np.mean(components))
+        # GDP per capita for governance proxy
+        gdp_pc = None
+        gdp_series = self._get_or_load(
+            f"maddison_{country_code}",
+            lambda: get_maddison_gdppc(country_code),
+        )
+        if gdp_series is not None:
+            gdp_pc = self._lookup_annual(gdp_series, year)
+
+        # Political score history for momentum
+        score_history = self._cache.get(
+            f"political_history_{country_code}", {}
+        )
+
+        # Compute enhanced score
+        result = compute_enhanced_political_score(
+            country_code=country_code,
+            year=year,
+            polity2=polity2,
+            vdem_polyarchy=vdem_poly,
+            vdem_rule=vdem_rule,
+            vdem_civlib=vdem_civlib,
+            conflict_intensity=conflict,
+            wgi_scores=wgi_scores,
+            gdp_per_capita=gdp_pc,
+            regime_durability=None,  # TODO: extract from Polity5 durable field
+            political_score_history=score_history if score_history else None,
+        )
+
+        # Cache for momentum tracking
+        if f"political_history_{country_code}" not in self._cache:
+            self._cache[f"political_history_{country_code}"] = {}
+        self._cache[f"political_history_{country_code}"][year] = result.composite_score
+
+        # Cache enhanced result for provenance / inspection
+        self._cache[f"enhanced_political_{country_code}_{year}"] = result
+
+        return result.composite_score
 
     # ── Economic Pillar ──────────────────────────────────────────────────
 
@@ -1407,6 +1484,7 @@ class GRRIHistoricalProvider:
             "pillars_available": list(available.keys()),
             "pillars_missing": [k for k in scores if scores[k] is None],
             "provenance": provenance,
+            "political_detail": self._get_political_detail(country_code, year),
         }
 
     def get_historical_grri_timeseries(
@@ -1427,12 +1505,21 @@ class GRRIHistoricalProvider:
         for year in range(start_year, end_year + 1):
             result = self.get_historical_grri(country_code, year, weights)
             if result is not None:
-                records.append({
+                row = {
                     "year": year,
                     "resilience": result["resilience"],
                     "modifier": result["modifier"],
                     **result["pillar_scores"],
-                })
+                }
+                # Include enhanced political detail if available
+                detail = result.get("political_detail")
+                if detail:
+                    row["regime_type"] = detail.get("regime_type")
+                    row["momentum_status"] = detail.get("momentum_status")
+                    row["governance_effectiveness"] = detail.get(
+                        "governance_effectiveness"
+                    )
+                records.append(row)
 
         if not records:
             logger.warning(
@@ -1554,6 +1641,16 @@ class GRRIHistoricalProvider:
             "pillar": "political",
         }
 
+        # WGI (World Bank Worldwide Governance Indicators)
+        wgi_dir = GRRI_HISTORICAL_DIR / "wgi"
+        summary["wgi"] = {
+            "available": (wgi_dir / "wgi_data.csv").exists(),
+            "path": str(wgi_dir),
+            "coverage": "1996-2022",
+            "pillar": "political",
+            "note": "All 6 dimensions: VA, PV, GE, RQ, RL, CC",
+        }
+
         # Unemployment
         unemp_dir = GRRI_HISTORICAL_DIR / "unemployment"
         summary["historical_unemployment"] = {
@@ -1566,6 +1663,33 @@ class GRRIHistoricalProvider:
         return summary
 
     # ── Helper Methods ────────────────────────────────────────────────────
+
+    def _get_political_detail(
+        self, country_code: str, year: int
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve enhanced political detail (regime type, momentum, components)
+        from cache.  Only available after ``get_political_score`` has been
+        called for this country-year.
+        """
+        enhanced = self._cache.get(f"enhanced_political_{country_code}_{year}")
+        if enhanced is None:
+            return None
+
+        return {
+            "regime_type": enhanced.regime_type.value,
+            "regime_stability": enhanced.regime_stability,
+            "governance_effectiveness": enhanced.governance_effectiveness,
+            "political_stability": enhanced.political_stability,
+            "institutional_quality": enhanced.institutional_quality,
+            "conflict_risk": enhanced.conflict_risk,
+            "momentum_status": enhanced.momentum.status.value,
+            "momentum_delta_3yr": enhanced.momentum.delta_3yr,
+            "momentum_delta_5yr": enhanced.momentum.delta_5yr,
+            "momentum_description": enhanced.momentum.description,
+            "momentum_factors": enhanced.momentum.contributing_factors,
+            "components": enhanced.components,
+        }
 
     def _lookup_annual(
         self,
@@ -1598,6 +1722,11 @@ class GRRIHistoricalProvider:
         sources: List[str] = []
 
         if pillar == "political":
+            # Check for enhanced political detail first
+            enhanced = self._cache.get(f"enhanced_political_{country_code}_{year}")
+            if enhanced is not None:
+                return enhanced.data_sources
+
             if f"polity5_{country_code}" in self._cache:
                 sources.append(f"Polity5 (1800-2018)")
             if f"vdem_rule_{country_code}" in self._cache:
@@ -1606,6 +1735,8 @@ class GRRIHistoricalProvider:
                 sources.append("V-Dem polyarchy (1789+)")
             if f"vdem_civlib_{country_code}" in self._cache:
                 sources.append("V-Dem civil_liberties (1789+)")
+            if "wgi_data" in self._cache:
+                sources.append("WGI (1996+)")
             # COW is loaded globally
             try:
                 if load_cow_wars() is not None:

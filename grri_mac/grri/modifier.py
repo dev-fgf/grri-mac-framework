@@ -146,12 +146,18 @@ def calculate_full_impact(
 
 
 # Pre-defined GRRI profiles for major countries/regions
+# Note: Political scores now use the enhanced regime-aware methodology
+# from governance_quality.py.  Consolidated autocracies (China, UAE)
+# score higher on governance effectiveness than old democracy-centric
+# approach would suggest.
 COUNTRY_PROFILES = {
     "US": GRRIPillars(political=0.75, economic=0.80, social=0.65, environmental=0.55),
     "EU": GRRIPillars(political=0.80, economic=0.70, social=0.75, environmental=0.70),
     "UK": GRRIPillars(political=0.80, economic=0.70, social=0.70, environmental=0.60),
     "Japan": GRRIPillars(political=0.75, economic=0.65, social=0.80, environmental=0.55),
-    "China": GRRIPillars(political=0.55, economic=0.70, social=0.60, environmental=0.45),
+    "China": GRRIPillars(political=0.52, economic=0.70, social=0.60, environmental=0.45),
+    "UAE": GRRIPillars(political=0.60, economic=0.75, social=0.65, environmental=0.50),
+    "Saudi": GRRIPillars(political=0.48, economic=0.65, social=0.50, environmental=0.40),
     "EM_Avg": GRRIPillars(political=0.45, economic=0.45, social=0.50, environmental=0.40),
 }
 

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC Framework — CEO &amp; Regulator Briefing</title>
+<style>
+  /* ── Base ────────────────────────────────────────────── */
+  html { color: #1a1a1a; background: #fff; }
+  body {
+    margin: 0 auto; max-width: 52em;
+    padding: 50px 60px 80px 60px;
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 12pt; line-height: 1.75;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .title-block {
+    text-align: center;
+    margin-bottom: 2.5em;
+    padding-bottom: 1.2em;
+    border-bottom: 3px double #2c3e50;
+  }
+  .title-block h1 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 2em; color: #2c3e50;
+    margin-bottom: 0.15em;
+  }
+  .title-block .subtitle {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.1em; color: #555;
+    margin: 0.3em 0;
+  }
+  .title-block .meta {
+    font-size: 0.92em; color: #888;
+    margin-top: 0.6em;
+  }
+
+  /* ── Headings ───────────────────────────────────────── */
+  h2 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.35em; color: #2c3e50;
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 0.2em;
+    margin-top: 2.2em;
+  }
+  h3 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.1em; color: #34495e;
+    margin-top: 1.4em;
+  }
+
+  /* ── Elevator pitch ─────────────────────────────────── */
+  .elevator {
+    background: linear-gradient(135deg, #1a3a5c, #2c3e50);
+    color: #fff;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 1.8em 0;
+    font-size: 1.15em;
+    line-height: 1.65;
+    text-align: center;
+  }
+  .elevator .tagline {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 0.8em;
+  }
+  .elevator strong { color: #74b9ff; }
+
+  /* ── Q&A blocks ─────────────────────────────────────── */
+  .qa {
+    margin: 1.6em 0;
+    page-break-inside: avoid;
+  }
+  .qa .question {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.08em;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.3em;
+    padding-left: 28px;
+    position: relative;
+  }
+  .qa .question::before {
+    content: "Q";
+    position: absolute; left: 0; top: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9em; font-weight: 800;
+    color: #fff; background: #2980b9;
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .qa .answer {
+    margin-top: 0.4em;
+    padding-left: 28px;
+    color: #333;
+  }
+
+  /* ── Case study boxes ───────────────────────────────── */
+  .case-study {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin: 1.5em 0;
+    page-break-inside: avoid;
+  }
+  .case-study.success {
+    border-left: 5px solid #27ae60;
+    background: #f0faf4;
+  }
+  .case-study.failure {
+    border-left: 5px solid #c0392b;
+    background: #fdf2f0;
+  }
+  .case-study .case-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.3em;
+  }
+  .case-study.success .case-label { color: #27ae60; }
+  .case-study.failure .case-label { color: #c0392b; }
+  .case-study h3 {
+    margin-top: 0.1em;
+    margin-bottom: 0.5em;
+    color: #2c3e50;
+  }
+  .case-study p { margin: 0.5em 0; }
+  .case-study .timeline {
+    background: rgba(0,0,0,0.04);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 0.8em 0;
+    font-size: 0.93em;
+  }
+  .case-study .timeline strong { color: #2c3e50; }
+  .case-study .outcome {
+    font-weight: 600;
+    margin-top: 0.5em;
+  }
+  .case-study.success .outcome { color: #27ae60; }
+  .case-study.failure .outcome { color: #c0392b; }
+
+  /* ── Callout box ────────────────────────────────────── */
+  .callout {
+    background: #fff8e1;
+    border-left: 4px solid #f5a623;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 1.2em 0;
+    font-size: 0.96em;
+    color: #5d4037;
+  }
+  .callout strong { color: #e65100; }
+
+  /* ── At-a-glance table ──────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2em 0;
+    font-size: 0.94em;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  th {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    color: #2c3e50;
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  /* ── Traffic-light dots ─────────────────────────────── */
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.green { background: #27ae60; }
+  .dot.amber { background: #f39c12; }
+  .dot.red   { background: #e74c3c; }
+
+  /* ── Pillar strip ───────────────────────────────────── */
+  .pillar-strip {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin: 1em 0;
+  }
+  .pillar-chip {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.82em;
+    background: #eaf2f8;
+    color: #2c3e50;
+    border: 1px solid #bcd4e6;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-weight: 600;
+  }
+
+  /* ── Section divider ────────────────────────────────── */
+  .divider {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 2.5em 0;
+  }
+
+  /* ── Watermark ──────────────────────────────────────── */
+  .watermark {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 4em; font-weight: 800;
+    color: rgba(200, 0, 0, 0.06);
+    pointer-events: none; z-index: 9999;
+    white-space: nowrap;
+    letter-spacing: 6px;
+  }
+
+  /* ── Print ──────────────────────────────────────────── */
+  @media print {
+    body { padding: 30px 40px; font-size: 11pt; }
+    .elevator { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .case-study { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .callout { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pillar-chip { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .watermark {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-35deg);
+      font-size: 4em; font-weight: 800;
+      color: rgba(200, 0, 0, 0.08) !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    @page {
+      margin: 2cm;
+      @bottom-center {
+        content: "MAC Framework — Confidential Draft | GRS © FGF";
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 8pt; color: #999;
+      }
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="watermark">CONFIDENTIAL DRAFT</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TITLE                                                  -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="title-block">
+  <h1>The MAC Framework</h1>
+  <p class="subtitle">Questions CEOs and Regulators Ask — and Honest Answers</p>
+  <p class="meta">Martyn Brush, FGF Research &nbsp;|&nbsp; February 2026 &nbsp;|&nbsp; Confidential Draft</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- ELEVATOR PITCH                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="elevator">
+  <div class="tagline">15-Second Elevator Pitch</div>
+  When markets crash, most investors assume their government bond hedges will protect them. 
+  <strong>Twice in the last five years, those hedges failed catastrophically</strong> — 
+  portfolios lost money on <em>both</em> sides. The MAC framework is an early-warning system 
+  that monitors seven dimensions of market stress and tells you, weeks in advance, 
+  <strong>whether your hedges are likely to work or break down</strong>. 
+  It has been validated against <strong>41 crises spanning 117 years</strong>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- THE SEVEN PILLARS (visual strip)                       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>What Does MAC Actually Measure?</h2>
+<p>
+  MAC stands for <strong>Margin Absorption Capacity</strong>. Think of it as a dashboard with 
+  seven gauges, each measuring a different kind of financial buffer. When enough buffers are 
+  depleted at the same time, the system becomes fragile — and hedges start to fail.
+</p>
+<div class="pillar-strip">
+  <span class="pillar-chip">Liquidity</span>
+  <span class="pillar-chip">Valuation</span>
+  <span class="pillar-chip">Positioning</span>
+  <span class="pillar-chip">Volatility</span>
+  <span class="pillar-chip">Policy</span>
+  <span class="pillar-chip">Contagion</span>
+  <span class="pillar-chip">Private Credit</span>
+</div>
+<p>
+  Each gauge runs from 0 (buffer exhausted — danger) to 1 (ample capacity — healthy). 
+  The seven scores are combined into one number that gives a plain-English reading:
+</p>
+<table>
+  <tr><th>MAC Score</th><th>Status</th><th>What It Means</th></tr>
+  <tr><td>Above 0.65</td><td><span class="dot green"></span>Comfortable</td><td>Buffers healthy. Hedges expected to work normally.</td></tr>
+  <tr><td>0.50 – 0.65</td><td><span class="dot amber"></span>Cautious</td><td>Some buffers thinning. Monitor closely.</td></tr>
+  <tr><td>0.35 – 0.50</td><td><span class="dot red"></span>Stretched</td><td>Multiple buffers depleted. Hedges at risk.</td></tr>
+  <tr><td>Below 0.35</td><td><span class="dot red"></span>Critical</td><td>Systemic fragility. Hedges likely to fail.</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CASE STUDIES                                            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Show Me: Does It Actually Work?</h2>
+
+<div class="case-study success">
+  <div class="case-label">Example 1 — Where MAC Worked</div>
+  <h3>COVID-19 Crash, March 2020</h3>
+  <p>
+    The fastest bear market in history. The S&P 500 fell 34% in just 23 trading days. 
+    Crucially, Treasury bond hedges — the main safety net for pension funds and endowments — 
+    <em>failed</em>. Bond prices fell alongside stocks because hedge funds were being forced 
+    to sell everything to meet margin calls. A traditional 60/40 portfolio lost money on both sides.
+  </p>
+  <div class="timeline">
+    <strong>What MAC showed:</strong><br>
+    <strong>20 January 2020</strong> — MAC status moved to DETERIORATING. Seven weeks before the crash peak.<br>
+    <strong>9 March 2020</strong> — MAC fell below 0.45. Volatility pillar at 0.01 (near zero). Policy pillar stressed at 0.29 — the Fed had limited room to cut.<br>
+    <strong>23 March 2020</strong> — MAC hit 0.20, its lowest ever recorded score. Valuation at 0.01, volatility at 0.00, policy at 0.29 — three pillars simultaneously breached.
+  </div>
+  <p class="outcome">
+    Result: MAC gave seven weeks of advance warning and correctly indicated that Treasury hedges 
+    would fail. A portfolio manager acting on the signal in January could have shifted to 
+    alternative protections (options, cash, gold) well before the crash.
+  </p>
+</div>
+
+<div class="case-study success">
+  <div class="case-label">Example 2 — Where MAC Worked</div>
+  <h3>The 2008 Global Financial Crisis</h3>
+  <p>
+    Lehman Brothers collapsed on 15 September 2008, triggering the worst financial crisis since 
+    the Great Depression. Markets froze globally. Unlike COVID, however, Treasury hedges 
+    <em>did work</em> in 2008 — flight-to-quality flows pushed bond prices higher. 
+    MAC correctly identified the crisis <em>and</em> correctly indicated that hedges would hold.
+  </p>
+  <div class="timeline">
+    <strong>What MAC showed:</strong><br>
+    <strong>June 2007</strong> — MAC status moved to DETERIORATING, 15 months before the Lehman collapse.<br>
+    <strong>August 2007</strong> — BNP Paribas froze redemptions. MAC fell to 0.34. Liquidity pillar at 0.00 — completely breached.<br>
+    <strong>September 2008</strong> — MAC at 0.35. Liquidity at 0.00, policy at 0.33 — but crucially, the <em>positioning</em> pillar was not breached, meaning forced Treasury selling was not expected.<br>
+    <strong>Key difference from 2020:</strong> In 2008, the basis trade that causes hedge failure was not yet a large-scale strategy. MAC correctly distinguished between "crisis" (yes) and "hedge failure" (no).
+  </div>
+  <p class="outcome">
+    Result: MAC flagged severe stress over a year in advance and correctly indicated that 
+    Treasury hedges would still provide protection — which they did. Portfolios with bonds 
+    benefited from flight-to-quality.
+  </p>
+</div>
+
+<div class="case-study failure">
+  <div class="case-label">Example 3 — Where MAC Did Not Work</div>
+  <h3>September 11, 2001</h3>
+  <p>
+    The terrorist attacks of 9/11 were a bolt from the blue. There was no financial precursor — 
+    no deterioration in liquidity, no stressed positioning, no credit market warning. 
+    The crisis originated entirely outside the financial system.
+  </p>
+  <div class="timeline">
+    <strong>What MAC showed:</strong><br>
+    <strong>Before the attack:</strong> MAC was in the CAUTIOUS range at 0.44 — somewhat elevated due to lingering effects of the dot-com bust, but no crisis signal.<br>
+    <strong>After the attack:</strong> Liquidity dropped to 0.30 and volatility to 0.25 within days. But the warning came <em>after</em> the event, not before.<br>
+    <strong>Lead time: Less than one week.</strong> Effectively zero actionable warning.
+  </div>
+  <p class="outcome">
+    Result: MAC did not predict this crisis. And it shouldn't have — this was a geopolitical 
+    shock with no market-visible build-up. No financial early-warning system could have detected 
+    it. This is a design boundary, not a bug: MAC measures the fragility of the financial 
+    system, not the probability that an aeroplane will hit a building.
+  </p>
+</div>
+
+<div class="callout">
+  <strong>The honest takeaway:</strong> MAC detects crises that build up inside the financial 
+  system — leverage, illiquidity, crowded positioning, fading policy capacity. It does not 
+  and cannot predict sudden exogenous shocks like terrorist attacks, pandemics' arrival dates, 
+  or surprise government decisions. It can, however, tell you how resilient the system is 
+  <em>when</em> those shocks happen.
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- Q&A SECTION                                             -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Questions CEOs and Regulators Ask</h2>
+
+<!-- ── Q1 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">How is this different from the VIX, which I can already see on Bloomberg?</div>
+  <div class="answer">
+    <p>
+      The VIX measures one thing: expected equity volatility over the next 30 days. 
+      It is useful but blind to many risks. During the September 2019 repo crisis, the VIX 
+      was 15 (perfectly calm) while overnight lending rates spiked to 10% — a genuine liquidity 
+      emergency. VIX said nothing. MAC's liquidity pillar would have flagged it.
+    </p>
+    <p>
+      More importantly, the VIX cannot tell you whether your hedges will work. VIX spiked 
+      in both 2008 and 2020 — but hedges worked in 2008 and failed in 2020. MAC distinguishes 
+      between the two because it also monitors positioning, leverage, and policy capacity.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q2 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What gives you confidence this isn't overfitted to past crises?</div>
+  <div class="answer">
+    <p>
+      Three things:
+    </p>
+    <p>
+      <strong>1. Scale of validation.</strong> The framework has been tested against 41 crises 
+      across 117 years (1907–2025), using six external databases. This is not a model trained 
+      on the last two crashes — it covers the Panic of 1907, the Great Depression, both 
+      World Wars, the Oil Crisis, Black Monday, the Asian Crisis, the dot-com bust, the GFC, 
+      COVID, and the 2025 tariff shock. Overfitting to <em>that</em> diverse a set of events 
+      would be an achievement in itself.
+    </p>
+    <p>
+      <strong>2. Out-of-sample performance.</strong> The machine-learning weights were calibrated 
+      on 14 modern crises (1998–2025). They were then applied, unchanged, to 27 earlier crises 
+      spanning 1907–1997. The framework still achieved a 75% detection rate on data it had 
+      never seen.
+    </p>
+    <p>
+      <strong>3. Transparent inputs.</strong> Every data point comes from public sources 
+      (Federal Reserve, NBER, Shiller, Bank of England). There are no proprietary black-box 
+      signals. Anyone can reproduce the result.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q3 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">How much warning time do we actually get?</div>
+  <div class="answer">
+    <p>
+      Typically <strong>3 to 12 weeks</strong> before the crisis peak. The COVID crash gave 
+      7 weeks of warning. The GFC gave over a year (the first DETERIORATING signal appeared 
+      in June 2007 — Lehman didn't fail until September 2008). The UK pension crisis in 2022 
+      gave 12 weeks.
+    </p>
+    <p>
+      The exception is exogenous shocks like 9/11 or the initial pandemic announcement — 
+      events with no financial precursor. For those, MAC gives near-zero warning, but it 
+      immediately tells you how fragile the system is once the shock hits.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q4 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What does "positioning breach" mean in plain English?</div>
+  <div class="answer">
+    <p>
+      It means too many large investors are making the same bet in the same direction, 
+      often with borrowed money. When those bets start losing, everyone rushes for the exit 
+      at the same time — and the very act of selling drives prices down further, which 
+      triggers more selling.
+    </p>
+    <p>
+      The specific bet that matters most for Treasury hedges is the "basis trade": hedge funds 
+      borrow money to exploit tiny price differences between Treasury bonds and Treasury 
+      futures. It's low-risk in normal times, but when margins are called, they're forced 
+      to sell bonds into a falling market. That's exactly what broke Treasury hedges in 
+      March 2020 and April 2025.
+    </p>
+    <p>
+      When MAC's positioning pillar drops below 0.20, it signals that this crowding has 
+      reached dangerous levels. In our data, <strong>every</strong> time positioning breached 
+      during a crisis, Treasury hedges failed.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q5 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What about private credit and shadow banking — does this cover that?</div>
+  <div class="answer">
+    <p>
+      Yes. One of the seven pillars is dedicated to private credit — the fast-growing market 
+      of non-bank lending (direct lending funds, business development companies, private debt 
+      funds). This market has grown from under $500 billion to over $1.7 trillion in a decade, 
+      and much of it is opaque.
+    </p>
+    <p>
+      The private credit pillar monitors lending standards (via the Fed's Senior Loan Officer 
+      Survey), distress signals (BDC discounts to net asset value), and overall leverage. 
+      It is the least well-supplied with historical data — the market barely existed before 
+      2004 — but it is precisely the kind of emerging risk that regulators are right to 
+      worry about.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q6 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">Does this work for countries outside the US?</div>
+  <div class="answer">
+    <p>
+      The core MAC pillars are currently calibrated for global markets with a US focus 
+      (because the deepest data is US-sourced). However, the framework includes a companion 
+      module called the <strong>GRRI</strong> (Global Risk and Resilience Index), which 
+      scores individual countries across four dimensions: political stability, economic 
+      robustness, social cohesion, and environmental exposure.
+    </p>
+    <p>
+      The GRRI acts as a multiplier: for resilient countries (strong institutions, stable 
+      governance), shocks are dampened; for fragile countries, shocks are amplified. 
+      This country-level layer covers 202 countries and has been extended back to 1789 
+      using academic datasets from the Varieties of Democracy project, the Maddison 
+      economic database, and conflict data from Uppsala University.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q7 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What about gold, oil, and commodity markets — are they in the model?</div>
+  <div class="answer">
+    <p>
+      MAC does not track commodity prices directly. It doesn't need to. Commodity shocks 
+      matter because of what they <em>do</em> to the financial system — and MAC measures 
+      those consequences across all seven pillars:
+    </p>
+    <p>
+      When oil prices spike, inflation expectations rise — that shows up in the 
+      <strong>Policy</strong> pillar (less room for central banks to cut rates). When 
+      commodity markets crash, energy companies' bonds get downgraded — that shows up in 
+      <strong>Valuation</strong> (credit spreads widen). When gold surges, it signals 
+      fear — that shows up in <strong>Volatility</strong> and <strong>Liquidity</strong>. 
+      When commodity shocks hit emerging-market exporters, capital flight shows up in 
+      <strong>Contagion</strong>.
+    </p>
+    <p>
+      The framework deliberately measures the system's capacity to absorb shocks, 
+      not the shocks themselves. This is what makes it robust: it works regardless of 
+      <em>what</em> caused the stress.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q8 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">Crypto? Does it matter?</div>
+  <div class="answer">
+    <p>
+      Yes, and it's captured. The Contagion pillar includes Bitcoin–equity correlation 
+      (BTC–SPY) and crypto futures open interest as indicators. When crypto becomes 
+      highly correlated with equities — as it did in 2022 — it stops being a diversifier 
+      and becomes another source of contagion.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q9 ─────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What's the false alarm rate? I don't want to be told to panic every month.</div>
+  <div class="answer">
+    <p>
+      The system spends roughly 45% of the time in "Comfortable" (green) and 30% in 
+      "Cautious" (amber). "Stretched" or worse occurs about 20% of the time. 
+      "Critical" — the strongest signal — occurs in only about 2% of weekly 
+      observations, and when it does, something serious is genuinely happening.
+    </p>
+    <p>
+      Of the five events the framework flagged that <em>didn't</em> result in full-blown 
+      crises, all involved extraordinary central bank intervention (LTCM bailout, 
+      BNP Paribas, Lehman backstop). The stress was real — the central banks 
+      just intervened before it cascaded. That's a feature, not a false alarm: you 
+      want to know when the system is fragile, even if someone else manages to 
+      prevent the break.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q10 ────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">Is the data public? Can regulators audit this?</div>
+  <div class="answer">
+    <p>
+      Every input comes from publicly available or freely licensable sources:
+    </p>
+    <table>
+      <tr><th>Source</th><th>Examples</th><th>Access</th></tr>
+      <tr><td>Federal Reserve (FRED)</td><td>VIX, credit spreads, policy rates, SOFR, balance sheet</td><td>Free, no registration</td></tr>
+      <tr><td>NBER Macrohistory</td><td>Call money rates, commercial paper, gold stocks (1857+)</td><td>Free</td></tr>
+      <tr><td>Shiller / Yale</td><td>S&P index, CAPE, CPI, long-term rates (1871+)</td><td>Free</td></tr>
+      <tr><td>Bank of England</td><td>GBP/USD, Bank Rate (1694+)</td><td>Free</td></tr>
+      <tr><td>CFTC</td><td>Commitments of Traders — positioning data</td><td>Free</td></tr>
+      <tr><td>FINRA / NYSE</td><td>Margin debt (1918+)</td><td>Free</td></tr>
+    </table>
+    <p>
+      There are no proprietary data feeds, no black boxes. The methodology is fully 
+      documented, the code is version-controlled, and every threshold is published 
+      with its calibration rationale. A regulator could reproduce every score from 
+      publicly available data.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q11 ────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">How should a board use this in practice?</div>
+  <div class="answer">
+    <p>
+      Three ways:
+    </p>
+    <p>
+      <strong>1. Standing risk monitoring.</strong> Report the MAC score and traffic-light 
+      status at every board risk meeting. When the status is green, the report is one line. 
+      When it moves to amber, a brief memo explaining which pillars are deteriorating. 
+      Red triggers a detailed briefing.
+    </p>
+    <p>
+      <strong>2. Hedge confidence assessment.</strong> The key actionable output is whether 
+      Treasury hedges — the backbone of most institutional portfolios — are likely to work 
+      or fail. When MAC is below 0.40 and positioning is breached, switch to alternative 
+      protections: put options, gold, cash, or reduced equity exposure.
+    </p>
+    <p>
+      <strong>3. Scenario planning.</strong> The framework includes a shock propagation model 
+      that simulates how an initial stress (e.g., a liquidity freeze) cascades through other 
+      pillars over time. This provides structured what-if analysis for stress testing.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q12 ────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What can't this system do? Where are the limits?</div>
+  <div class="answer">
+    <p>
+      We want to be direct about the boundaries:
+    </p>
+    <p>
+      <strong>It does not predict when crises will start.</strong> MAC tells you how 
+      fragile the system is, not when the next shock will arrive. A car's fuel gauge tells 
+      you how far you can drive — not when you'll have an accident.
+    </p>
+    <p>
+      <strong>It does not capture exogenous shocks.</strong> Terrorist attacks, 
+      pandemics, surprise elections, natural disasters — these originate outside the 
+      financial system. MAC tells you how well-prepared the system is to absorb them, 
+      not whether they'll happen.
+    </p>
+    <p>
+      <strong>Historical data gets thinner as you go back.</strong> Pre-1990 results 
+      rely on proxy data (1920s credit spreads from Moody's railroad bonds, 1800s 
+      volatility from academic reconstructions). These are well-documented and 
+      peer-reviewed, but inherently less precise than modern electronic data.
+    </p>
+    <p>
+      <strong>The private credit pillar is young.</strong> Non-bank lending as a 
+      systemic force is a post-2010 phenomenon. The data for this pillar is shorter 
+      than the others, and this is where the next crisis may be least visible.
+    </p>
+    <p>
+      <strong>Central bank intervention can override all signals.</strong> When the Fed 
+      steps in with unlimited liquidity, market fragility may not produce the expected 
+      outcomes. MAC correctly identifies the vulnerability — but it cannot predict 
+      whether or when governments will intervene.
+    </p>
+  </div>
+</div>
+
+<!-- ── Q13 ────────────────────────────────────────── -->
+<div class="qa">
+  <div class="question">What are your key numbers? Give me the headline statistics.</div>
+  <div class="answer">
+    <table>
+      <tr><th>Metric</th><th>Value</th></tr>
+      <tr><td>Time span tested</td><td>117 years (1907–2025)</td></tr>
+      <tr><td>Crises evaluated</td><td>41 distinct events</td></tr>
+      <tr><td>Crisis detection rate</td><td>76% (31 of 41)</td></tr>
+      <tr><td>Modern-era detection rate (1971–2025)</td><td>82% (22 of 27)</td></tr>
+      <tr><td>Hedge failure detection</td><td>100% (2 of 2 confirmed failures)</td></tr>
+      <tr><td>Hedge failure false negatives</td><td>Zero</td></tr>
+      <tr><td>Typical advance warning</td><td>3–12 weeks</td></tr>
+      <tr><td>Independent data sources</td><td>6+ external databases, 30+ FRED series</td></tr>
+      <tr><td>Weekly observations</td><td>6,158</td></tr>
+    </table>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CLOSING                                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>In Summary</h2>
+<p>
+  MAC is not a crystal ball. It is a structural health monitor for the financial system. 
+  It measures the capacity of markets to absorb stress — and when that capacity is depleted, 
+  it provides weeks of advance warning before the consequences hit portfolios.
+</p>
+<p>
+  Its most important practical output is a simple binary: <strong>are your bond hedges going 
+  to work, or not?</strong> Getting that question right — even once — can save a pension fund 
+  hundreds of millions.
+</p>
+<p>
+  The data is public. The methodology is documented. The code is auditable. 
+  And we've told you where it doesn't work, not just where it does.
+</p>
+
+<p style="text-align: center; margin-top: 3em; font-size: 0.88em; color: #999; font-family: 'Helvetica Neue', Arial, sans-serif;">
+  MAC Framework v7.1 &nbsp;|&nbsp; Confidential Draft &nbsp;|&nbsp; GRS &copy; FGF
+</p>
+
+</body>
+</html>
